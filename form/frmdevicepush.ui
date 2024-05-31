@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FormDevicePush</class>
+ <widget class="QWidget" name="FormDevicePush">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="leftMargin">
+    <number>6</number>
+   </property>
+   <property name="topMargin">
+    <number>6</number>
+   </property>
+   <property name="rightMargin">
+    <number>6</number>
+   </property>
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="VideoWidget" name="videoWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
+      <enum>QFrame::Shape::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Sunken</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item row="0" column="2">
+       <widget class="QLabel" name="labVideoDevice">
+        <property name="text">
+         <string>视频</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labPushUrl1">
+        <property name="text">
+         <string>推流地址1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QPushButton" name="btnStart1">
+        <property name="text">
+         <string>启动推流</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QComboBox" name="cboxAudioDevice"/>
+      </item>
+      <item row="1" column="4">
+       <widget class="QCheckBox" name="ckMuted">
+        <property name="text">
+         <string>静音播放</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QComboBox" name="cboxVideoDevice"/>
+      </item>
+      <item row="3" column="1" colspan="3">
+       <widget class="QLineEdit" name="txtPushUrl2"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="txtMediaUrl1"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labMediaUrl1">
+        <property name="text">
+         <string>采集地址1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="3">
+       <widget class="QLineEdit" name="txtPushUrl1"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labPushUrl2">
+        <property name="text">
+         <string>推流地址2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QPushButton" name="btnStart2">
+        <property name="text">
+         <string>启动推流</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="txtMediaUrl2"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="labAudioDevice">
+        <property name="text">
+         <string>音频</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labMediaUrl2">
+        <property name="text">
+         <string>采集地址2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QCheckBox" name="ckOsd">
+        <property name="text">
+         <string>带上水印</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="AudioLevel" name="audioLevel" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>20</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VideoWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">videowidgetx.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AudioLevel</class>
+   <extends>QWidget</extends>
+   <header>audiolevel.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>txtMediaUrl1</tabstop>
+  <tabstop>txtMediaUrl2</tabstop>
+  <tabstop>txtPushUrl1</tabstop>
+  <tabstop>txtPushUrl2</tabstop>
+  <tabstop>cboxVideoDevice</tabstop>
+  <tabstop>cboxAudioDevice</tabstop>
+  <tabstop>ckOsd</tabstop>
+  <tabstop>ckMuted</tabstop>
+  <tabstop>btnStart1</tabstop>
+  <tabstop>btnStart2</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FormConfig</class>
+ <widget class="QWidget" name="FormConfig">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="leftMargin">
+    <number>6</number>
+   </property>
+   <property name="topMargin">
+    <number>6</number>
+   </property>
+   <property name="rightMargin">
+    <number>6</number>
+   </property>
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="gboxBase">
+     <property name="title">
+      <string>基本设置</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labPublicUrl">
+        <property name="text">
+         <string>外网地址</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="txtHtmlName1"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="cboxOpenGLType">
+        <item>
+         <property name="text">
+          <string>Default</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>DesktopOpenGL</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>OpenGLES</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>SoftwareOpenGL</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labOpenGLType">
+        <property name="text">
+         <string>GPU模式</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QPushButton" name="btnHtmlName1">
+        <property name="text">
+         <string>选择路径</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="txtHtmlName2"/>
+      </item>
+      <item row="5" column="2">
+       <widget class="QPushButton" name="btnHtmlName2">
+        <property name="text">
+         <string>选择路径</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="labHtmlName2">
+        <property name="text">
+         <string>文件点播</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labHttpUrl">
+        <property name="text">
+         <string>网页地址</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="txtPublicUrl"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="txtHttpUrl"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="labHtmlName1">
+        <property name="text">
+         <string>网络推流</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labWindowTitle">
+        <property name="text">
+         <string>软件标题</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="txtWindowTitle"/>
+      </item>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="ckCheckRun">
+        <property name="text">
+         <string>禁止多开</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QCheckBox" name="ckAutoRun">
+        <property name="text">
+         <string>开机运行</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QCheckBox" name="ckUseTray">
+        <property name="text">
+         <string>后台运行</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QCheckBox" name="ckAutoCopy">
+        <property name="text">
+         <string>自动复制</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="gboxEnable">
+     <property name="title">
+      <string>模块启用</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="ckEnableDevicePush">
+        <property name="text">
+         <string>设备推流</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="ckEnableSimple">
+        <property name="text">
+         <string>简单示例</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QCheckBox" name="ckEnableSpeedPush">
+        <property name="text">
+         <string>倍速推流</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="ckEnableNetPush">
+        <property name="text">
+         <string>网络推流</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QCheckBox" name="ckEnableLoopPush">
+        <property name="text">
+         <string>多路推流</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="ckEnableFilePush">
+        <property name="text">
+         <string>文件点播</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="ckEnableImagePush">
+        <property name="text">
+         <string>图片推流</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>txtWindowTitle</tabstop>
+  <tabstop>cboxOpenGLType</tabstop>
+  <tabstop>txtPublicUrl</tabstop>
+  <tabstop>txtHttpUrl</tabstop>
+  <tabstop>txtHtmlName1</tabstop>
+  <tabstop>txtHtmlName2</tabstop>
+  <tabstop>ckCheckRun</tabstop>
+  <tabstop>ckAutoRun</tabstop>
+  <tabstop>ckUseTray</tabstop>
+  <tabstop>ckAutoCopy</tabstop>
+  <tabstop>btnHtmlName1</tabstop>
+  <tabstop>btnHtmlName2</tabstop>
+  <tabstop>ckEnableSimple</tabstop>
+  <tabstop>ckEnableNetPush</tabstop>
+  <tabstop>ckEnableDevicePush</tabstop>
+  <tabstop>ckEnableSpeedPush</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
