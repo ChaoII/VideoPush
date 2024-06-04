@@ -98,7 +98,7 @@ signals:
     //保存成功
     void receiveSaveStart();
     //保存结束
-    void receiveSaveFinsh();
+    void receiveSaveFinish();
     //保存失败
     void receiveSaveError(int error);
 };

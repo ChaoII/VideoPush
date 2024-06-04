@@ -13,8 +13,7 @@
 #include "core_videoffmpeg/ffmpegthread.h"
 #include "core_videoffmpeg/ffmpegsavehelper.h"
 
-frmNetPush::frmNetPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmNetPush)
-{
+frmNetPush::frmNetPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmNetPush) {
     ui->setupUi(this);
     this->initForm();
     this->initTip();
@@ -23,8 +22,7 @@ frmNetPush::frmNetPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmNetPush
     this->initTable();
 }
 
-frmNetPush::~frmNetPush()
-{
+frmNetPush::~frmNetPush() {
     if (ui->btnStart->text() == "停止服务") {
         pushServer->stop();
     }
@@ -32,32 +30,30 @@ frmNetPush::~frmNetPush()
     delete ui;
 }
 
-void frmNetPush::resizeEvent(QResizeEvent *)
-{
+void frmNetPush::resizeEvent(QResizeEvent *) {
     this->moveVideo();
 }
 
-void frmNetPush::initForm()
-{
+void frmNetPush::initForm() {
     fileNameUrl = QtHelper::appPath() + "/config/video_push_url.txt";
     ui->widgetRight->setFixedWidth(AppData::RightWidth);
     ui->tabWidget->setCurrentIndex(0);
-    connect(&netAdd, SIGNAL(addUrl(QString, QString, bool)), this, SLOT(addUrl(QString, QString, bool)));
+    connect(&netAdd, &frmNetAdd::addUrl, this, &frmNetPush::addUrl);
 
     //加载流媒体服务器信息
     VideoPushUrl::initServerInfo(QtHelper::appPath() + "/config/video_push_port.txt");
     ui->cboxPushType->addItems(VideoPushUrl::getPushType());
 
-    width = 1920;
-    height = 1080;
-    rotate = 0;
-    videoThread = NULL;
+    width_ = 1920;
+    height_ = 1080;
+    rotate_ = 0;
+    videoThread = nullptr;
     ui->sliderPosition->setRange(0, 0);
 
     //实例化文件推流类并绑定信号槽
     pushServer = new NetPushServer(this);
-    connect(pushServer, SIGNAL(pushStart(QString, int, int, int, int, bool)), this, SLOT(pushStart(QString, int, int, int, int, bool)));
-    connect(pushServer, SIGNAL(pushChanged(QString, int)), this, SLOT(pushChanged(QString, int)));
+    connect(pushServer, &NetPushServer::pushStart, this, &frmNetPush::pushStart);
+    connect(pushServer, &NetPushServer::pushChanged, this, &frmNetPush::pushChanged);
 
     on_ckVideoVisible_stateChanged(AppConfig::NetVideoVisible);
     ui->ckVideoVisible->setChecked(AppConfig::NetVideoVisible);
@@ -75,18 +71,16 @@ void frmNetPush::initForm()
 #endif
 
     //定时器显示时间/方便推流桌面的时候看到一个动的画面
-    QTimer *timer2 = new QTimer(this);
-    connect(timer2, SIGNAL(timeout()), this, SLOT(initTip()));
+    auto timer2 = new QTimer(this);
+    connect(timer2, &QTimer::timeout, this, &frmNetPush::initTip);
     timer2->start(1000);
 }
 
-void frmNetPush::initTip()
-{
+void frmNetPush::initTip() {
     VideoPushHelper::initTip(ui->labTip);
 }
 
-void frmNetPush::initPara()
-{
+void frmNetPush::initPara() {
     //部分流媒体服务支持rtmp推pcm
     static QStringList types;
     if (types.count() == 0) {
@@ -109,55 +103,53 @@ void frmNetPush::initPara()
     VideoPushHelper::hideUser = AppConfig::NetHideUser;
 }
 
-void frmNetPush::initConfig()
-{
+void frmNetPush::initConfig() {
     ui->cboxPushType->setCurrentIndex(ui->cboxPushType->findText(AppConfig::NetPushType));
-    connect(ui->cboxPushType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxPushType, &QComboBox::currentIndexChanged, this, &frmNetPush::saveConfig);
 
     ui->cboxPushMode->setCurrentIndex(ui->cboxPushMode->findText(AppConfig::NetPushMode));
-    connect(ui->cboxPushMode, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxPushMode, &QComboBox::currentIndexChanged, this, &frmNetPush::saveConfig);
 
     QtHelper::initLocalIPs(ui->cboxPushHost, AppConfig::NetPushHost);
-    connect(ui->cboxPushHost->lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(saveConfig()));
-    connect(ui->cboxPushHost, SIGNAL(activated(int)), this, SLOT(initUrl()));
+    connect(ui->cboxPushHost->lineEdit(), &QLineEdit::textChanged, this, &frmNetPush::saveConfig);
+    connect(ui->cboxPushHost, &QComboBox::activated, this, &frmNetPush::initUrl);
 
     ui->txtPushUrl->setText(AppConfig::NetPushUrl);
-    connect(ui->txtPushUrl, SIGNAL(textChanged(QString)), this, SLOT(saveConfig()));
+    connect(ui->txtPushUrl, &QLineEdit::textChanged, this, &frmNetPush::saveConfig);
 
     ui->cboxFlagType->setCurrentIndex(AppConfig::NetFlagType);
-    connect(ui->cboxFlagType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxFlagType, &QComboBox::currentIndexChanged, this, &frmNetPush::saveConfig);
 
     ui->txtPushFlag->setText(AppConfig::NetPushFlag);
-    connect(ui->txtPushFlag, SIGNAL(textChanged(QString)), this, SLOT(saveConfig()));
+    connect(ui->txtPushFlag, &QLineEdit::textChanged, this, &frmNetPush::saveConfig);
 
     ui->cboxPreviewType->setCurrentIndex(ui->cboxPreviewType->findText(AppConfig::NetPreviewType));
-    connect(ui->cboxPreviewType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxPreviewType, &QComboBox::currentIndexChanged, this, &frmNetPush::saveConfig);
 
     VideoUtil::loadCopyNumber(ui->cboxCopyNumber);
     ui->cboxCopyNumber->setCurrentIndex(ui->cboxCopyNumber->findText(QString::number(AppConfig::NetCopyNumber)));
-    connect(ui->cboxCopyNumber, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxCopyNumber, &QComboBox::currentIndexChanged, this, &frmNetPush::saveConfig);
 
     VideoUtil::loadEncodeVideo(ui->cboxEncodeVideo);
     ui->cboxEncodeVideo->setCurrentIndex(AppConfig::EncodeVideo);
-    connect(ui->cboxEncodeVideo, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxEncodeVideo, &QComboBox::currentIndexChanged, this, &frmNetPush::saveConfig);
 
     VideoUtil::loadEncodeVideoRatio(ui->cboxEncodeVideoRatio);
     ui->cboxEncodeVideoRatio->setCurrentIndex(ui->cboxEncodeVideoRatio->findData(AppConfig::EncodeVideoRatio));
-    connect(ui->cboxEncodeVideoRatio, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxEncodeVideoRatio, &QComboBox::currentIndexChanged, this, &frmNetPush::saveConfig);
 
     VideoUtil::loadEncodeVideoScale(ui->cboxEncodeVideoScale);
     ui->cboxEncodeVideoScale->lineEdit()->setText(AppConfig::EncodeVideoScale);
-    connect(ui->cboxEncodeVideoScale->lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(saveConfig()));
+    connect(ui->cboxEncodeVideoScale->lineEdit(), &QLineEdit::textChanged, this, &frmNetPush::saveConfig);
 
     ui->ckCheckB->setChecked(AppConfig::CheckB);
-    connect(ui->ckCheckB, SIGNAL(stateChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->ckCheckB, &QCheckBox::checkStateChanged, this, &frmNetPush::saveConfig);
 
     ui->ckHideUser->setChecked(AppConfig::NetHideUser);
-    connect(ui->ckHideUser, SIGNAL(stateChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->ckHideUser, &QCheckBox::checkStateChanged, this, &frmNetPush::saveConfig);
 }
 
-void frmNetPush::saveConfig()
-{
+void frmNetPush::saveConfig() {
     QString netPushType = ui->cboxPushType->currentText();
     if (AppConfig::NetPushType != netPushType) {
         AppConfig::NetPushType = netPushType;
@@ -182,7 +174,8 @@ void frmNetPush::saveConfig()
     AppConfig::NetPreviewType = ui->cboxPreviewType->currentText();
     AppConfig::NetCopyNumber = ui->cboxCopyNumber->currentText().toInt();
     AppConfig::EncodeVideo = ui->cboxEncodeVideo->currentIndex();
-    AppConfig::EncodeVideoRatio = ui->cboxEncodeVideoRatio->itemData(ui->cboxEncodeVideoRatio->currentIndex()).toFloat();
+    AppConfig::EncodeVideoRatio = ui->cboxEncodeVideoRatio->itemData(
+            ui->cboxEncodeVideoRatio->currentIndex()).toFloat();
     AppConfig::EncodeVideoScale = ui->cboxEncodeVideoScale->lineEdit()->text().trimmed();
     AppConfig::CheckB = ui->ckCheckB->isChecked();
     AppConfig::NetHideUser = ui->ckHideUser->isChecked();
@@ -192,16 +185,15 @@ void frmNetPush::saveConfig()
     this->initPara();
 }
 
-void frmNetPush::initUrl()
-{
+void frmNetPush::initUrl() {
     //自动取出对应流媒体服务器对应推流模式对应网卡的推流地址
-    QString url = VideoPushUrl::getPushUrl(AppConfig::NetPushType, AppConfig::NetPushMode, AppConfig::NetPushUrl, AppConfig::NetPushHost);
+    QString url = VideoPushUrl::getPushUrl(AppConfig::NetPushType, AppConfig::NetPushMode, AppConfig::NetPushUrl,
+                                           AppConfig::NetPushHost);
     UrlHelper::removeDefaultPort(url);
     ui->txtPushUrl->setText(url);
 }
 
-void frmNetPush::initTable()
-{
+void frmNetPush::initTable() {
     //列名和列宽
     QStringList columnName;
     columnName << "唯一标识" << "分辨率" << "状态" << "视频" << "音频" << "完整地址";
@@ -209,7 +201,7 @@ void frmNetPush::initTable()
     columnWidth << 270 << 90 << 60 << 40 << 40 << 100;
 
     //设置列数和列宽
-    int columnCount = columnWidth.count();
+    int columnCount = static_cast<int>(columnWidth.count());
     ui->tableWidget->setColumnCount(columnCount);
     for (int i = 0; i < columnCount; ++i) {
         ui->tableWidget->setColumnWidth(i, columnWidth.at(i));
@@ -229,31 +221,25 @@ void frmNetPush::initTable()
     }
 }
 
-void frmNetPush::writeUrl()
-{
+void frmNetPush::writeUrl() {
     this->connectBtn();
     VideoPushHelper::writeUrl(ui->tableWidget, fileNameUrl);
 }
 
-void frmNetPush::connectBtn()
-{
+void frmNetPush::connectBtn() {
     //关联按钮信号槽
     int count = ui->tableWidget->rowCount();
     for (int i = 0; i < count; ++i) {
-        QPushButton *btn = (QPushButton *)ui->tableWidget->cellWidget(i, 2);
+        auto btn = (QPushButton *) ui->tableWidget->cellWidget(i, 2);
         if (btn) {
-            connect(btn, SIGNAL(clicked(bool)), this, SLOT(clicked()), Qt::UniqueConnection);
+            connect(btn, &QPushButton::clicked, this, &frmNetPush::clicked);
         }
     }
 }
 
-void frmNetPush::moveVideo()
-{
-    int width = this->width;
-    int height = this->height;
-    WidgetHelper::rotateSize(rotate, width, height);
-    QRect rect = WidgetHelper::getCenterRect(QSize(width, height), ui->frameVideo->rect());
-
+void frmNetPush::moveVideo() {
+    WidgetHelper::rotateSize(rotate_, this->width_, this->height_);
+    QRect rect = WidgetHelper::getCenterRect(QSize(this->width_, this->height_), ui->frameVideo->rect());
     labImage->clear();
     yuvWidget->clear();
 #ifndef openglx
@@ -263,8 +249,8 @@ void frmNetPush::moveVideo()
 #endif
 }
 
-void frmNetPush::resetVideo()
-{
+//(int, int, quint8 * , quint8 * , quint8 * , quint32, quint32, quint32)
+void frmNetPush::resetVideo() {
     ui->labDuration->setText("00:00");
     ui->labPosition->setText("00:00");
     ui->sliderPosition->setRange(0, 0);
@@ -273,30 +259,28 @@ void frmNetPush::resetVideo()
     if (videoThread) {
         videoThread->setPlayAudio(false);
         videoThread->setPushPreview(false);
-        disconnect(videoThread, SIGNAL(receivePlayStart(int)), this, SLOT(receivePlayStart(int)));
-        disconnect(videoThread, SIGNAL(receivePosition(qint64)), this, SLOT(receivePosition(qint64)));
-        disconnect(videoThread, SIGNAL(receiveImage(QImage, int)), this, SLOT(receiveImage(QImage, int)));
-        disconnect(videoThread, SIGNAL(receiveFrame(int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32)),
-                   this, SLOT(receiveFrame(int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32)));
-        videoThread = NULL;
+        disconnect(videoThread, &FFmpegThread::receivePlayStart, this, &frmNetPush::receivePlayStart);
+        disconnect(videoThread, &FFmpegThread::receivePosition, this, &frmNetPush::receivePosition);
+        disconnect(videoThread, &FFmpegThread::receiveImage, this, &frmNetPush::receiveImage);
+        disconnect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
+                &FFmpegThread::receiveFrame), this, &frmNetPush::receiveFrame);
+        videoThread = nullptr;
     }
 
     labImage->clear();
     yuvWidget->clear();
 }
 
-void frmNetPush::clearUrl()
-{
+void frmNetPush::clearUrl() {
     ui->txtRtspUrl->clear();
     ui->txtRtmpUrl->clear();
     ui->txtHlsUrl->clear();
     ui->txtWebRtcUrl->clear();
 }
 
-void frmNetPush::clicked()
-{
+void frmNetPush::clicked() {
     //动态单个启动和停止推流
-    QPushButton *btn = (QPushButton *)sender();
+    auto btn = (QPushButton *) sender();
     int row = btn->objectName().split("_").at(1).toInt();
     QString mediaUrl = ui->tableWidget->item(row, 5)->data(Qt::UserRole).toString();
     if (btn->text() == "启动") {
@@ -306,8 +290,8 @@ void frmNetPush::clicked()
     }
 }
 
-void frmNetPush::pushStart(const QString &mediaUrl, int width, int height, int videoStatus, int audioStatus, bool start)
-{
+void
+frmNetPush::pushStart(const QString &mediaUrl, int width, int height, int videoStatus, int audioStatus, bool start) {
     int count = ui->tableWidget->rowCount();
     for (int i = 0; i < count; ++i) {
         QString url = ui->tableWidget->item(i, 5)->data(Qt::UserRole).toString();
@@ -325,8 +309,7 @@ void frmNetPush::pushStart(const QString &mediaUrl, int width, int height, int v
     }
 }
 
-void frmNetPush::pushChanged(const QString &mediaUrl, int state)
-{
+void frmNetPush::pushChanged(const QString &mediaUrl, int state) {
     int count = ui->tableWidget->rowCount();
     for (int i = 0; i < count; ++i) {
         QString url = ui->tableWidget->item(i, 5)->data(Qt::UserRole).toString();
@@ -337,49 +320,46 @@ void frmNetPush::pushChanged(const QString &mediaUrl, int state)
     }
 }
 
-void frmNetPush::receivePlayStart(int time)
-{
+void frmNetPush::receivePlayStart(int time) {
+    Q_UNUSED(time)
     //调整视频控件位置
     if (videoThread) {
-        width = videoThread->getVideoWidth();
-        height = videoThread->getVideoHeight();
-        rotate = videoThread->getRotate();
+        width_ = videoThread->getVideoWidth();
+        height_ = videoThread->getVideoHeight();
+        rotate_ = videoThread->getRotate();
         this->moveVideo();
     }
 }
 
-void frmNetPush::receivePosition(qint64 position)
-{
+void frmNetPush::receivePosition(qint64 position) {
     //设置当前进度及已播放时长
-    ui->sliderPosition->setValue(position);
+    ui->sliderPosition->setValue(static_cast<int>(position));
     ui->labPosition->setText(QtHelper::getTimeString(position));
 }
 
-void frmNetPush::receiveImage(const QImage &image, int time)
-{
+void frmNetPush::receiveImage(const QImage &image, int time) {
+    Q_UNUSED(time)
     if (sender()) {
-
         labImage->setImage(image, true);
     }
 }
 
-void frmNetPush::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY, quint32 linesizeU, quint32 linesizeV)
-{
+void frmNetPush::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 lineSizeY,
+                              quint32 lineSizeU, quint32 lineSizeV) {
     //这里要过滤下可能线程刚好结束了但是信号已经到这里
     if (sender()) {
-        yuvWidget->updateFrame(width, height, dataY, dataU, dataV, linesizeY, linesizeU, linesizeV);
+        yuvWidget->updateFrame(width, height, dataY, dataU, dataV, lineSizeY, lineSizeU, lineSizeV);
     }
 }
 
-void frmNetPush::addUrl(const QString &flag, const QString &url, bool direct)
-{
+void frmNetPush::addUrl(const QString &flag, const QString &url, bool direct) {
     //非直接添加则取出对应的标识
-    QString name = direct ? flag : VideoPushHelper::getFlag(ui->tableWidget, AppConfig::NetFlagType, AppConfig::NetPushFlag);
+    QString name = direct ? flag : VideoPushHelper::getFlag(ui->tableWidget, AppConfig::NetFlagType,
+                                                            AppConfig::NetPushFlag);
     VideoPushHelper::addUrl(ui->tableWidget, url, pushServer, name);
 }
 
-void frmNetPush::on_btnStart_clicked()
-{
+void frmNetPush::on_btnStart_clicked() {
     if (ui->btnStart->text() == "启动服务") {
         //先要检查服务是否正常
         QString url = AppConfig::NetPushUrl;
@@ -405,8 +385,7 @@ void frmNetPush::on_btnStart_clicked()
     AppConfig::writeConfig();
 }
 
-void frmNetPush::on_btnPreview_clicked()
-{
+void frmNetPush::on_btnPreview_clicked() {
     QString pushUrl = AppConfig::NetPushUrl;
     QString pushType = AppConfig::NetPushType;
     QString pullType = AppConfig::NetPreviewType;
@@ -432,13 +411,12 @@ void frmNetPush::on_btnPreview_clicked()
         }
     }
 
-    //liveplayer表示采用liveplayer播放器
-    bool liveplayer = VideoPushUrl::useLivePlayer(pushType, pullType);
-    VideoPushUrl::preview(AppConfig::HttpUrl, AppConfig::HtmlName1, AppConfig::NetCopyNumber, urls, liveplayer);
+    //livePlayer表示采用livePlayer播放器
+    bool livePlayer = VideoPushUrl::useLivePlayer(pushType, pullType);
+    VideoPushUrl::preview(AppConfig::HttpUrl, AppConfig::HtmlName1, AppConfig::NetCopyNumber, urls, livePlayer);
 }
 
-void frmNetPush::on_btnRemove_clicked()
-{
+void frmNetPush::on_btnRemove_clicked() {
     int row = ui->tableWidget->currentRow();
     if (row >= 0) {
         QString flag = ui->tableWidget->item(row, 0)->text();
@@ -449,8 +427,7 @@ void frmNetPush::on_btnRemove_clicked()
     }
 }
 
-void frmNetPush::on_btnClear_clicked()
-{
+void frmNetPush::on_btnClear_clicked() {
     if (QtHelper::showMessageBoxQuestion("确定要清空吗? 清空后不能恢复!") == QMessageBox::Yes) {
         pushServer->clearUrl();
         ui->tableWidget->setRowCount(0);
@@ -460,19 +437,17 @@ void frmNetPush::on_btnClear_clicked()
     }
 }
 
-void frmNetPush::on_btnAddFile_clicked()
-{
+void frmNetPush::on_btnAddFile_clicked() {
     QString filter = "视频文件(*.mp4 *.rmvb *.avi *.asf *.mov *.wmv *.mkv);;音频文件(*.mp3 *.wav *.wma *.aac);;所有文件(*.*)";
     QStringList fileNames = QFileDialog::getOpenFileNames(this, "", "", filter);
-    foreach (QString fileName, fileNames) {
+    for (auto &fileName: fileNames) {
         this->addUrl(AppConfig::NetPushFlag, fileName, false);
     }
 
     this->writeUrl();
 }
 
-void frmNetPush::on_btnAddPath_clicked()
-{
+void frmNetPush::on_btnAddPath_clicked() {
 #if 0
     //批量指定测试地址
     on_btnClear_clicked();
@@ -490,7 +465,7 @@ void frmNetPush::on_btnAddPath_clicked()
         QStringList filters = QString("*.mp4 *.rmvb *.avi *.asf *.mov *.wmv *.mkv *.mp3 *.wav *.wma *.aac").split(" ");
         QDir dir(path);
         QStringList fileNames = dir.entryList(filters);
-        foreach (QString fileName, fileNames) {
+        for (auto &fileName: fileNames) {
             this->addUrl(AppConfig::NetPushFlag, path + "/" + fileName, false);
         }
     }
@@ -499,45 +474,40 @@ void frmNetPush::on_btnAddPath_clicked()
     this->writeUrl();
 }
 
-void frmNetPush::on_btnAddUrl_clicked()
-{
+void frmNetPush::on_btnAddUrl_clicked() {
     //add.exec();
     //return;
 
     bool ok = false;
     QString title = "视频流[rtsp://xxxxx rtmp://xxxxx http://xxxxx] / 摄像头[video=USB Video Device|1280x720|30] / 桌面[desktop]";
     QStringList urls = UrlUtil::getUrls(UrlUtil::Simple);
-    QString url = QInputDialog::getItem(this, "输入地址", title, urls, urls.indexOf(AppConfig::NetLastUrl), true, &ok);
+    QString url = QInputDialog::getItem(this, "输入地址", title, urls,
+                                        static_cast<int>(urls.indexOf(AppConfig::NetLastUrl)), true, &ok);
     url = url.trimmed();
     if (ok && !url.isEmpty()) {
         this->addUrl(AppConfig::NetPushFlag, url, false);
         AppConfig::NetLastUrl = url;
         AppConfig::writeConfig();
     }
-
     this->writeUrl();
 }
 
-void frmNetPush::on_btnClose_clicked()
-{
+void frmNetPush::on_btnClose_clicked() {
     this->resetVideo();
 }
 
-void frmNetPush::on_sliderPosition_clicked()
-{
+void frmNetPush::on_sliderPosition_clicked() {
     int value = ui->sliderPosition->value();
     on_sliderPosition_sliderMoved(value);
 }
 
-void frmNetPush::on_sliderPosition_sliderMoved(int value)
-{
+void frmNetPush::on_sliderPosition_sliderMoved(int value) {
     if (videoThread) {
         videoThread->setPosition(value);
     }
 }
 
-void frmNetPush::on_ckSoundMuted_stateChanged(int arg1)
-{
+void frmNetPush::on_ckSoundMuted_stateChanged(int arg1) {
     AppConfig::NetSoundMuted = (arg1 != 0);
     AppConfig::writeConfig();
     if (videoThread) {
@@ -545,8 +515,7 @@ void frmNetPush::on_ckSoundMuted_stateChanged(int arg1)
     }
 }
 
-void frmNetPush::on_ckPlayPause_stateChanged(int arg1)
-{
+void frmNetPush::on_ckPlayPause_stateChanged(int arg1) {
     if (videoThread) {
         if (arg1 != 0) {
             videoThread->pause();
@@ -556,16 +525,15 @@ void frmNetPush::on_ckPlayPause_stateChanged(int arg1)
     }
 }
 
-void frmNetPush::on_ckVideoVisible_stateChanged(int arg1)
-{
+void frmNetPush::on_ckVideoVisible_stateChanged(int arg1) {
     AppConfig::NetVideoVisible = (arg1 != 0);
     AppConfig::writeConfig();
     ui->frameVideo->setVisible(AppConfig::NetVideoVisible);
     ui->frameSlider->setVisible(AppConfig::NetVideoVisible);
 }
 
-void frmNetPush::on_tableWidget_cellPressed(int row, int column)
-{
+void frmNetPush::on_tableWidget_cellPressed(int row, int column) {
+    Q_UNUSED(column)
     //取出拉流地址
     QString flag = ui->tableWidget->item(row, 0)->text();
     QString name = ui->tableWidget->item(row, 5)->data(Qt::UserRole).toString();
@@ -622,26 +590,25 @@ void frmNetPush::on_tableWidget_cellPressed(int row, int column)
     if (videoThread->getIsFile()) {
         qint64 duration = videoThread->getDuration();
         qint64 position = videoThread->getPosition();
-        ui->sliderPosition->setRange(0, duration);
+        ui->sliderPosition->setRange(0, static_cast<int>(duration));
         ui->labDuration->setText(QtHelper::getTimeString(duration));
         this->receivePosition(position);
     }
 
     //绑定信号槽显示实时视频
-    connect(videoThread, SIGNAL(receivePlayStart(int)), this, SLOT(receivePlayStart(int)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receivePosition(qint64)), this, SLOT(receivePosition(qint64)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveImage(QImage, int)), this, SLOT(receiveImage(QImage, int)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveFrame(int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32)),
-            this, SLOT(receiveFrame(int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32)), Qt::UniqueConnection);
+    connect(videoThread, &FFmpegThread::receivePlayStart, this, &frmNetPush::receivePlayStart);
+    connect(videoThread, &FFmpegThread::receivePosition, this, &frmNetPush::receivePosition);
+    connect(videoThread, &FFmpegThread::receiveImage, this, &frmNetPush::receiveImage);
+    connect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
+            &FFmpegThread::receiveFrame), this, &frmNetPush::receiveFrame);
 }
 
-void frmNetPush::on_tableWidget_cellDoubleClicked(int row, int column)
-{
+void frmNetPush::on_tableWidget_cellDoubleClicked(int row, int column) {
+    Q_UNUSED(column)
     //停止服务阶段双击修改推流码
     if (AppConfig::NetPushStart || row < 0) {
         return;
     }
-
     //获取当前双击行对应推流码
     QString url = ui->tableWidget->item(row, 5)->text();
     QString srcFlag = ui->tableWidget->item(row, 0)->text();

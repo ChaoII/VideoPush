@@ -4,6 +4,7 @@
 #include "core_videobase/bannerwidget.h"
 #include "core_videobase/widgethelper.h"
 #include "core_videohelper/urlhelper.h"
+#include <QOverload>
 
 VideoWidget::VideoWidget(QWidget *parent) : AbstractVideoWidget(parent) {
     videoWidth_ = 0;
@@ -12,12 +13,12 @@ VideoWidget::VideoWidget(QWidget *parent) : AbstractVideoWidget(parent) {
     videoThread = nullptr;
 
     //关联按钮单击事件(对应功能可以直接处理掉)
-    connect(this, SIGNAL(sig_btnClicked(QString)), this, SLOT(btnClicked(QString)));
+    connect(this, &VideoWidget::sigBtnClicked, this, &VideoWidget::btnClicked);
     //关联鼠标按下用于电子放大
-    connect(this, SIGNAL(sig_receivePoint(int, QPoint)), this, SLOT(receivePoint(int, QPoint)));
+    connect(this, &VideoWidget::sigReceivePoint, this, &VideoWidget::receivePoint);
     //关联标签和图形信息变化
-    connect(this, SIGNAL(sig_osdChanged()), this, SLOT(osdChanged()));
-    connect(this, SIGNAL(sig_graphChanged()), this, SLOT(graphChanged()));
+    connect(this, &VideoWidget::sigOsdChanged, this, &VideoWidget::osdChanged);
+    connect(this, &VideoWidget::sigGraphChanged, this, &VideoWidget::graphChanged);
 }
 
 VideoWidget::~VideoWidget() {
@@ -26,11 +27,11 @@ VideoWidget::~VideoWidget() {
 
 void VideoWidget::resizeEvent(QResizeEvent *e) {
     if (!videoThread) {
-        AbstractVideoWidget::resizeEvent(NULL);
+        AbstractVideoWidget::resizeEvent(nullptr);
         return;
     }
 
-    //主动调用resizeEvent(NULL)后产生的sender有对象也需要触发
+    //主动调用resizeEvent(nullptr)后产生的sender有对象也需要触发
     if (e || sender()) {
         //将尺寸等信息赋值给基类(基类那边需要用到这些变量)
         videoWidth_ = videoThread->getVideoWidth();
@@ -45,7 +46,7 @@ void VideoWidget::resizeEvent(QResizeEvent *e) {
         hardware_ = videoThread->getHardware();
 
         //先执行父类的尺寸变化
-        AbstractVideoWidget::resizeEvent(NULL);
+        AbstractVideoWidget::resizeEvent(nullptr);
         videoThread->debug("窗体拉伸", QString("宽高: %1x%2 角度: %3").arg(videoWidth_).arg(videoHeight_).arg(rotate_));
 
         //在拉伸填充模式下可能还没获取到尺寸就会触发一次
@@ -490,34 +491,32 @@ void VideoWidget::connectThreadSignal() {
     }
 
     //后面带个参数指定信号唯一(如果多次连接信号会自动去重)
-    connect(videoThread, SIGNAL(started()), this, SLOT(started()), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(finished()), this, SLOT(finished()), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receivePlayStart(int)), this, SLOT(receivePlayStart(int)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receivePlayFinsh()), this, SLOT(receivePlayFinsh()), Qt::UniqueConnection);
+    connect(videoThread, &VideoThread::started, this, &VideoWidget::started);
+    connect(videoThread, &VideoThread::finished, this, &VideoWidget::finished);
+    connect(videoThread, &VideoThread::receivePlayStart, this, &VideoWidget::receivePlayStart);
+    connect(videoThread, &VideoThread::receivePlayFinish, this, &VideoWidget::receivePlayFinsh);
 
-    connect(videoThread, SIGNAL(receiveImage(QImage, int)), this, SLOT(receiveImage(QImage, int)),
-            Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(snapImage(QImage, QString)), this, SLOT(snapImage(QImage, QString)),
-            Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveFrame(int, int, quint8 * , int)), this,
-            SLOT(receiveFrame(int, int, quint8 * , int)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveFrame(int, int, quint8 * , quint8 * , quint8 * , quint32, quint32, quint32)),
-            this, SLOT(receiveFrame(int, int, quint8 * , quint8 * , quint8 * , quint32, quint32, quint32)),
-            Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveFrame(int, int, quint8 * , quint8 * , quint32, quint32)),
-            this, SLOT(receiveFrame(int, int, quint8 * , quint8 * , quint32, quint32)), Qt::UniqueConnection);
+    connect(videoThread, &VideoThread::receiveImage, this, &VideoWidget::receiveImage);
+    connect(videoThread, &VideoThread::snapImage, this, &VideoWidget::snapImage);
+    connect(videoThread, QOverload<int, int, quint8 *, int>::of(&VideoThread::receiveFrame), this,
+            QOverload<int, int, quint8 *, int>::of(&VideoWidget::receiveFrame));
+    connect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
+                    &VideoThread::receiveFrame), this,
+            QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
+                    &VideoWidget::receiveFrame));
+    connect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint32, quint32>::of(
+                    &VideoThread::receiveFrame), this,
+            QOverload<int, int, quint8 *, quint8 *, quint32, quint32>::of(&VideoWidget::receiveFrame));
 
-    connect(videoThread, SIGNAL(receiveLevel(qreal, qreal)), this, SIGNAL(sig_receiveLevel(qreal, qreal)),
-            Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveKbps(qreal, int)), this, SIGNAL(sig_receiveKbps(qreal, int)));
-    connect(videoThread, SIGNAL(receivePlayStart(int)), this, SIGNAL(sig_receivePlayStart(int)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receivePlayFinsh()), this, SIGNAL(sig_receivePlayFinsh()), Qt::UniqueConnection);
+    connect(videoThread, &VideoThread::receiveLevel, this, &VideoWidget::sigReceiveLevel);
+    connect(videoThread, &VideoThread::receiveKbps, this, &VideoWidget::sigReceiveKbps);
+    connect(videoThread, &VideoThread::receivePlayStart, this, &VideoWidget::sigReceivePlayStart);
+    connect(videoThread, &VideoThread::receivePlayFinish, this, &VideoWidget::sigReceivePlayFinish);
 
-    connect(videoThread, SIGNAL(receivePlayFinsh()), bannerWidget_, SLOT(receivePlayFinsh()), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveMuted(bool)), bannerWidget_, SLOT(receiveMuted(bool)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(recorderStateChanged(RecorderState, QString)), bannerWidget_,
-            SLOT(recorderStateChanged(RecorderState, QString)), Qt::UniqueConnection);
-    connect(videoThread, SIGNAL(receiveSizeChanged()), this, SLOT(receiveSizeChanged()));
+    connect(videoThread, &VideoThread::receivePlayFinish, bannerWidget_, &BannerWidget::receivePlayFinish);
+    connect(videoThread, &VideoThread::receiveMuted, bannerWidget_, &BannerWidget::receiveMuted);
+    connect(videoThread, &VideoThread::recorderStateChanged, bannerWidget_, &BannerWidget::recorderStateChanged);
+    connect(videoThread, &VideoThread::receiveSizeChanged, this, &VideoWidget::receiveSizeChanged);
 
     //根据默认音量大小和静音状态触发下信号
     if (videoPara.videoCore == VideoCore_FFmpeg) {

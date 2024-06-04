@@ -81,7 +81,7 @@ void BannerWidget::btnClicked()
     }
 }
 
-void BannerWidget::receivePlayFinsh()
+void BannerWidget::receivePlayFinish()
 {
     this->isRecord = false;
     this->isCrop = false;

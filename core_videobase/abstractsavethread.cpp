@@ -232,6 +232,6 @@ void AbstractSaveThread::stop()
         }
 
         fileName.clear();
-        emit receiveSaveFinsh();
+        emit receiveSaveFinish();
     }
 }

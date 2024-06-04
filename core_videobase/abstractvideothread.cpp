@@ -8,12 +8,14 @@
 #endif
 
 #ifdef ffmpeg
+
 #include "ffmpegsave.h"
+
 #endif
 
 int AbstractVideoThread::debugInfo = 2;
-AbstractVideoThread::AbstractVideoThread(QObject *parent) : QThread(parent)
-{
+
+AbstractVideoThread::AbstractVideoThread(QObject *parent) : QThread(parent) {
     //注册数据类型
     qRegisterMetaType<RecorderState>("RecorderState");
     qRegisterMetaType<QList<int> >("QList<int>");
@@ -24,7 +26,7 @@ AbstractVideoThread::AbstractVideoThread(QObject *parent) : QThread(parent)
     isSnap = false;
     isRecord = false;
 
-    hwndWidget_ = (QWidget *)parent;
+    hwndWidget_ = (QWidget *) parent;
 
 #ifdef videosave
     saveVideo_ = new SaveVideo(this);
@@ -35,83 +37,67 @@ AbstractVideoThread::AbstractVideoThread(QObject *parent) : QThread(parent)
 #endif
 }
 
-AbstractVideoThread::~AbstractVideoThread()
-{
+AbstractVideoThread::~AbstractVideoThread() {
     this->stop();
 }
 
-void AbstractVideoThread::setGeometry()
-{
+void AbstractVideoThread::setGeometry() {
 
 }
 
-void AbstractVideoThread::initFilter()
-{
+void AbstractVideoThread::initFilter() {
 
 }
 
-bool AbstractVideoThread::getIsOk() const
-{
+bool AbstractVideoThread::getIsOk() const {
     return this->isOk;
 }
 
-bool AbstractVideoThread::getIsPause() const
-{
+bool AbstractVideoThread::getIsPause() const {
     return this->isPause;
 }
 
-bool AbstractVideoThread::getIsSnap() const
-{
+bool AbstractVideoThread::getIsSnap() const {
     return this->isSnap;
 }
 
-bool AbstractVideoThread::getIsRecord() const
-{
+bool AbstractVideoThread::getIsRecord() const {
     return this->isRecord;
 }
 
-void AbstractVideoThread::updateTime()
-{
+void AbstractVideoThread::updateTime() {
     lastTime_ = QDateTime::currentDateTime();
 }
 
-QElapsedTimer *AbstractVideoThread::getTimer()
-{
+QElapsedTimer *AbstractVideoThread::getTimer() {
     return &timer_;
 }
 
-QString AbstractVideoThread::getIP() const
-{
+QString AbstractVideoThread::getIP() const {
     return this->ip_;
 }
 
-QString AbstractVideoThread::getFlag() const
-{
+QString AbstractVideoThread::getFlag() const {
     return this->flag_;
 }
 
-VideoMode AbstractVideoThread::getVideoMode() const
-{
+VideoMode AbstractVideoThread::getVideoMode() const {
     return this->videoMode_;
 }
 
-void AbstractVideoThread::setVideoMode(const VideoMode &videoMode)
-{
+void AbstractVideoThread::setVideoMode(const VideoMode &videoMode) {
     this->videoMode_ = videoMode;
 }
 
-int AbstractVideoThread::getVideoWidth() const
-{
+int AbstractVideoThread::getVideoWidth() const {
     return this->videoWidth_;
 }
 
-int AbstractVideoThread::getVideoHeight() const
-{
+int AbstractVideoThread::getVideoHeight() const {
     return this->videoHeight_;
 }
 
-void AbstractVideoThread::setVideoSize(const QString &videoSize)
-{
+void AbstractVideoThread::setVideoSize(const QString &videoSize) {
     this->videoSize_ = videoSize;
     QStringList sizes = DeviceInfoHelper::getSizes(videoSize);
     if (sizes.count() == 2) {
@@ -120,8 +106,7 @@ void AbstractVideoThread::setVideoSize(const QString &videoSize)
     }
 }
 
-void AbstractVideoThread::checkVideoSize(int width, int height)
-{
+void AbstractVideoThread::checkVideoSize(int width, int height) {
     if (width > 0 && height > 0 && videoWidth_ > 0 && videoHeight_ > 0) {
         if (videoWidth_ != width || videoHeight_ != height) {
             videoWidth_ = width;
@@ -131,8 +116,7 @@ void AbstractVideoThread::checkVideoSize(int width, int height)
     }
 }
 
-void AbstractVideoThread::addWidget(QWidget *widget)
-{
+void AbstractVideoThread::addWidget(QWidget *widget) {
     //必须是视频而且句柄模式才需要加入视频控件
     if (onlyAudio_ || videoMode_ != VideoMode_Hwnd) {
         return;
@@ -146,53 +130,43 @@ void AbstractVideoThread::addWidget(QWidget *widget)
     QMetaObject::invokeMethod(widget, "show");
 }
 
-qreal AbstractVideoThread::getFrameRate() const
-{
+qreal AbstractVideoThread::getFrameRate() const {
     return this->frameRate_;
 }
 
-void AbstractVideoThread::setFrameRate(qreal frameRate)
-{
+void AbstractVideoThread::setFrameRate(qreal frameRate) {
     this->frameRate_ = frameRate;
 }
 
-int AbstractVideoThread::getRotate() const
-{
+int AbstractVideoThread::getRotate() const {
     return this->rotate_;
 }
 
-void AbstractVideoThread::setRotate(int rotate)
-{
+void AbstractVideoThread::setRotate(int rotate) {
     this->rotate_ = rotate;
 }
 
-QString AbstractVideoThread::getFormatName() const
-{
+QString AbstractVideoThread::getFormatName() const {
     return this->formatName_;
 }
 
-QString AbstractVideoThread::getVideoCodecName() const
-{
+QString AbstractVideoThread::getVideoCodecName() const {
     return this->videoCodecName_;
 }
 
-void AbstractVideoThread::setVideoCodecName(const QString &videoCodecName)
-{
+void AbstractVideoThread::setVideoCodecName(const QString &videoCodecName) {
     this->videoCodecName_ = videoCodecName.toLower();
 }
 
-QString AbstractVideoThread::getAudioCodecName() const
-{
+QString AbstractVideoThread::getAudioCodecName() const {
     return this->audioCodecName_;
 }
 
-void AbstractVideoThread::setAudioCodecName(const QString &audioCodecName)
-{
+void AbstractVideoThread::setAudioCodecName(const QString &audioCodecName) {
     this->audioCodecName_ = audioCodecName.toLower();
 }
 
-void AbstractVideoThread::checkPath(const QString &fileName)
-{
+void AbstractVideoThread::checkPath(const QString &fileName) {
     //推流则不用继续
     if (fileName.startsWith("rtsp://") || fileName.startsWith("rtmp://")) {
         return;
@@ -212,125 +186,102 @@ void AbstractVideoThread::checkPath(const QString &fileName)
     }
 }
 
-QString AbstractVideoThread::getSnapName() const
-{
+QString AbstractVideoThread::getSnapName() const {
     return this->snapName_;
 }
 
-void AbstractVideoThread::setSnapName(const QString &snapName)
-{
-    this->snapName_= snapName;
+void AbstractVideoThread::setSnapName(const QString &snapName) {
+    this->snapName_ = snapName;
     this->checkPath(snapName);
 }
 
-QString AbstractVideoThread::getFileName() const
-{
+QString AbstractVideoThread::getFileName() const {
     return this->fileName_;
 }
 
-void AbstractVideoThread::setFileName(const QString &fileName)
-{
+void AbstractVideoThread::setFileName(const QString &fileName) {
     this->fileName_ = fileName;
     UrlHelper::checkPrefix(this->fileName_);
     this->checkPath(this->fileName_);
 }
 
-void AbstractVideoThread::setFindFaceRect(bool findFaceRect)
-{
+void AbstractVideoThread::setFindFaceRect(bool findFaceRect) {
     this->findFaceRect_ = findFaceRect;
 }
 
-void AbstractVideoThread::setFindFaceOne(bool findFaceOne)
-{
+void AbstractVideoThread::setFindFaceOne(bool findFaceOne) {
     this->findFaceOne_ = findFaceOne;
 }
 
-SaveVideoType AbstractVideoThread::getSaveVideoType() const
-{
+SaveVideoType AbstractVideoThread::getSaveVideoType() const {
     return this->saveVideoType_;
 }
 
-void AbstractVideoThread::setSaveVideoType(const SaveVideoType &saveVideoType)
-{
+void AbstractVideoThread::setSaveVideoType(const SaveVideoType &saveVideoType) {
     this->saveVideoType_ = saveVideoType;
 }
 
-SaveAudioType AbstractVideoThread::getSaveAudioType() const
-{
+SaveAudioType AbstractVideoThread::getSaveAudioType() const {
     return this->saveAudioType_;
 }
 
-void AbstractVideoThread::setSaveAudioType(const SaveAudioType &saveAudioType)
-{
+void AbstractVideoThread::setSaveAudioType(const SaveAudioType &saveAudioType) {
     this->saveAudioType_ = saveAudioType;
 }
 
-double AbstractVideoThread::getEncodeSpeed() const
-{
+double AbstractVideoThread::getEncodeSpeed() const {
     return this->encodeSpeed_;
 }
 
-void AbstractVideoThread::setEncodeSpeed(double encodeSpeed)
-{
-    this->encodeSpeed_= encodeSpeed;
+void AbstractVideoThread::setEncodeSpeed(double encodeSpeed) {
+    this->encodeSpeed_ = encodeSpeed;
 }
 
-EncodeAudio AbstractVideoThread::getEncodeAudio() const
-{
+EncodeAudio AbstractVideoThread::getEncodeAudio() const {
     return this->encodeAudio_;
 }
 
-void AbstractVideoThread::setEncodeAudio(const EncodeAudio &encodeAudio)
-{
+void AbstractVideoThread::setEncodeAudio(const EncodeAudio &encodeAudio) {
     this->encodeAudio_ = encodeAudio;
 }
 
-EncodeVideo AbstractVideoThread::getEncodeVideo() const
-{
+EncodeVideo AbstractVideoThread::getEncodeVideo() const {
     return this->encodeVideo_;
 }
 
-void AbstractVideoThread::setEncodeVideo(const EncodeVideo &encodeVideo)
-{
+void AbstractVideoThread::setEncodeVideo(const EncodeVideo &encodeVideo) {
     this->encodeVideo_ = encodeVideo;
 }
 
-int AbstractVideoThread::getEncodeVideoFps() const
-{
+int AbstractVideoThread::getEncodeVideoFps() const {
     return this->encodeVideoFps_;
 }
 
-void AbstractVideoThread::setEncodeVideoFps(int encodeVideoFps)
-{
+void AbstractVideoThread::setEncodeVideoFps(int encodeVideoFps) {
     if (encodeVideoFps >= 1 && encodeVideoRatio_ <= 30) {
         this->encodeVideoFps_ = encodeVideoFps;
     }
 }
 
-float AbstractVideoThread::getEncodeVideoRatio() const
-{
+float AbstractVideoThread::getEncodeVideoRatio() const {
     return this->encodeVideoRatio_;
 }
 
-void AbstractVideoThread::setEncodeVideoRatio(float encodeVideoRatio)
-{
+void AbstractVideoThread::setEncodeVideoRatio(float encodeVideoRatio) {
     if (encodeVideoRatio >= 0.1 && encodeVideoRatio < 1) {
         this->encodeVideoRatio_ = encodeVideoRatio;
     }
 }
 
-QString AbstractVideoThread::getEncodeVideoScale() const
-{
+QString AbstractVideoThread::getEncodeVideoScale() const {
     return this->encodeVideoScale_;
 }
 
-void AbstractVideoThread::setEncodeVideoScale(const QString &encodeVideoScale)
-{
+void AbstractVideoThread::setEncodeVideoScale(const QString &encodeVideoScale) {
     this->encodeVideoScale_ = encodeVideoScale;
 }
 
-void AbstractVideoThread::setFlag(const QString &flag)
-{
+void AbstractVideoThread::setFlag(const QString &flag) {
     this->flag_ = flag;
 #ifdef videosave
     saveVideo_->setFlag(flag);
@@ -341,8 +292,7 @@ void AbstractVideoThread::setFlag(const QString &flag)
 #endif
 }
 
-void AbstractVideoThread::debug(const QString &head, const QString &msg, const QString &url)
-{
+void AbstractVideoThread::debug(const QString &head, const QString &msg, const QString &url) {
     if (debugInfo == 0) {
         return;
     }
@@ -374,26 +324,22 @@ void AbstractVideoThread::debug(const QString &head, const QString &msg, const Q
     }
 }
 
-void AbstractVideoThread::setImage(const QImage &image)
-{
+void AbstractVideoThread::setImage(const QImage &image) {
     this->updateTime();
     emit receiveImage(image, 0);
 }
 
-void AbstractVideoThread::setRgb(int width, int height, quint8 *dataRGB, int type)
-{
+void AbstractVideoThread::setRgb(int width, int height, quint8 *dataRGB, int type) {
     this->updateTime();
     emit receiveFrame(width, height, dataRGB, type);
 }
 
-void AbstractVideoThread::setYuv(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV)
-{
+void AbstractVideoThread::setYuv(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV) {
     this->updateTime();
     emit receiveFrame(width, height, dataY, dataU, dataV, width, width / 2, width / 2);
 }
 
-void AbstractVideoThread::play()
-{
+void AbstractVideoThread::play() {
     //没有运行才需要启动
     if (!this->isRunning()) {
         stopped = false;
@@ -403,8 +349,7 @@ void AbstractVideoThread::play()
     }
 }
 
-void AbstractVideoThread::stop()
-{
+void AbstractVideoThread::stop() {
     //处于运行状态才可以停止
     if (this->isRunning()) {
         stopped = true;
@@ -414,30 +359,26 @@ void AbstractVideoThread::stop()
     }
 }
 
-void AbstractVideoThread::pause()
-{
+void AbstractVideoThread::pause() {
     if (this->isRunning()) {
         isPause = true;
     }
 }
 
-void AbstractVideoThread::next()
-{
+void AbstractVideoThread::next() {
     if (this->isRunning()) {
         isPause = false;
     }
 }
 
-void AbstractVideoThread::snap(const QString &snapName)
-{
+void AbstractVideoThread::snap(const QString &snapName) {
     if (this->isRunning()) {
         isSnap = true;
         this->setSnapName(snapName);
     }
 }
 
-void AbstractVideoThread::snapFinish(const QImage &image)
-{
+void AbstractVideoThread::snapFinish(const QImage &image) {
     //如果填了截图文件名称则先保存图片
     if (!snapName_.isEmpty() && !image.isNull()) {
         //取出拓展名根据拓展名保存格式
@@ -449,13 +390,11 @@ void AbstractVideoThread::snapFinish(const QImage &image)
     emit snapImage(image, snapName_);
 }
 
-QImage AbstractVideoThread::getImage()
-{
+QImage AbstractVideoThread::getImage() {
     return QImage();
 }
 
-void AbstractVideoThread::recordStart(const QString &fileName)
-{
+void AbstractVideoThread::recordStart(const QString &fileName) {
 #ifdef videosave
     this->setFileName(fileName);
     if (saveAudioType > 0) {
@@ -490,8 +429,7 @@ void AbstractVideoThread::recordStart(const QString &fileName)
 #endif
 }
 
-void AbstractVideoThread::recordPause()
-{
+void AbstractVideoThread::recordPause() {
 #ifdef videosave
     if (saveAudioType > 0) {
         if (saveAudio->getIsOk()) {
@@ -510,8 +448,7 @@ void AbstractVideoThread::recordPause()
 #endif
 }
 
-void AbstractVideoThread::recordStop()
-{
+void AbstractVideoThread::recordStop() {
 #ifdef videosave
     if (saveAudioType > 0) {
         if (saveAudio->getIsOk()) {
@@ -530,8 +467,7 @@ void AbstractVideoThread::recordStop()
 #endif
 }
 
-void AbstractVideoThread::writeVideoData(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV)
-{
+void AbstractVideoThread::writeVideoData(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV) {
 #ifdef videosave
     if (saveVideoType == SaveVideoType_Yuv && isRecord) {
         saveVideo->setPara(SaveVideoType_Yuv, width, height, frameRate);
@@ -540,8 +476,7 @@ void AbstractVideoThread::writeVideoData(int width, int height, quint8 *dataY, q
 #endif
 }
 
-void AbstractVideoThread::writeAudioData(const char *data, qint64 len)
-{
+void AbstractVideoThread::writeAudioData(const char *data, qint64 len) {
 #ifdef videosave
     if (saveAudioType > 0 && saveAudio->getIsOk()) {
         saveAudio->write(data, len);
@@ -549,8 +484,7 @@ void AbstractVideoThread::writeAudioData(const char *data, qint64 len)
 #endif
 }
 
-void AbstractVideoThread::writeAudioData(const QByteArray &data)
-{
+void AbstractVideoThread::writeAudioData(const QByteArray &data) {
 #ifdef videosave
     if (saveAudioType > 0 && saveAudio->getIsOk()) {
         this->writeAudioData(data.constData(), data.length());
@@ -558,14 +492,12 @@ void AbstractVideoThread::writeAudioData(const QByteArray &data)
 #endif
 }
 
-void AbstractVideoThread::setOsdInfo(const QList<OsdInfo> &listOsd)
-{
+void AbstractVideoThread::setOsdInfo(const QList<OsdInfo> &listOsd) {
     this->listOsd_ = listOsd;
     this->initFilter();
 }
 
-void AbstractVideoThread::setGraphInfo(const QList<GraphInfo> &listGraph)
-{
+void AbstractVideoThread::setGraphInfo(const QList<GraphInfo> &listGraph) {
     this->listGraph_ = listGraph;
     this->initFilter();
 }

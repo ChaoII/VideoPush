@@ -218,7 +218,7 @@ void VideoThread::closeVideo() {
     isSnap = false;
     isRecord = false;
     debug("关闭线程", "");
-    emit receivePlayFinsh();
+    emit receivePlayFinish();
 }
 
 void VideoThread::replay() {
@@ -349,7 +349,7 @@ void VideoThread::checkMediaType() {
             }
         } else if (videoCore == VideoCore_Mdk) {
             //限定低于3s时长的为视频流
-            if (duration< 3000) {
+            if (duration < 3000) {
                 if (http) {
                     mediaType = MediaType_Http;
                 }

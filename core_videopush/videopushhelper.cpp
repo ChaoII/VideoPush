@@ -1,95 +1,99 @@
 ﻿#include "videopushhelper.h"
+
 #ifdef filepush
+
 #include "filepushserver.h"
+
 #endif
 #ifdef netpush
+
 #include "ffmpegutil.h"
 #include "netpushserver.h"
+
 #endif
 
 QHash<QString, QString> VideoPushHelper::mimeType = QHash<QString, QString>();
-QString VideoPushHelper::getContentType(const QString &suffix)
-{
+
+QString VideoPushHelper::getContentType(const QString &suffix) {
     if (mimeType.isEmpty()) {
         //视频类型
-        mimeType["asf"]   = "video/x-ms-asf";
-        mimeType["asx"]   = "video/x-ms-asf";
-        mimeType["avi"]   = "video/avi";
-        mimeType["ivf"]   = "video/x-ivf";
-        mimeType["m1v"]   = "video/x-mpeg";
-        mimeType["m2v"]   = "video/x-mpeg";
-        mimeType["m4e"]   = "video/mpeg4";
+        mimeType["asf"] = "video/x-ms-asf";
+        mimeType["asx"] = "video/x-ms-asf";
+        mimeType["avi"] = "video/avi";
+        mimeType["ivf"] = "video/x-ivf";
+        mimeType["m1v"] = "video/x-mpeg";
+        mimeType["m2v"] = "video/x-mpeg";
+        mimeType["m4e"] = "video/mpeg4";
         mimeType["movie"] = "video/x-sgi-movie";
-        mimeType["mp2v"]  = "video/mpeg";
-        mimeType["mp4"]   = "video/mpeg4";
-        mimeType["mpa"]   = "video/x-mpg";
-        mimeType["mpe"]   = "video/x-mpeg";
-        mimeType["mpeg"]  = "video/mpg";
-        mimeType["mpg"]   = "video/mpg";
-        mimeType["mps"]   = "video/x-mpeg";
-        mimeType["mpv"]   = "video/mpg";
-        mimeType["mpv2"]  = "video/mpeg";
-        mimeType["rv"]    = "video/vnd.rn-realvideo";
-        mimeType["wm"]    = "video/x-ms-wm";
-        mimeType["wmv"]   = "video/x-ms-wmv";
-        mimeType["wmx"]   = "video/x-ms-wmx";
-        mimeType["wvx"]   = "video/x-ms-wvx";
+        mimeType["mp2v"] = "video/mpeg";
+        mimeType["mp4"] = "video/mpeg4";
+        mimeType["mpa"] = "video/x-mpg";
+        mimeType["mpe"] = "video/x-mpeg";
+        mimeType["mpeg"] = "video/mpg";
+        mimeType["mpg"] = "video/mpg";
+        mimeType["mps"] = "video/x-mpeg";
+        mimeType["mpv"] = "video/mpg";
+        mimeType["mpv2"] = "video/mpeg";
+        mimeType["rv"] = "video/vnd.rn-realvideo";
+        mimeType["wm"] = "video/x-ms-wm";
+        mimeType["wmv"] = "video/x-ms-wmv";
+        mimeType["wmx"] = "video/x-ms-wmx";
+        mimeType["wvx"] = "video/x-ms-wvx";
 
         //音频类型
-        mimeType["acp"]   = "audio/x-mei-aac";
-        mimeType["aif"]   = "audio/aiff";
-        mimeType["aiff"]  = "audio/aiff";
-        mimeType["aifc"]  = "audio/aiff";
-        mimeType["au"]    = "audio/basic";
-        mimeType["la1"]   = "audio/x-liquid-file";
-        mimeType["lavs"]  = "audio/x-liquid-secure";
+        mimeType["acp"] = "audio/x-mei-aac";
+        mimeType["aif"] = "audio/aiff";
+        mimeType["aiff"] = "audio/aiff";
+        mimeType["aifc"] = "audio/aiff";
+        mimeType["au"] = "audio/basic";
+        mimeType["la1"] = "audio/x-liquid-file";
+        mimeType["lavs"] = "audio/x-liquid-secure";
         mimeType["lmsff"] = "audio/x-la-lms";
-        mimeType["m3u"]   = "audio/mpegurl";
-        mimeType["midi"]  = "audio/mid";
-        mimeType["mid"]   = "audio/mid";
-        mimeType["mp2"]   = "audio/mp2";
-        mimeType["mp3"]   = "audio/mp3";
-        mimeType["mp4"]   = "audio/mp4";
-        mimeType["mnd"]   = "audio/x-musicnet-download";
-        mimeType["mp1"]   = "audio/mp1";
-        mimeType["mns"]   = "audio/x-musicnet-stream";
-        mimeType["mpga"]  = "audio/rn-mpeg";
-        mimeType["pls"]   = "audio/scpls";
-        mimeType["ra"]    = "audio/vnd.rn-realaudio";
-        mimeType["ram"]   = "audio/x-pn-realaudio";
-        mimeType["rmi"]   = "audio/mid";
-        mimeType["rmm"]   = "audio/x-pn-realaudio";
-        mimeType["rpm"]   = "audio/x-pn-realaudio-plugin";
-        mimeType["snd"]   = "audio/basic";
-        mimeType["wav"]   = "audio/wav";
-        mimeType["wax"]   = "audio/x-ms-wax";
-        mimeType["wma"]   = "audio/x-ms-wma";
-        mimeType["xpl"]   = "audio/scpls";
+        mimeType["m3u"] = "audio/mpegurl";
+        mimeType["midi"] = "audio/mid";
+        mimeType["mid"] = "audio/mid";
+        mimeType["mp2"] = "audio/mp2";
+        mimeType["mp3"] = "audio/mp3";
+        mimeType["mp4"] = "audio/mp4";
+        mimeType["mnd"] = "audio/x-musicnet-download";
+        mimeType["mp1"] = "audio/mp1";
+        mimeType["mns"] = "audio/x-musicnet-stream";
+        mimeType["mpga"] = "audio/rn-mpeg";
+        mimeType["pls"] = "audio/scpls";
+        mimeType["ra"] = "audio/vnd.rn-realaudio";
+        mimeType["ram"] = "audio/x-pn-realaudio";
+        mimeType["rmi"] = "audio/mid";
+        mimeType["rmm"] = "audio/x-pn-realaudio";
+        mimeType["rpm"] = "audio/x-pn-realaudio-plugin";
+        mimeType["snd"] = "audio/basic";
+        mimeType["wav"] = "audio/wav";
+        mimeType["wax"] = "audio/x-ms-wax";
+        mimeType["wma"] = "audio/x-ms-wma";
+        mimeType["xpl"] = "audio/scpls";
 
         //图片类型
-        mimeType["fax"]   = "image/fax";
-        mimeType["gif"]   = "image/gif";
-        mimeType["ico"]   = "image/x-ico";
-        mimeType["jfif"]  = "image/jpeg";
-        mimeType["jpe"]   = "image/jpeg";
-        mimeType["jpeg"]  = "image/jpeg";
-        mimeType["jpg"]   = "image/jpeg";
-        mimeType["net"]   = "image/pnetvue";
-        mimeType["png"]   = "image/png";
-        mimeType["rp"]    = "image/vnd.rn-realpix";
-        mimeType["tif"]   = "image/tiff";
-        mimeType["tiff"]  = "image/tiff";
-        mimeType["wbmp"]  = "image/vnd.wap.wbmp";
+        mimeType["fax"] = "image/fax";
+        mimeType["gif"] = "image/gif";
+        mimeType["ico"] = "image/x-ico";
+        mimeType["jfif"] = "image/jpeg";
+        mimeType["jpe"] = "image/jpeg";
+        mimeType["jpeg"] = "image/jpeg";
+        mimeType["jpg"] = "image/jpeg";
+        mimeType["net"] = "image/pnetvue";
+        mimeType["png"] = "image/png";
+        mimeType["rp"] = "image/vnd.rn-realpix";
+        mimeType["tif"] = "image/tiff";
+        mimeType["tiff"] = "image/tiff";
+        mimeType["wbmp"] = "image/vnd.wap.wbmp";
     }
 
     return mimeType.value(suffix, "Unknown");
 }
 
-QString VideoPushHelper::getSize(quint64 size)
-{
+QString VideoPushHelper::getSize(quint64 size) {
     //转换成单位 KB MB GB 更直观
     QString flag = "KB";
-    double value = (double)size / 1024;
+    double value = (double) size / 1024;
 
     if (value > 1024) {
         value = value / 1024;
@@ -106,8 +110,8 @@ QString VideoPushHelper::getSize(quint64 size)
 
 quint8 VideoPushHelper::cryptoType = 0;
 QString VideoPushHelper::cryptoFlag = "127.0.0.1";
-QString VideoPushHelper::getCryptoString(const QString &url)
-{
+
+QString VideoPushHelper::getCryptoString(const QString &url) {
     QString data = url;
     if (cryptoType == 1) {
         data = url + cryptoFlag;
@@ -118,8 +122,7 @@ QString VideoPushHelper::getCryptoString(const QString &url)
     return QCryptographicHash::hash(data.toUtf8(), QCryptographicHash::Md5).toHex();
 }
 
-bool VideoPushHelper::checkCount(bool &isCritical, int maxCount, int rowCount)
-{
+bool VideoPushHelper::checkCount(bool &isCritical, int maxCount, int rowCount) {
 #ifdef betaversion
     if (rowCount >= maxCount) {
         if (!isCritical) {
@@ -133,8 +136,8 @@ bool VideoPushHelper::checkCount(bool &isCritical, int maxCount, int rowCount)
     return true;
 }
 
-void VideoPushHelper::addFile(QTableWidget *tableWidget, const QString &file, FilePushServer *pushServer, const QString &flag)
-{
+void VideoPushHelper::addFile(QTableWidget *tableWidget, const QString &file, FilePushServer *pushServer,
+                              const QString &flag) {
     //获取当前行数
     int row = tableWidget->rowCount();
     //校验数量
@@ -180,8 +183,8 @@ void VideoPushHelper::addFile(QTableWidget *tableWidget, const QString &file, Fi
     tableWidget->resizeColumnToContents(0);
 }
 
-void VideoPushHelper::updateFile(QTableWidget *tableWidget, int row, const QString &srcFlag, const QString &dstFlag, const QString &file, FilePushServer *pushServer)
-{
+void VideoPushHelper::updateFile(QTableWidget *tableWidget, int row, const QString &srcFlag, const QString &dstFlag,
+                                 const QString &file, FilePushServer *pushServer) {
     if (srcFlag.isEmpty() || dstFlag.isEmpty() || srcFlag == dstFlag) {
         return;
     }
@@ -194,8 +197,7 @@ void VideoPushHelper::updateFile(QTableWidget *tableWidget, int row, const QStri
 #endif
 }
 
-void VideoPushHelper::readFile(QTableWidget *tableWidget, const QString &fileName, FilePushServer *pushServer)
-{
+void VideoPushHelper::readFile(QTableWidget *tableWidget, const QString &fileName, FilePushServer *pushServer) {
     QFile file(fileName);
     if (file.open(QFile::ReadOnly | QFile::Text)) {
         while (!file.atEnd()) {
@@ -210,7 +212,7 @@ void VideoPushHelper::readFile(QTableWidget *tableWidget, const QString &fileNam
             QStringList list = content.split(",");
             if (list.count() >= 2) {
                 //过滤下不存在的文件
-                QString name = list.at(1);
+                const QString& name = list.at(1);
                 if (QFile(name).exists()) {
                     addFile(tableWidget, name.trimmed(), pushServer, list.at(0).trimmed());
                 }
@@ -219,8 +221,7 @@ void VideoPushHelper::readFile(QTableWidget *tableWidget, const QString &fileNam
     }
 }
 
-void VideoPushHelper::writeFile(QTableWidget *tableWidget, const QString &fileName)
-{
+void VideoPushHelper::writeFile(QTableWidget *tableWidget, const QString &fileName) {
     QFile file(fileName);
     if (file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
         int count = tableWidget->rowCount();
@@ -233,8 +234,7 @@ void VideoPushHelper::writeFile(QTableWidget *tableWidget, const QString &fileNa
     }
 }
 
-int VideoPushHelper::writeAddress(const QString &address, const QString &fileName)
-{
+int VideoPushHelper::writeAddress(const QString &address, const QString &fileName) {
     int count = 0;
     bool exist = false;
     QFile file(fileName);
@@ -267,8 +267,7 @@ int VideoPushHelper::writeAddress(const QString &address, const QString &fileNam
     return count;
 }
 
-void VideoPushHelper::addLoop(QTableWidget *tableWidget, const QString &fileName)
-{
+void VideoPushHelper::addLoop(QTableWidget *tableWidget, const QString &fileName) {
     //获取当前行数
     int row = tableWidget->rowCount();
     //校验数量
@@ -300,8 +299,7 @@ void VideoPushHelper::addLoop(QTableWidget *tableWidget, const QString &fileName
     tableWidget->setItem(row, 1, new QTableWidgetItem(fileName));
 }
 
-void VideoPushHelper::readLoop(QTableWidget *tableWidget, const QString &fileName)
-{
+void VideoPushHelper::readLoop(QTableWidget *tableWidget, const QString &fileName) {
     QFile file(fileName);
     if (file.open(QFile::ReadOnly | QFile::Text)) {
         while (!file.atEnd()) {
@@ -320,8 +318,7 @@ void VideoPushHelper::readLoop(QTableWidget *tableWidget, const QString &fileNam
     }
 }
 
-quint64 VideoPushHelper::writeLoop(QTableWidget *tableWidget, const QString &fileName)
-{
+quint64 VideoPushHelper::writeLoop(QTableWidget *tableWidget, const QString &fileName) {
     quint64 duration = 0;
     QFile file(fileName);
     if (file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
@@ -337,8 +334,9 @@ quint64 VideoPushHelper::writeLoop(QTableWidget *tableWidget, const QString &fil
 }
 
 bool VideoPushHelper::hideUser = false;
-void VideoPushHelper::addUrl(QTableWidget *tableWidget, const QString &url, NetPushServer *pushServer, const QString &flag)
-{
+
+void
+VideoPushHelper::addUrl(QTableWidget *tableWidget, const QString &url, NetPushServer *pushServer, const QString &flag) {
     if (url.isEmpty()) {
         return;
     }
@@ -439,8 +437,8 @@ void VideoPushHelper::addUrl(QTableWidget *tableWidget, const QString &url, NetP
     tableWidget->resizeColumnToContents(0);
 }
 
-void VideoPushHelper::updateUrl(QTableWidget *tableWidget, int row, const QString &srcFlag, const QString &dstFlag, const QString &url, NetPushServer *pushServer)
-{
+void VideoPushHelper::updateUrl(QTableWidget *tableWidget, int row, const QString &srcFlag, const QString &dstFlag,
+                                const QString &url, NetPushServer *pushServer) {
     if (srcFlag.isEmpty() || dstFlag.isEmpty() || srcFlag == dstFlag) {
         return;
     }
@@ -453,8 +451,7 @@ void VideoPushHelper::updateUrl(QTableWidget *tableWidget, int row, const QStrin
 #endif
 }
 
-void VideoPushHelper::readUrl(QTableWidget *tableWidget, const QString &fileName, NetPushServer *pushServer)
-{
+void VideoPushHelper::readUrl(QTableWidget *tableWidget, const QString &fileName, NetPushServer *pushServer) {
     QFile file(fileName);
     if (file.open(QFile::ReadOnly | QFile::Text)) {
         while (!file.atEnd()) {
@@ -476,8 +473,7 @@ void VideoPushHelper::readUrl(QTableWidget *tableWidget, const QString &fileName
     }
 }
 
-void VideoPushHelper::writeUrl(QTableWidget *tableWidget, const QString &fileName)
-{
+void VideoPushHelper::writeUrl(QTableWidget *tableWidget, const QString &fileName) {
     QFile file(fileName);
     if (file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
         int count = tableWidget->rowCount();
@@ -490,8 +486,7 @@ void VideoPushHelper::writeUrl(QTableWidget *tableWidget, const QString &fileNam
     }
 }
 
-bool VideoPushHelper::existFlag(const QString &fileName, const QString &flag)
-{
+bool VideoPushHelper::existFlag(const QString &fileName, const QString &flag) {
     QFile file(fileName);
     if (file.open(QFile::ReadOnly | QFile::Text)) {
         while (!file.atEnd()) {
@@ -507,8 +502,7 @@ bool VideoPushHelper::existFlag(const QString &fileName, const QString &flag)
     return false;
 }
 
-QString VideoPushHelper::getFlag(QTableWidget *tableWidget, int flagType, const QString &pushFlag)
-{
+QString VideoPushHelper::getFlag(QTableWidget *tableWidget, int flagType, const QString &pushFlag) {
     QString flag = pushFlag;
     if (flagType == 0) {
         if (!flag.isEmpty()) {
@@ -531,16 +525,15 @@ QString VideoPushHelper::getFlag(QTableWidget *tableWidget, int flagType, const 
 }
 
 QList<QString> VideoPushHelper::colors = QList<QString>() << "#A0A0A4" << "#282D30" << "#22A3A9" << "#D64D54";
-void VideoPushHelper::setStatus(QTableWidgetItem *item, int status)
-{
+
+void VideoPushHelper::setStatus(QTableWidgetItem *item, int status) {
     int index = (status >= colors.count() ? 0 : status);
     item->setForeground(QColor(colors.at(index)));
 }
 
-void VideoPushHelper::setStatus(QTableWidget *tableWidget, int row, int state, bool start)
-{
+void VideoPushHelper::setStatus(QTableWidget *tableWidget, int row, int state, bool start) {
     //可能是按钮
-    QPushButton *btn = (QPushButton *)tableWidget->cellWidget(row, 2);
+    QPushButton *btn = (QPushButton *) tableWidget->cellWidget(row, 2);
     if (btn) {
         if (state == 0) {
             btn->setText("停止");
@@ -565,8 +558,7 @@ void VideoPushHelper::setStatus(QTableWidget *tableWidget, int row, int state, b
     }
 }
 
-void VideoPushHelper::initTip(QLabel *label, int fontSize)
-{
+void VideoPushHelper::initTip(QLabel *label, int fontSize) {
     static QString tip;
     if (tip.isEmpty()) {
         QStringList list;

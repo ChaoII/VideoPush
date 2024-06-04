@@ -40,8 +40,8 @@ void FormDevicePush::initForm() {
     ffmpegThread = new FFmpegThread;
     ffmpegThread->setAudioLevel(true);
     connect(ffmpegThread, &FFmpegThread::receivePlayStart, this, &FormDevicePush::receivePlayStart);
-    connect(ffmpegThread, &FFmpegThread::receivePlayFinsh, this, &FormDevicePush::receivePlayFinish);
-    connect(ffmpegThread, &FFmpegThread::receivePlayFinsh, ui->audioLevel, &AudioLevel::clear);
+    connect(ffmpegThread, &FFmpegThread::receivePlayFinish, this, &FormDevicePush::receivePlayFinish);
+    connect(ffmpegThread, &FFmpegThread::receivePlayFinish, ui->audioLevel, &AudioLevel::clear);
     connect(ffmpegThread, &FFmpegThread::receiveLevel, ui->audioLevel, &AudioLevel::setLevel);
 
     connect(ui->videoWidget, &VideoWidget::sigReceivePlayStart, this, &FormDevicePush::receivePlayStart);
@@ -84,10 +84,10 @@ void FormDevicePush::initConfig() {
     connect(ui->txtPushUrl2, &QLineEdit::textChanged, this, &FormDevicePush::saveConfig);
 
     ui->ckOsd->setChecked(AppConfig::DevicePushOsd);
-    connect(ui->ckOsd, &QCheckBox::stateChanged, this, &FormDevicePush::saveConfig);
+    connect(ui->ckOsd, &QCheckBox::checkStateChanged, this, &FormDevicePush::saveConfig);
 
     ui->ckMuted->setChecked(AppConfig::DevicePushMuted);
-    connect(ui->ckMuted, &QCheckBox::stateChanged, this, &FormDevicePush::saveConfig);
+    connect(ui->ckMuted, &QCheckBox::checkStateChanged, this, &FormDevicePush::saveConfig);
 
     //自动启动推流
     if (AppConfig::DevicePushStart1) {
@@ -125,7 +125,6 @@ void FormDevicePush::initUrl() {
     if (sender() == ui->cboxAudioDevice && AppConfig::DeviceMediaUrl1.contains(":audio")) {
         //return;
     }
-
     QString videoDevice = ui->cboxVideoDevice->currentText();
     QString audioDevice = ui->cboxAudioDevice->currentText();
 
@@ -142,14 +141,11 @@ void FormDevicePush::initUrl() {
             if (mediaUrl.contains(":audio=")) {
                 url = url + ":audio=" + audioDevice;
             }
-
             list[0] = url;
             url = list.join("|");
         }
-
         ui->txtMediaUrl1->setText(url);
     }
-
     if (!audioDevice.isEmpty()) {
         QString url = "audio=" + audioDevice;
         ui->txtMediaUrl2->setText(url);
@@ -162,7 +158,6 @@ void FormDevicePush::initPara() {
     if (ffmpegThread->isRunning()) {
         ffmpegThread->setMuted(muted);
     }
-
     if (ui->videoWidget->getIsRunning()) {
         //如果是本地桌面采集带音频则需要静音/否则声音一直重复播放导致滴滴滴
         ui->videoWidget->setMuted(true);
@@ -170,9 +165,9 @@ void FormDevicePush::initPara() {
         if (ui->ckOsd->isChecked()) {
             int height = ui->videoWidget->getVideoHeight();
             QList<OsdInfo> osds = WidgetHelper::getTestOsd(height);
-                    foreach (OsdInfo osd, osds) {
-                    ui->videoWidget->setOsd(osd);
-                }
+            for (auto &osd: osds) {
+                ui->videoWidget->setOsd(osd);
+            }
         } else {
             ui->videoWidget->clearOsd();
         }

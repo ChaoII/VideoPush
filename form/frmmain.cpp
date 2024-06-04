@@ -1,6 +1,6 @@
 ﻿#include "frmmain.h"
 #include "ui_frmmain.h"
-#include "core_helper/qthelper.h"
+#include "qthelper.h"
 #include "appevent.h"
 #include "trayicon.h"
 

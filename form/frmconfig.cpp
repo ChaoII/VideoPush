@@ -24,16 +24,16 @@ void FormConfig::initConfig() {
     connect(ui->cboxOpenGLType, &QComboBox::currentIndexChanged, this, &FormConfig::saveConfig);
 
     ui->ckCheckRun->setChecked(AppConfig::CheckRun);
-    connect(ui->ckCheckRun, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckCheckRun, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckAutoRun->setChecked(AppConfig::AutoRun);
-    connect(ui->ckAutoRun, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckAutoRun, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckUseTray->setChecked(AppConfig::UseTray);
-    connect(ui->ckUseTray, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckUseTray, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckAutoCopy->setChecked(AppConfig::AutoCopy);
-    connect(ui->ckAutoCopy, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckAutoCopy, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->txtPublicUrl->setText(AppConfig::PublicUrl);
     connect(ui->txtPublicUrl, &QLineEdit::textChanged, this, &FormConfig::saveConfig);
@@ -48,25 +48,25 @@ void FormConfig::initConfig() {
     connect(ui->txtHtmlName2, &QLineEdit::textChanged, this, &FormConfig::saveConfig);
 
     ui->ckEnableSimple->setChecked(AppConfig::EnableSimple);
-    connect(ui->ckEnableSimple, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckEnableSimple, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckEnableNetPush->setChecked(AppConfig::EnableNetPush);
-    connect(ui->ckEnableNetPush, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckEnableNetPush, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckEnableDevicePush->setChecked(AppConfig::EnableDevicePush);
-    connect(ui->ckEnableDevicePush, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckEnableDevicePush, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckEnableSpeedPush->setChecked(AppConfig::EnableSpeedPush);
-    connect(ui->ckEnableSpeedPush, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckEnableSpeedPush, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckEnableLoopPush->setChecked(AppConfig::EnableLoopPush);
-    connect(ui->ckEnableLoopPush, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckEnableLoopPush, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckEnableFilePush->setChecked(AppConfig::EnableFilePush);
-    connect(ui->ckEnableFilePush, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckEnableFilePush, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 
     ui->ckEnableImagePush->setChecked(AppConfig::EnableImagePush);
-    connect(ui->ckEnableImagePush, &QCheckBox::stateChanged, this, &FormConfig::saveConfig);
+    connect(ui->ckEnableImagePush, &QCheckBox::checkStateChanged, this, &FormConfig::saveConfig);
 }
 
 void FormConfig::saveConfig() {
@@ -80,7 +80,6 @@ void FormConfig::saveConfig() {
     AppConfig::HttpUrl = ui->txtHttpUrl->text().trimmed();
     AppConfig::HtmlName1 = ui->txtHtmlName1->text().trimmed();
     AppConfig::HtmlName2 = ui->txtHtmlName2->text().trimmed();
-
     AppConfig::EnableSimple = ui->ckEnableSimple->isChecked();
     AppConfig::EnableNetPush = ui->ckEnableNetPush->isChecked();
     AppConfig::EnableDevicePush = ui->ckEnableDevicePush->isChecked();

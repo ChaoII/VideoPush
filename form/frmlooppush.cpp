@@ -7,28 +7,24 @@
 #include "ffmpegsave.h"
 #include "ffmpeghelper.h"
 
-frmLoopPush::frmLoopPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmLoopPush)
-{
+frmLoopPush::frmLoopPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmLoopPush) {
     ui->setupUi(this);
     this->initForm();
     this->initConfig();
     this->initTable();
 }
 
-frmLoopPush::~frmLoopPush()
-{
+frmLoopPush::~frmLoopPush() {
     if (ui->btnStart->text() == "停止服务") {
         ffmpegThread->stop();
         ffmpegSave1->stop();
         ffmpegSave2->stop();
         ffmpegSave3->stop();
     }
-
     delete ui;
 }
 
-void frmLoopPush::initForm()
-{
+void frmLoopPush::initForm() {
     rowCount = 0;
     currentRow = 0;
     fileNameUrl = QtHelper::appPath() + "/config/video_push_loop.txt";
@@ -38,9 +34,9 @@ void frmLoopPush::initForm()
     ffmpegThread = new FFmpegThread(this);
     ffmpegThread->setFlag("采集0");
     //关联信号槽
-    connect(ffmpegThread, SIGNAL(receivePlayStart(int)), this, SLOT(receivePlayStart(int)));
-    connect(ffmpegThread, SIGNAL(receivePlayFinsh()), this, SLOT(receivePlayFinsh()));
-    connect(ffmpegThread, SIGNAL(receivePlayError(int)), this, SLOT(receivePlayFinsh()));
+    connect(ffmpegThread, &FFmpegThread::receivePlayStart, this, &frmLoopPush::receivePlayStart);
+    connect(ffmpegThread, &FFmpegThread::receivePlayFinish, this, &frmLoopPush::receivePlayFinish);
+    connect(ffmpegThread, &FFmpegThread::receivePlayError, this, &frmLoopPush::receivePlayFinish);
 
     //设置解码内核
     ffmpegThread->setVideoCore(VideoCore_FFmpeg);
@@ -49,13 +45,13 @@ void frmLoopPush::initForm()
     //设置默认不预览视频
     ffmpegThread->setPushPreview(false);
     //设置编码策略和视频压缩比率
-    ffmpegThread->setEncodeVideo((EncodeVideo)AppConfig::EncodeVideo);
+    ffmpegThread->setEncodeVideo((EncodeVideo) AppConfig::EncodeVideo);
     ffmpegThread->setEncodeVideoRatio(AppConfig::EncodeVideoRatio);
     ffmpegThread->setEncodeVideoScale(AppConfig::EncodeVideoScale);
 
     //设置保存视频类将数据包信号发出来用于继续推流
     ffmpegSave = ffmpegThread->getSaveFile();
-    connect(ffmpegSave, SIGNAL(receivePacket(AVPacket *)), this, SLOT(receivePacket(AVPacket *)));
+    connect(ffmpegSave, &FFmpegSave::receivePacket, this, &frmLoopPush::receivePacket);
 
     //多路推流
     ffmpegSave1 = new FFmpegSave(this);
@@ -65,37 +61,35 @@ void frmLoopPush::initForm()
     ffmpegSave2->setFlag("地址2");
     ffmpegSave3->setFlag("地址3");
 
-    connect(ffmpegSave1, SIGNAL(receiveSaveStart()), this, SLOT(receiveSaveStart()));
-    connect(ffmpegSave2, SIGNAL(receiveSaveStart()), this, SLOT(receiveSaveStart()));
-    connect(ffmpegSave3, SIGNAL(receiveSaveStart()), this, SLOT(receiveSaveStart()));
-    connect(ffmpegSave1, SIGNAL(receiveSaveFinsh()), this, SLOT(receiveSaveFinsh()));
-    connect(ffmpegSave2, SIGNAL(receiveSaveFinsh()), this, SLOT(receiveSaveFinsh()));
-    connect(ffmpegSave3, SIGNAL(receiveSaveFinsh()), this, SLOT(receiveSaveFinsh()));
+    connect(ffmpegSave1, &FFmpegSave::receiveSaveStart, this, &frmLoopPush::receiveSaveStart);
+    connect(ffmpegSave2, &FFmpegSave::receiveSaveStart, this, &frmLoopPush::receiveSaveStart);
+    connect(ffmpegSave3, &FFmpegSave::receiveSaveStart, this, &frmLoopPush::receiveSaveStart);
+    connect(ffmpegSave1, &FFmpegSave::receiveSaveFinish, this, &frmLoopPush::receiveSaveFinish);
+    connect(ffmpegSave2, &FFmpegSave::receiveSaveFinish, this, &frmLoopPush::receiveSaveFinish);
+    connect(ffmpegSave3, &FFmpegSave::receiveSaveFinish, this, &frmLoopPush::receiveSaveFinish);
 }
 
-void frmLoopPush::initConfig()
-{
+void frmLoopPush::initConfig() {
     ui->ckPushEnable1->setChecked(AppConfig::LoopPushEnable1);
-    connect(ui->ckPushEnable1, SIGNAL(stateChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->ckPushEnable1, &QCheckBox::checkStateChanged, this, &frmLoopPush::saveConfig);
 
     ui->ckPushEnable2->setChecked(AppConfig::LoopPushEnable2);
-    connect(ui->ckPushEnable2, SIGNAL(stateChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->ckPushEnable2, &QCheckBox::checkStateChanged, this, &frmLoopPush::saveConfig);
 
     ui->ckPushEnable3->setChecked(AppConfig::LoopPushEnable3);
-    connect(ui->ckPushEnable3, SIGNAL(stateChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->ckPushEnable3, &QCheckBox::checkStateChanged, this, &frmLoopPush::saveConfig);
 
     ui->txtPushUrl1->setText(AppConfig::LoopPushUrl1);
-    connect(ui->txtPushUrl1, SIGNAL(textChanged()), this, SLOT(saveConfig()));
+    connect(ui->txtPushUrl1, &QTextEdit::textChanged, this, &frmLoopPush::saveConfig);
 
     ui->txtPushUrl2->setText(AppConfig::LoopPushUrl2);
-    connect(ui->txtPushUrl2, SIGNAL(textChanged()), this, SLOT(saveConfig()));
+    connect(ui->txtPushUrl2, &QTextEdit::textChanged, this, &frmLoopPush::saveConfig);
 
     ui->txtPushUrl3->setText(AppConfig::LoopPushUrl3);
-    connect(ui->txtPushUrl3, SIGNAL(textChanged()), this, SLOT(saveConfig()));
+    connect(ui->txtPushUrl3, &QTextEdit::textChanged, this, &frmLoopPush::saveConfig);
 }
 
-void frmLoopPush::saveConfig()
-{
+void frmLoopPush::saveConfig() {
     AppConfig::LoopPushEnable1 = ui->ckPushEnable1->isChecked();
     AppConfig::LoopPushEnable2 = ui->ckPushEnable2->isChecked();
     AppConfig::LoopPushEnable3 = ui->ckPushEnable3->isChecked();
@@ -105,8 +99,7 @@ void frmLoopPush::saveConfig()
     AppConfig::writeConfig();
 }
 
-void frmLoopPush::initTable()
-{
+void frmLoopPush::initTable() {
     //列名和列宽
     QStringList columnName;
     columnName << "时长" << "文件地址( 双击立即切换 )";
@@ -114,7 +107,7 @@ void frmLoopPush::initTable()
     columnWidth << 100 << 250;
 
     //设置列数和列宽
-    int columnCount = columnWidth.count();
+    int columnCount = static_cast<int>(columnWidth.count());
     ui->tableWidget->setColumnCount(columnCount);
     for (int i = 0; i < columnCount; ++i) {
         ui->tableWidget->setColumnWidth(i, columnWidth.at(i));
@@ -133,8 +126,7 @@ void frmLoopPush::initTable()
     }
 }
 
-void frmLoopPush::writeFile()
-{
+void frmLoopPush::writeFile() {
     //写入的时候统计总时长
     quint64 duration = VideoPushHelper::writeLoop(ui->tableWidget, fileNameUrl);
     QString min = QString("%1").arg(duration / 60, 2, 10, QChar('0'));
@@ -143,8 +135,7 @@ void frmLoopPush::writeFile()
     ui->labTip->setText(QString("总时长: %1").arg(time));
 }
 
-void frmLoopPush::receivePlayStart(int time)
-{
+void frmLoopPush::receivePlayStart(int time) {
     //打开后才能启动录像(已经设置过仅仅是发送数据包不会真正存储数据到文件)
     QString fileName = QtHelper::appPath() + "/video/push.mp4";
     ffmpegThread->recordStart(fileName);
@@ -155,8 +146,10 @@ void frmLoopPush::receivePlayStart(int time)
         SaveVideoType saveType = SaveVideoType_Mp4;
 
         //重新编码过的则取视频保存类的对象
-        AVStream *videoStreamIn = ffmpegSave->getVideoEncode() ? ffmpegSave->getVideoStream() : ffmpegThread->getVideoStream();
-        AVStream *audioStreamIn = ffmpegSave->getAudioEncode() ? ffmpegSave->getAudioStream() : ffmpegThread->getAudioStream();
+        AVStream *videoStreamIn = ffmpegSave->getVideoEncode() ? ffmpegSave->getVideoStream()
+                                                               : ffmpegThread->getVideoStream();
+        AVStream *audioStreamIn = ffmpegSave->getAudioEncode() ? ffmpegSave->getAudioStream()
+                                                               : ffmpegThread->getAudioStream();
 
         if (AppConfig::LoopPushEnable1) {
             ffmpegSave1->setSavePara(mediaType, saveType, videoStreamIn, audioStreamIn);
@@ -173,8 +166,7 @@ void frmLoopPush::receivePlayStart(int time)
     }
 }
 
-void frmLoopPush::receivePlayFinsh()
-{
+void frmLoopPush::receivePlayFinish() {
     //停止其他推流线程
     if (ffmpegSave1->getIsOk()) {
         ffmpegSave1->stop();
@@ -203,9 +195,8 @@ void frmLoopPush::receivePlayFinsh()
     this->play();
 }
 
-void frmLoopPush::receiveSaveStart()
-{
-    FFmpegSave *save = (FFmpegSave *)sender();
+void frmLoopPush::receiveSaveStart() {
+    auto save = (FFmpegSave *) sender();
     if (save == ffmpegSave1) {
         ui->ckPushEnable1->setEnabled(false);
     } else if (save == ffmpegSave2) {
@@ -215,9 +206,8 @@ void frmLoopPush::receiveSaveStart()
     }
 }
 
-void frmLoopPush::receiveSaveFinsh()
-{
-    FFmpegSave *save = (FFmpegSave *)sender();
+void frmLoopPush::receiveSaveFinish() {
+    auto save = (FFmpegSave *) sender();
     if (save == ffmpegSave1) {
         ui->ckPushEnable1->setEnabled(true);
     } else if (save == ffmpegSave2) {
@@ -227,8 +217,7 @@ void frmLoopPush::receiveSaveFinsh()
     }
 }
 
-void frmLoopPush::receivePacket(AVPacket *packet)
-{
+void frmLoopPush::receivePacket(AVPacket *packet) {
     //由于在第二路推流中会被更改所以需要重新拷贝一份
     AVPacket *packet2 = FFmpegHelper::creatPacket(packet);
     AVPacket *packet3 = FFmpegHelper::creatPacket(packet);
@@ -251,8 +240,7 @@ void frmLoopPush::receivePacket(AVPacket *packet)
     FFmpegHelper::freePacket(packet3);
 }
 
-void frmLoopPush::play()
-{
+void frmLoopPush::play() {
     QString url = ui->tableWidget->item(currentRow, 1)->text();
     ui->tableWidget->setCurrentCell(currentRow, 1);
     //要重新设置启用发送数据包(关闭的时候会复位该标志位)
@@ -262,20 +250,17 @@ void frmLoopPush::play()
     ffmpegThread->play();
 }
 
-void frmLoopPush::stop()
-{
+void frmLoopPush::stop() {
     ffmpegThread->stop();
 }
 
-void frmLoopPush::setEnable(bool enable)
-{
+void frmLoopPush::setEnable(bool enable) {
     ui->btnAdd->setEnabled(enable);
     ui->btnRemove->setEnabled(enable);
     ui->btnClear->setEnabled(enable);
 }
 
-void frmLoopPush::on_btnStart_clicked()
-{
+void frmLoopPush::on_btnStart_clicked() {
     if (ui->btnStart->text() == "启动服务") {
         rowCount = ui->tableWidget->rowCount();
         if (rowCount == 0) {
@@ -296,19 +281,16 @@ void frmLoopPush::on_btnStart_clicked()
     AppConfig::writeConfig();
 }
 
-void frmLoopPush::on_btnAdd_clicked()
-{
+void frmLoopPush::on_btnAdd_clicked() {
     QString filter = "视频文件(*.mp4 *.asf);;所有文件(*.*)";
     QStringList fileNames = QFileDialog::getOpenFileNames(this, "", "", filter);
-    foreach (QString fileName, fileNames) {
+    for (auto &fileName: fileNames) {
         VideoPushHelper::addLoop(ui->tableWidget, fileName);
     }
-
     this->writeFile();
 }
 
-void frmLoopPush::on_btnRemove_clicked()
-{
+void frmLoopPush::on_btnRemove_clicked() {
     int row = ui->tableWidget->currentRow();
     if (row >= 0) {
         ui->tableWidget->removeRow(row);
@@ -316,16 +298,14 @@ void frmLoopPush::on_btnRemove_clicked()
     }
 }
 
-void frmLoopPush::on_btnClear_clicked()
-{
+void frmLoopPush::on_btnClear_clicked() {
     if (QtHelper::showMessageBoxQuestion("确定要清空吗? 清空后不能恢复!") == QMessageBox::Yes) {
         ui->tableWidget->setRowCount(0);
         this->writeFile();
     }
 }
 
-void frmLoopPush::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
-{
+void frmLoopPush::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item) {
     currentRow = item->row() - 2;
-    receivePlayFinsh();
+    receivePlayFinish();
 }

@@ -324,7 +324,7 @@ signals:
     void receivePlayStart(int time);
 
     //播放结束
-    void receivePlayFinsh();
+    void receivePlayFinish();
 
     //播放失败
     void receivePlayError(int error);

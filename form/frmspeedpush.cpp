@@ -3,22 +3,19 @@
 #include "qthelper.h"
 #include "videoutil.h"
 
-frmSpeedPush::frmSpeedPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmSpeedPush)
-{
+frmSpeedPush::frmSpeedPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmSpeedPush) {
     ui->setupUi(this);
     this->initForm();
     this->initConfig();
 }
 
-frmSpeedPush::~frmSpeedPush()
-{
+frmSpeedPush::~frmSpeedPush() {
     AppConfig::SpeedPushStart = (ui->btnStart->text() == "停止推流");
     AppConfig::writeConfig();
     delete ui;
 }
 
-void frmSpeedPush::initForm()
-{
+void frmSpeedPush::initForm() {
     VideoPara videoPara = ui->videoWidget->getVideoPara();
     videoPara.videoCore = VideoCore_FFmpeg;
     ui->videoWidget->setVideoPara(videoPara);
@@ -27,32 +24,30 @@ void frmSpeedPush::initForm()
     para.playRepeat = true;
     ui->videoWidget->setVideoPara(para);
 
-    connect(ui->videoWidget, SIGNAL(sig_receivePlayStart(int)), this, SLOT(receivePlayStart(int)));
-    connect(ui->videoWidget, SIGNAL(sig_receivePlayFinsh()), this, SLOT(receivePlayFinsh()));
+    connect(ui->videoWidget, &VideoWidget::sigReceivePlayStart, this, &frmSpeedPush::receivePlayStart);
+    connect(ui->videoWidget, &VideoWidget::sigReceivePlayFinish, this, &frmSpeedPush::receivePlayFinish);
 }
 
-void frmSpeedPush::initConfig()
-{
+void frmSpeedPush::initConfig() {
     VideoUtil::loadMediaUrl(ui->cboxMediaUrl, AppConfig::SpeedMediaUrl, 0x40);
-    connect(ui->cboxMediaUrl->lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(saveConfig()));
+    connect(ui->cboxMediaUrl->lineEdit(), &QLineEdit::textChanged, this, &frmSpeedPush::saveConfig);
 
     ui->txtPushUrl->setText(AppConfig::SpeedPushUrl);
-    connect(ui->txtPushUrl, SIGNAL(textChanged(QString)), this, SLOT(saveConfig()));
+    connect(ui->txtPushUrl, &QLineEdit::textChanged, this, &frmSpeedPush::saveConfig);
 
     VideoUtil::loadSpeed(ui->cboxSpeed);
     ui->cboxSpeed->setCurrentIndex(ui->cboxSpeed->findData(AppConfig::SpeedPushValue));
-    connect(ui->cboxSpeed, SIGNAL(currentIndexChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->cboxSpeed, &QComboBox::currentIndexChanged, this, &frmSpeedPush::saveConfig);
 
     ui->ckMuted->setChecked(AppConfig::SpeedPushMuted);
-    connect(ui->ckMuted, SIGNAL(stateChanged(int)), this, SLOT(saveConfig()));
+    connect(ui->ckMuted, &QCheckBox::checkStateChanged, this, &frmSpeedPush::saveConfig);
 
     if (AppConfig::SpeedPushStart) {
         on_btnStart_clicked();
     }
 }
 
-void frmSpeedPush::saveConfig()
-{
+void frmSpeedPush::saveConfig() {
     AppConfig::SpeedMediaUrl = ui->cboxMediaUrl->currentText().trimmed();
     AppConfig::SpeedPushUrl = ui->txtPushUrl->text().trimmed();
     AppConfig::SpeedPushValue = ui->cboxSpeed->itemData(ui->cboxSpeed->currentIndex()).toFloat();
@@ -60,34 +55,31 @@ void frmSpeedPush::saveConfig()
     AppConfig::writeConfig();
 }
 
-void frmSpeedPush::receivePlayStart(int time)
-{
+void frmSpeedPush::receivePlayStart(int time) {
+    Q_UNUSED(time)
     VideoThread *thread = ui->videoWidget->getVideoThread();
     thread->setMuted(AppConfig::SpeedPushMuted);
     thread->setSpeed(AppConfig::SpeedPushValue);
     thread->setEncodeSpeed(AppConfig::SpeedPushValue);
     thread->recordStart(AppConfig::SpeedPushUrl);
-    connect(thread, SIGNAL(receivePosition(qint64)), this, SLOT(receivePosition(qint64)));
+    connect(thread, &VideoThread::receivePosition, this, &frmSpeedPush::receivePosition);
 
-    ui->sliderPosition->setRange(0, thread->getDuration());
+    ui->sliderPosition->setRange(0, static_cast<int>(thread->getDuration()));
     ui->btnStart->setText("停止推流");
     ui->cboxSpeed->setEnabled(false);
 }
 
-void frmSpeedPush::receivePlayFinsh()
-{
+void frmSpeedPush::receivePlayFinish() {
     ui->sliderPosition->setRange(0, 0);
     ui->btnStart->setText("启动推流");
     ui->cboxSpeed->setEnabled(true);
 }
 
-void frmSpeedPush::receivePosition(qint64 position)
-{
-    ui->sliderPosition->setValue(position);
+void frmSpeedPush::receivePosition(qint64 position) {
+    ui->sliderPosition->setValue(static_cast<int>(position));
 }
 
-void frmSpeedPush::on_btnStart_clicked()
-{
+void frmSpeedPush::on_btnStart_clicked() {
     if (ui->btnStart->text() == "启动推流") {
         ui->videoWidget->open(AppConfig::SpeedMediaUrl);
     } else {
@@ -95,18 +87,16 @@ void frmSpeedPush::on_btnStart_clicked()
     }
 }
 
-void frmSpeedPush::on_sliderPosition_clicked()
-{
+void frmSpeedPush::on_sliderPosition_clicked() {
     int value = ui->sliderPosition->value();
     on_sliderPosition_sliderMoved(value);
 }
 
-void frmSpeedPush::on_sliderPosition_sliderMoved(int value)
-{
+void frmSpeedPush::on_sliderPosition_sliderMoved(int value) {
     ui->videoWidget->setPosition(value);
 }
 
-void frmSpeedPush::on_ckMuted_stateChanged(int arg1)
-{
+void frmSpeedPush::on_ckMuted_stateChanged(int arg1) {
+    Q_UNUSED(arg1)
     ui->videoWidget->setMuted(ui->ckMuted->isChecked());
 }
