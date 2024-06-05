@@ -5,8 +5,7 @@
 
 TrayIcon::TrayIcon(QObject *parent) : QObject(parent) {
     trayIcon_ = new QSystemTrayIcon(this);
-    connect(trayIcon_, &QSystemTrayIcon::activated,
-            this, &TrayIcon::iconIsActivated);
+    connect(trayIcon_, &QSystemTrayIcon::activated, this, &TrayIcon::iconIsActivated);
     menu_ = new QMenu;
 }
 

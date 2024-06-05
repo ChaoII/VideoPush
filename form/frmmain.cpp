@@ -1,32 +1,17 @@
 ﻿#include "frmmain.h"
-#include "ui_frmmain.h"
 #include "qthelper.h"
 #include "appevent.h"
 #include "trayicon.h"
-
 #include "frmconfig.h"
 #include "frmsimple.h"
-
-#ifdef netpush
-
 #include "frmnetpush.h"
 #include "frmdevicepush.h"
 #include "frmspeedpush.h"
 #include "frmlooppush.h"
-
-#endif
-
-#ifdef filepush
-
 #include "frmfilepush.h"
-
-#endif
-
-#ifdef imagepush
-
 #include "frmimagepush.h"
+#include "ui_frmmain.h"
 
-#endif
 
 FormMain::FormMain(QWidget *parent) : QWidget(parent), ui(new Ui::FormMain) {
     ui->setupUi(this);
@@ -35,9 +20,6 @@ FormMain::FormMain(QWidget *parent) : QWidget(parent), ui(new Ui::FormMain) {
 }
 
 FormMain::~FormMain() {
-    if (AppConfig::UseTray) {
-        TrayIcon::Instance().setVisible(false);
-    }
     //退出的时候保存配置
     AppConfig::FormMax = this->isMaximized();
     AppConfig::writeConfig();
@@ -87,15 +69,12 @@ void FormMain::initForm() {
     if (AppConfig::EnableLoopPush) {
         ui->tabWidget->addTab(new frmLoopPush, "多路推流");
     }
-
     if (AppConfig::EnableFilePush) {
         ui->tabWidget->addTab(new frmFilePush, "文件点播");
     }
-
     if (AppConfig::EnableImagePush) {
         ui->tabWidget->addTab(new frmImagePush, "图片推流");
     }
-
 }
 
 void FormMain::initConfig() {

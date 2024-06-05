@@ -5,8 +5,7 @@
 #include "core_videopush/videopushhelper.h"
 #include <QtWidgets>
 
-void initOther()
-{
+void initOther() {
     //限制只能一个实例
     if (AppConfig::CheckRun) {
         QtHelper::checkRun();
@@ -31,8 +30,7 @@ void initOther()
     //QtHelper::start("H:/0_dll/bin_push/ABLMediaServer-2024-02-27/WinX64", "ABLMediaServer");
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int openGLType = QtHelper::getIniValue(argv, "OpenGLType", "", "video_push").toInt();
 
     QtHelper::initOpenGL(openGLType);

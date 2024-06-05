@@ -410,12 +410,12 @@ void VideoPushUrl::preview(const QString &httpUrl, const QString &fileName, quin
     int count = urls.count();
     int countAll = count * number;
     if (fileName.isEmpty() || number < 1 || count == 0) {
-        QMessageBox::critical(0, "错误", "数量或者参数不符合要求!");
+        QMessageBox::critical(nullptr, "错误", "数量或者参数不符合要求!");
         return;
     }
 
     if (countAll > maxCount) {
-        QMessageBox::critical(0, "错误", QString("最大预览通道数量不能超过 %1 路!").arg(maxCount));
+        QMessageBox::critical(nullptr, "错误", QString("最大预览通道数量不能超过 %1 路!").arg(maxCount));
         return;
     }
 

@@ -102,7 +102,7 @@ QSize QtHelper::deskSize() {
     return getScreenRect().size();
 }
 
-QWidget *QtHelper::centerBaseForm = 0;
+QWidget *QtHelper::centerBaseForm = nullptr;
 
 void QtHelper::setFormInCenter(QWidget *form) {
     int formWidth = form->width();
@@ -110,7 +110,7 @@ void QtHelper::setFormInCenter(QWidget *form) {
 
     //如果=0表示采用系统桌面屏幕为参照
     QRect rect;
-    if (centerBaseForm == 0) {
+    if (centerBaseForm == nullptr) {
         rect = getScreenRect();
     } else {
         rect = centerBaseForm->geometry();
