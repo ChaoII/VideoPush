@@ -1,15 +1,14 @@
-﻿#pragma execution_character_set("utf-8")
+﻿
 #include "videoplayback.h"
-#include "qpainter.h"
-#include "qevent.h"
-#include "qlayout.h"
-#include "qlabel.h"
-#include "qdebug.h"
-#include "qpushbutton.h"
+#include <QPainter>
+#include <QEvent>
+#include <QLayout>
+#include <QLabel>
+#include <QDebug>
+#include <QMouseEvent>
 
 //顶部时间控件
-VideoTime::VideoTime(QWidget *parent) : QWidget(parent)
-{
+VideoTime::VideoTime(QWidget *parent) : QWidget(parent) {
     minValue = 0;
     maxValue = 60;
     value = 0;
@@ -20,8 +19,7 @@ VideoTime::VideoTime(QWidget *parent) : QWidget(parent)
     bgColor = QColor(60, 60, 60);
 }
 
-void VideoTime::paintEvent(QPaintEvent *)
-{
+void VideoTime::paintEvent(QPaintEvent *) {
     //绘制准备工作,启用反锯齿
     QPainter painter(this);
     painter.setRenderHints(QPainter::Antialiasing);
@@ -32,8 +30,7 @@ void VideoTime::paintEvent(QPaintEvent *)
     drawRuler(&painter);
 }
 
-void VideoTime::drawBg(QPainter *painter)
-{
+void VideoTime::drawBg(QPainter *painter) {
     painter->save();
     painter->setPen(Qt::NoPen);
     painter->setBrush(bgColor);
@@ -41,8 +38,7 @@ void VideoTime::drawBg(QPainter *painter)
     painter->restore();
 }
 
-void VideoTime::drawRuler(QPainter *painter)
-{
+void VideoTime::drawRuler(QPainter *painter) {
     painter->save();
     painter->setPen(textColor);
 
@@ -74,7 +70,7 @@ void VideoTime::drawRuler(QPainter *painter)
             }
 
             QString text = QString("08:%1").arg(i);
-#if (QT_VERSION >= QT_VERSION_CHECK(5,11,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
             double textWidth = fontMetrics().horizontalAdvance(text);
 #else
             double textWidth = fontMetrics().width(text);
@@ -99,16 +95,14 @@ void VideoTime::drawRuler(QPainter *painter)
     painter->restore();
 }
 
-void VideoTime::setTextColor(const QColor &textColor)
-{
+void VideoTime::setTextColor(const QColor &textColor) {
     if (this->textColor != textColor) {
         this->textColor = textColor;
         this->update();
     }
 }
 
-void VideoTime::setBgColor(const QColor &bgColor)
-{
+void VideoTime::setBgColor(const QColor &bgColor) {
     if (this->bgColor != bgColor) {
         this->bgColor = bgColor;
         this->update();
@@ -116,14 +110,12 @@ void VideoTime::setBgColor(const QColor &bgColor)
 }
 
 //通道控件
-VideoCh::VideoCh(QWidget *parent) : QWidget(parent)
-{
+VideoCh::VideoCh(QWidget *parent) : QWidget(parent) {
     chColor = QColor(240, 240, 240);
     dataColor = QColor(77, 206, 247);
 }
 
-void VideoCh::paintEvent(QPaintEvent *)
-{
+void VideoCh::paintEvent(QPaintEvent *) {
     //绘制准备工作,启用反锯齿
     QPainter painter(this);
     painter.setRenderHints(QPainter::Antialiasing);
@@ -134,8 +126,7 @@ void VideoCh::paintEvent(QPaintEvent *)
     drawData(&painter);
 }
 
-void VideoCh::drawBg(QPainter *painter)
-{
+void VideoCh::drawBg(QPainter *painter) {
     painter->save();
     painter->setPen(Qt::NoPen);
     painter->setBrush(chColor);
@@ -143,8 +134,7 @@ void VideoCh::drawBg(QPainter *painter)
     painter->restore();
 }
 
-void VideoCh::drawData(QPainter *painter)
-{
+void VideoCh::drawData(QPainter *painter) {
     painter->save();
     painter->setPen(Qt::NoPen);
     painter->setBrush(dataColor);
@@ -158,32 +148,28 @@ void VideoCh::drawData(QPainter *painter)
     painter->restore();
 }
 
-void VideoCh::setChColor(const QColor &chColor)
-{
+void VideoCh::setChColor(const QColor &chColor) {
     if (this->chColor != chColor) {
         this->chColor = chColor;
         this->update();
     }
 }
 
-void VideoCh::setDataColor(const QColor &dataColor)
-{
+void VideoCh::setDataColor(const QColor &dataColor) {
     if (this->dataColor != dataColor) {
         this->dataColor = dataColor;
         this->update();
     }
 }
 
-void VideoCh::setDatas(const QList<VideoData> &datas)
-{
+void VideoCh::setDatas(const QList<VideoData> &datas) {
     this->datas = datas;
     this->update();
 }
 
 
 //完整控件
-VideoPlayback::VideoPlayback(QWidget *parent) : QWidget(parent)
-{
+VideoPlayback::VideoPlayback(QWidget *parent) : QWidget(parent) {
     margin = 0;
     spacing = 0;
     labWidth = 49;
@@ -212,16 +198,15 @@ VideoPlayback::VideoPlayback(QWidget *parent) : QWidget(parent)
     this->setBgColor(QColor(60, 60, 60));
 }
 
-bool VideoPlayback::eventFilter(QObject *watched, QEvent *event)
-{
+bool VideoPlayback::eventFilter(QObject *watched, QEvent *event) {
     if (watched == labFlow) {
         int type = event->type();
         if (type == QEvent::MouseButtonPress) {
-            QMouseEvent *mouseEvent = (QMouseEvent *)event;
+            QMouseEvent *mouseEvent = (QMouseEvent *) event;
             pressPos = mouseEvent->pos();
             labFlow->update();
         } else if (type == QEvent::MouseMove) {
-            QMouseEvent *mouseEvent = (QMouseEvent *)event;
+            QMouseEvent *mouseEvent = (QMouseEvent *) event;
             pressPos = mouseEvent->pos();
             labFlow->update();
         } else if (type == QEvent::Paint) {
@@ -238,94 +223,76 @@ bool VideoPlayback::eventFilter(QObject *watched, QEvent *event)
     return QWidget::eventFilter(watched, event);
 }
 
-void VideoPlayback::paintEvent(QPaintEvent *)
-{
+void VideoPlayback::paintEvent(QPaintEvent *) {
     QPainter painter(this);
     painter.fillRect(rect(), bgColor);
 }
 
-void VideoPlayback::resizeEvent(QResizeEvent *)
-{
+void VideoPlayback::resizeEvent(QResizeEvent *) {
     labFlow->resize(this->size());
 }
 
-int VideoPlayback::getMargin() const
-{
+int VideoPlayback::getMargin() const {
     return this->margin;
 }
 
-int VideoPlayback::getSpacing() const
-{
+int VideoPlayback::getSpacing() const {
     return this->spacing;
 }
 
-int VideoPlayback::getLabWidth() const
-{
+int VideoPlayback::getLabWidth() const {
     return this->labWidth;
 }
 
-QString VideoPlayback::getTextCh1() const
-{
+QString VideoPlayback::getTextCh1() const {
     return this->textCh1;
 }
 
-QString VideoPlayback::getTextCh2() const
-{
+QString VideoPlayback::getTextCh2() const {
     return this->textCh2;
 }
 
-QString VideoPlayback::getTextCh3() const
-{
+QString VideoPlayback::getTextCh3() const {
     return this->textCh3;
 }
 
-QString VideoPlayback::getTextCh4() const
-{
+QString VideoPlayback::getTextCh4() const {
     return this->textCh4;
 }
 
-int VideoPlayback::getLineWidth() const
-{
+int VideoPlayback::getLineWidth() const {
     return this->lineWidth;
 }
 
-QColor VideoPlayback::getLineColor() const
-{
+QColor VideoPlayback::getLineColor() const {
     return this->lineColor;
 }
 
-QColor VideoPlayback::getTextColor() const
-{
+QColor VideoPlayback::getTextColor() const {
     return this->textColor;
 }
 
-QColor VideoPlayback::getBgColor() const
-{
+QColor VideoPlayback::getBgColor() const {
     return this->bgColor;
 }
 
-QColor VideoPlayback::getVideoTextColor() const
-{
+QColor VideoPlayback::getVideoTextColor() const {
     return this->videoTextColor;
 }
 
-QColor VideoPlayback::getVideoBgColor() const
-{
+QColor VideoPlayback::getVideoBgColor() const {
     return this->videoBgColor;
 }
 
-QColor VideoPlayback::getVideoChColor() const
-{
+QColor VideoPlayback::getVideoChColor() const {
     return this->videoChColor;
 }
 
-QColor VideoPlayback::getVideoDataColor() const
-{
+QColor VideoPlayback::getVideoDataColor() const {
     return this->videoDataColor;
 }
 
-void VideoPlayback::initControl()
-{
+void VideoPlayback::initControl() {
     //表格布局,左侧为标签显示文字标识,右侧顶部为时间控件,下面为4个通道的控件
     layout = new QGridLayout;
     this->setLayout(layout);
@@ -373,24 +340,21 @@ void VideoPlayback::initControl()
     labFlow->installEventFilter(this);
 }
 
-void VideoPlayback::setMargin(int margin)
-{
+void VideoPlayback::setMargin(int margin) {
     if (this->margin != margin) {
         this->margin = margin;
         layout->setContentsMargins(margin, margin, margin, margin);
     }
 }
 
-void VideoPlayback::setSpacing(int spacing)
-{
+void VideoPlayback::setSpacing(int spacing) {
     if (this->spacing != spacing) {
         this->spacing = spacing;
         layout->setSpacing(spacing);
     }
 }
 
-void VideoPlayback::setLabWidth(int labWidth)
-{
+void VideoPlayback::setLabWidth(int labWidth) {
     if (this->labWidth != labWidth) {
         this->labWidth = labWidth;
         labTime->setFixedWidth(labWidth);
@@ -401,64 +365,57 @@ void VideoPlayback::setLabWidth(int labWidth)
     }
 }
 
-void VideoPlayback::setTextCh1(const QString &textCh1)
-{
+void VideoPlayback::setTextCh1(const QString &textCh1) {
     if (this->textCh1 != textCh1) {
         this->textCh1 = textCh1;
         labCh1->setText(textCh1);
     }
 }
 
-void VideoPlayback::setTextCh2(const QString &textCh2)
-{
+void VideoPlayback::setTextCh2(const QString &textCh2) {
     if (this->textCh2 != textCh2) {
         this->textCh2 = textCh2;
         labCh2->setText(textCh2);
     }
 }
 
-void VideoPlayback::setTextCh3(const QString &textCh3)
-{
+void VideoPlayback::setTextCh3(const QString &textCh3) {
     if (this->textCh3 != textCh3) {
         this->textCh3 = textCh3;
         labCh3->setText(textCh3);
     }
 }
 
-void VideoPlayback::setTextCh4(const QString &textCh4)
-{
+void VideoPlayback::setTextCh4(const QString &textCh4) {
     if (this->textCh4 != textCh4) {
         this->textCh4 = textCh4;
         labCh4->setText(textCh4);
     }
 }
 
-void VideoPlayback::setTextCh(const QString &textCh1, const QString &textCh2, const QString &textCh3, const QString &textCh4)
-{
+void VideoPlayback::setTextCh(const QString &textCh1, const QString &textCh2, const QString &textCh3,
+                              const QString &textCh4) {
     setTextCh1(textCh1);
     setTextCh2(textCh2);
     setTextCh3(textCh3);
     setTextCh4(textCh4);
 }
 
-void VideoPlayback::setLineWidth(int lineWidth)
-{
+void VideoPlayback::setLineWidth(int lineWidth) {
     if (this->lineWidth != lineWidth) {
         this->lineWidth = lineWidth;
         labFlow->update();
     }
 }
 
-void VideoPlayback::setLineColor(const QColor &lineColor)
-{
+void VideoPlayback::setLineColor(const QColor &lineColor) {
     if (this->lineColor != lineColor) {
         this->lineColor = lineColor;
         labFlow->update();
     }
 }
 
-void VideoPlayback::setTextColor(const QColor &textColor)
-{
+void VideoPlayback::setTextColor(const QColor &textColor) {
     if (this->textColor != textColor) {
         this->textColor = textColor;
         QString qss = QString("color:%1").arg(textColor.name());
@@ -469,32 +426,28 @@ void VideoPlayback::setTextColor(const QColor &textColor)
     }
 }
 
-void VideoPlayback::setBgColor(const QColor &bgColor)
-{
+void VideoPlayback::setBgColor(const QColor &bgColor) {
     if (this->bgColor != bgColor) {
         this->bgColor = bgColor;
         this->update();
     }
 }
 
-void VideoPlayback::setVideoTextColor(const QColor &videoTextColor)
-{
+void VideoPlayback::setVideoTextColor(const QColor &videoTextColor) {
     if (this->videoTextColor != videoTextColor) {
         this->videoTextColor = videoTextColor;
         videoTime->setTextColor(videoTextColor);
     }
 }
 
-void VideoPlayback::setVideoBgColor(const QColor &videoBgColor)
-{
+void VideoPlayback::setVideoBgColor(const QColor &videoBgColor) {
     if (this->videoBgColor != videoBgColor) {
         this->videoBgColor = videoBgColor;
         videoTime->setBgColor(videoBgColor);
     }
 }
 
-void VideoPlayback::setVideoChColor(const QColor &videoChColor)
-{
+void VideoPlayback::setVideoChColor(const QColor &videoChColor) {
     if (this->videoChColor != videoChColor) {
         this->videoChColor = videoChColor;
         videoCh1->setChColor(videoChColor);
@@ -504,8 +457,7 @@ void VideoPlayback::setVideoChColor(const QColor &videoChColor)
     }
 }
 
-void VideoPlayback::setVideoDataColor(const QColor &videoDataColor)
-{
+void VideoPlayback::setVideoDataColor(const QColor &videoDataColor) {
     if (this->videoDataColor != videoDataColor) {
         this->videoDataColor = videoDataColor;
         videoCh1->setDataColor(videoDataColor);
@@ -515,22 +467,18 @@ void VideoPlayback::setVideoDataColor(const QColor &videoDataColor)
     }
 }
 
-void VideoPlayback::setDatas1(const QList<VideoCh::VideoData> &datas)
-{
+void VideoPlayback::setDatas1(const QList<VideoCh::VideoData> &datas) {
     videoCh1->setDatas(datas);
 }
 
-void VideoPlayback::setDatas2(const QList<VideoCh::VideoData> &datas)
-{
+void VideoPlayback::setDatas2(const QList<VideoCh::VideoData> &datas) {
     videoCh2->setDatas(datas);
 }
 
-void VideoPlayback::setDatas3(const QList<VideoCh::VideoData> &datas)
-{
+void VideoPlayback::setDatas3(const QList<VideoCh::VideoData> &datas) {
     videoCh3->setDatas(datas);
 }
 
-void VideoPlayback::setDatas4(const QList<VideoCh::VideoData> &datas)
-{
+void VideoPlayback::setDatas4(const QList<VideoCh::VideoData> &datas) {
     videoCh4->setDatas(datas);
 }

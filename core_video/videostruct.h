@@ -92,7 +92,7 @@ struct VideoPara {
 
         secretKey = "";
         audioDevice = "";
-        codecName = "";      
+        codecName = "";
 
         openSleepTime = 3000;
         readTimeout = 0;

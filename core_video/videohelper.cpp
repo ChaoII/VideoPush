@@ -4,38 +4,31 @@
 #include "widgethelper.h"
 #include "deviceinfohelper.h"
 
-QString VideoHelper::getVersion()
-{
+QString VideoHelper::getVersion() {
     return VideoUtil::getVersion();
 }
 
-QString VideoHelper::getVersion(const VideoCore &videoCore)
-{
+QString VideoHelper::getVersion(const VideoCore &videoCore) {
     return VideoUtil::getVersion(videoCore);
 }
 
-VideoCore VideoHelper::getVideoCore(int type)
-{
+VideoCore VideoHelper::getVideoCore(int type) {
     return VideoUtil::getVideoCore(type);
 }
 
-bool VideoHelper::checkSaveFile(const QString &fullName, const QString &fileName, bool isffmpeg)
-{
+bool VideoHelper::checkSaveFile(const QString &fullName, const QString &fileName, bool isffmpeg) {
     return VideoUtil::checkSaveFile(fullName, fileName, isffmpeg);
 }
 
-void VideoHelper::renameFile(const QString &fileName)
-{
+void VideoHelper::renameFile(const QString &fileName) {
     VideoUtil::renameFile(fileName);
 }
 
-void VideoHelper::resetCursor()
-{
+void VideoHelper::resetCursor() {
     VideoUtil::resetCursor();
 }
 
-void VideoHelper::rotateImage(int rotate, QImage &image)
-{
+void VideoHelper::rotateImage(int rotate, QImage &image) {
     if (rotate > 0) {
         QTransform matrix;
         matrix.rotate(rotate);
@@ -43,18 +36,15 @@ void VideoHelper::rotateImage(int rotate, QImage &image)
     }
 }
 
-void VideoHelper::rotateSize(int rotate, int &width, int &height)
-{
+void VideoHelper::rotateSize(int rotate, int &width, int &height) {
     WidgetHelper::rotateSize(rotate, width, height);
 }
 
-int VideoHelper::getRangeValue(int oldMin, int oldMax, int oldValue, int newMin, int newMax)
-{
+int VideoHelper::getRangeValue(int oldMin, int oldMax, int oldValue, int newMin, int newMax) {
     return (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
 }
 
-bool VideoHelper::checkUrl(VideoThread *videoThread, const MediaType &mediaType, const QString &mediaUrl, int timeout)
-{
+bool VideoHelper::checkUrl(VideoThread *videoThread, const MediaType &mediaType, const QString &mediaUrl, int timeout) {
     //因为每个视频采集子类都会执行这个方法/所以通用的处理放在这里
 
     //udp://开头的表示必须用udp协议
@@ -95,8 +85,7 @@ bool VideoHelper::checkUrl(VideoThread *videoThread, const MediaType &mediaType,
     }
 }
 
-QString VideoHelper::getFormatName(VideoThread *videoThread)
-{
+QString VideoHelper::getFormatName(VideoThread *videoThread) {
     //文件封装格式可能是一个很长的字符串比如 mov,mp4,m4a,3gp,3g2,mj2
     QString name = videoThread->getFormatName();
     if (name.contains(",")) {
@@ -119,8 +108,7 @@ QString VideoHelper::getFormatName(VideoThread *videoThread)
     return name;
 }
 
-QString VideoHelper::getPlayUrl(const VideoCore &videoCore, const MediaType &mediaType, const QString &mediaUrl)
-{
+QString VideoHelper::getPlayUrl(const VideoCore &videoCore, const MediaType &mediaType, const QString &mediaUrl) {
     QString url = mediaUrl.trimmed();
     if (mediaType == MediaType_Rtsp) {
         //视频流中的特殊字符比如rtsp中的用户密码部分需要转义
@@ -188,8 +176,7 @@ QString VideoHelper::getPlayUrl(const VideoCore &videoCore, const MediaType &med
     return url;
 }
 
-QUrl VideoHelper::getPlayUrl(const MediaType &mediaType, const QString &mediaUrl)
-{
+QUrl VideoHelper::getPlayUrl(const MediaType &mediaType, const QString &mediaUrl) {
     QUrl url;
     if (mediaType == MediaType_FileLocal) {
         url = QUrl::fromLocalFile(mediaUrl);
@@ -199,8 +186,7 @@ QUrl VideoHelper::getPlayUrl(const MediaType &mediaType, const QString &mediaUrl
     return url;
 }
 
-QByteArray VideoHelper::getUrlData(const MediaType &mediaType, const QString &mediaUrl, bool gbk)
-{
+QByteArray VideoHelper::getUrlData(const MediaType &mediaType, const QString &mediaUrl, bool gbk) {
     if (gbk && mediaType == MediaType_Screen) {
         //return mediaUrl.toLocal8Bit();
         return QTextCodec::codecForName("gbk")->fromUnicode(mediaUrl);
@@ -209,8 +195,7 @@ QByteArray VideoHelper::getUrlData(const MediaType &mediaType, const QString &me
     }
 }
 
-MediaType VideoHelper::getMediaType(const QString &mediaUrl)
-{
+MediaType VideoHelper::getMediaType(const QString &mediaUrl) {
     //http开头的文件地址这里没法判断(需要打开后获取时长判断)
     MediaType mediaType;
     if (mediaUrl.startsWith("rtsp://")) {
@@ -233,12 +218,11 @@ MediaType VideoHelper::getMediaType(const QString &mediaUrl)
     return mediaType;
 }
 
-void VideoHelper::getDeviceName(const QString &mediaUrl, QString &audioDevice, QString &videoDevice)
-{
+void VideoHelper::getDeviceName(const QString &mediaUrl, QString &audioDevice, QString &videoDevice) {
     videoDevice = "none";
     audioDevice = "none";
     QStringList list = mediaUrl.split(":");
-    foreach (QString s, list) {
+    for (auto &s: list) {
         QStringList l = s.split("=");
         QString flag = l.first();
         QString name = l.last();
@@ -251,8 +235,9 @@ void VideoHelper::getDeviceName(const QString &mediaUrl, QString &audioDevice, Q
 }
 
 //格式要求: url|bufferSize|frameRate|offsetX|offsetY|screenIndex|encodeScale
-void VideoHelper::getDevicePara(QString &mediaUrl, QString &bufferSize, int &frameRate, QString &codecName, int &offsetX, int &offsetY, QString &encodeScale)
-{
+void
+VideoHelper::getDevicePara(QString &mediaUrl, QString &bufferSize, int &frameRate, QString &codecName, int &offsetX,
+                           int &offsetY, QString &encodeScale) {
     //ffmpeg -f gdigrab -s 800x600 -r 30 -i desktop out.mp4
     //ffmpeg -f x11grab -s 800x600 -r 30 -i :0.0+0,0 out.mp4
     //ffmpeg -f avfoundation -s 800x600 -r 30 -i 0:0 out.mp4
@@ -266,22 +251,22 @@ void VideoHelper::getDevicePara(QString &mediaUrl, QString &bufferSize, int &fra
 }
 
 //格式要求: url|transport|decodeType|encodeVideo|encodeVideoFps|encodeVideoRatio|encodeVideoScale
-void VideoHelper::getNormalPara(QString &mediaUrl, QString &transport, DecodeType &decodeType, EncodeVideo &encodeVideo, int &encodeVideoFps, float &encodeVideoRatio, QString &encodeVideoScale)
-{
+void VideoHelper::getNormalPara(QString &mediaUrl, QString &transport, DecodeType &decodeType, EncodeVideo &encodeVideo,
+                                int &encodeVideoFps, float &encodeVideoRatio, QString &encodeVideoScale) {
     int decodeType2 = -1, encodeVideo2 = -1;
-    DeviceInfoHelper::getNormalPara(mediaUrl, transport, decodeType2, encodeVideo2, encodeVideoFps, encodeVideoRatio, encodeVideoScale);
+    DeviceInfoHelper::getNormalPara(mediaUrl, transport, decodeType2, encodeVideo2, encodeVideoFps, encodeVideoRatio,
+                                    encodeVideoScale);
     mediaUrl = mediaUrl.split("|").first();
 
     if (decodeType2 >= 0) {
-        decodeType = (DecodeType)decodeType2;
+        decodeType = (DecodeType) decodeType2;
     }
     if (encodeVideo2 >= 0) {
-        encodeVideo = (EncodeVideo)encodeVideo2;
+        encodeVideo = (EncodeVideo) encodeVideo2;
     }
 }
 
-MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, EncodePara &encodePara)
-{
+MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, EncodePara &encodePara) {
     //获取视频类型
     QString url = videoPara.mediaUrl;
     MediaType mediaType = VideoHelper::getMediaType(url);
@@ -311,7 +296,7 @@ MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, En
         }
 
         //Qt4中的多媒体只有句柄模式(Qt5.6以下绘制模式用QAbstractVideoSurface获取不到图片也只能用句柄模式)
-#if (QT_VERSION < QT_VERSION_CHECK(5,6,0))
+#if (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
         widgetPara.videoMode = VideoMode_Hwnd;
 #endif
     } else if (videoCore == VideoCore_FFmpeg) {
@@ -378,9 +363,12 @@ MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, En
 
     //如果地址带了本地设备参数或者桌面参数则需要取出对应的参数
     if (mediaType == MediaType_Device || mediaType == MediaType_Screen) {
-        VideoHelper::getDevicePara(videoPara.mediaUrl, videoPara.bufferSize, videoPara.frameRate, videoPara.codecName, videoPara.offsetX, videoPara.offsetY, encodePara.encodeVideoScale);
+        VideoHelper::getDevicePara(videoPara.mediaUrl, videoPara.bufferSize, videoPara.frameRate, videoPara.codecName,
+                                   videoPara.offsetX, videoPara.offsetY, encodePara.encodeVideoScale);
     } else {
-        VideoHelper::getNormalPara(videoPara.mediaUrl, videoPara.transport, videoPara.decodeType, encodePara.encodeVideo, encodePara.encodeVideoFps, encodePara.encodeVideoRatio, encodePara.encodeVideoScale);
+        VideoHelper::getNormalPara(videoPara.mediaUrl, videoPara.transport, videoPara.decodeType,
+                                   encodePara.encodeVideo, encodePara.encodeVideoFps, encodePara.encodeVideoRatio,
+                                   encodePara.encodeVideoScale);
     }
 
     //本地文件以及本地摄像头不需要连接超时时间
@@ -443,13 +431,11 @@ MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, En
     return mediaType;
 }
 
-VideoThread *VideoHelper::newVideoThread(QWidget *parent, const VideoCore &videoCore, const VideoMode &videoMode)
-{
+VideoThread *VideoHelper::newVideoThread(QWidget *parent, const VideoCore &videoCore, const VideoMode &videoMode) {
     return VideoUtil::newVideoThread(parent, videoCore, videoMode);
 }
 
-void VideoHelper::initVideoThread(VideoThread *videoThread, const VideoPara &videoPara, const EncodePara &encodePara)
-{
+void VideoHelper::initVideoThread(VideoThread *videoThread, const VideoPara &videoPara, const EncodePara &encodePara) {
     //设置一堆参数
     videoThread->setVideoCore(videoPara.videoCore);
     videoThread->setMediaUrl(videoPara.mediaUrl.trimmed());
@@ -485,14 +471,12 @@ void VideoHelper::initVideoThread(VideoThread *videoThread, const VideoPara &vid
     videoThread->setEncodeVideoScale(encodePara.encodeVideoScale);
 }
 
-void VideoHelper::initVideoPara(VideoThread *videoThread, const QString &mediaUrl)
-{
+void VideoHelper::initVideoPara(VideoThread *videoThread, const QString &mediaUrl) {
     QString encodeVideoScale = "1";
     VideoHelper::initVideoPara(videoThread, mediaUrl, encodeVideoScale);
 }
 
-void VideoHelper::initVideoPara(VideoThread *videoThread, const QString &mediaUrl, QString &encodeVideoScale)
-{
+void VideoHelper::initVideoPara(VideoThread *videoThread, const QString &mediaUrl, QString &encodeVideoScale) {
     //如果是本地设备或者桌面录屏要取出其他参数
     MediaType mediaType = VideoHelper::getMediaType(mediaUrl);
     if (mediaType == MediaType_Device || mediaType == MediaType_Screen) {
@@ -517,7 +501,8 @@ void VideoHelper::initVideoPara(VideoThread *videoThread, const QString &mediaUr
         EncodeVideo encodeVideo = EncodeVideo_None;
         int encodeVideoFps = 0;
         float encodeVideoRatio = 1;
-        VideoHelper::getNormalPara(url, transport, decodeType, encodeVideo, encodeVideoFps, encodeVideoRatio, encodeVideoScale);
+        VideoHelper::getNormalPara(url, transport, decodeType, encodeVideo, encodeVideoFps, encodeVideoRatio,
+                                   encodeVideoScale);
 
         videoThread->setMediaUrl(url);
         videoThread->setTransport(transport);

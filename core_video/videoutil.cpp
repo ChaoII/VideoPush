@@ -2,7 +2,9 @@
 #include "core_videohelper/urlutil.h"
 
 #ifdef audiox
+
 #include "audiohelper.h"
+
 #endif
 
 #ifdef qmedia
@@ -10,7 +12,9 @@
 #endif
 
 #ifdef ffmpeg
+
 #include "ffmpeghelper.h"
+
 #endif
 
 #ifdef vlcx
@@ -37,8 +41,7 @@
 #include "easyplayerhelper.h"
 #endif
 
-QString VideoUtil::getVersion()
-{
+QString VideoUtil::getVersion() {
 #ifdef qmedia
     return getVersion(VideoCore_QMedia);
 #elif ffmpeg
@@ -60,8 +63,7 @@ QString VideoUtil::getVersion()
 #endif
 }
 
-QString VideoUtil::getVersion(const VideoCore &videoCore)
-{
+QString VideoUtil::getVersion(const VideoCore &videoCore) {
     QString version = "none v1.0";
     if (videoCore == VideoCore_QMedia) {
 #ifdef qmedia
@@ -100,8 +102,7 @@ QString VideoUtil::getVersion(const VideoCore &videoCore)
     return version;
 }
 
-VideoCore VideoUtil::getVideoCore(int type)
-{
+VideoCore VideoUtil::getVideoCore(int type) {
     VideoCore videoCore = VideoCore_None;
     if (type == 0) {
 #ifdef qmedia
@@ -158,8 +159,7 @@ VideoCore VideoUtil::getVideoCore(int type)
     return videoCore;
 }
 
-QStringList VideoUtil::getAudioDevice(const VideoCore &videoCore)
-{
+QStringList VideoUtil::getAudioDevice(const VideoCore &videoCore) {
     QStringList names, descriptions;
     if (videoCore == VideoCore_Vlc) {
 #ifdef vlcx
@@ -179,8 +179,7 @@ QStringList VideoUtil::getAudioDevice(const VideoCore &videoCore)
     return descriptions;
 }
 
-VideoThread *VideoUtil::newVideoThread(QWidget *parent, const VideoCore &videoCore, const VideoMode &videoMode)
-{
+VideoThread *VideoUtil::newVideoThread(QWidget *parent, const VideoCore &videoCore, const VideoMode &videoMode) {
     VideoThread *videoThread = NULL;
     if (videoCore == VideoCore_QMedia) {
 #ifdef qmedia
@@ -224,8 +223,7 @@ VideoThread *VideoUtil::newVideoThread(QWidget *parent, const VideoCore &videoCo
     return videoThread;
 }
 
-bool VideoUtil::checkSaveFile(const QString &fullName, const QString &fileName, bool isffmpeg)
-{
+bool VideoUtil::checkSaveFile(const QString &fullName, const QString &fileName, bool isffmpeg) {
     //过滤不符合要求的命名的文件/不区分大小写
     if (!fileName.startsWith("ch", Qt::CaseInsensitive)) {
         return false;
@@ -254,8 +252,7 @@ bool VideoUtil::checkSaveFile(const QString &fullName, const QString &fileName, 
     return true;
 }
 
-void VideoUtil::renameFile(const QString &fileName)
-{
+void VideoUtil::renameFile(const QString &fileName) {
     if (fileName.isEmpty()) {
         return;
     }
@@ -283,7 +280,7 @@ void VideoUtil::renameFile(const QString &fileName)
     //默认名称: vlc-record-2021-09-26-20h46m16s-6e0b2be040a943489ef0b9bb344b96b8.hd.m3u8-.mp4
     //规范名称: vlc-record-2021-09-26-16h15m13s-Ch1-.avi vlc-record-2021-09-26-16h15m13s-Ch2-.mp4
 
-    foreach (QString file, files) {
+    for (auto &file: files) {
         //已经改名的不用处理(未改名的都是vlc-record-开头)
         if (!file.startsWith("vlc-record-")) {
             continue;
@@ -318,15 +315,13 @@ void VideoUtil::renameFile(const QString &fileName)
     }
 }
 
-void VideoUtil::resetCursor()
-{
+void VideoUtil::resetCursor() {
     qApp->setOverrideCursor(Qt::ArrowCursor);
     qApp->restoreOverrideCursor();
     //qDebug() << TIMEMS << "resetCursor";
 }
 
-void VideoUtil::loadVideoCore(QComboBox *cbox, int &videoCore, bool simple)
-{
+void VideoUtil::loadVideoCore(QComboBox *cbox, int &videoCore, bool simple) {
     //冻结该控件所有信号
     cbox->blockSignals(true);
     cbox->clear();
@@ -377,8 +372,7 @@ void VideoUtil::loadVideoCore(QComboBox *cbox, int &videoCore, bool simple)
     cbox->blockSignals(false);
 }
 
-void VideoUtil::loadMediaUrl(QComboBox *cbox, const QString &mediaUrl, int type)
-{
+void VideoUtil::loadMediaUrl(QComboBox *cbox, const QString &mediaUrl, int type) {
     //冻结该控件所有信号
     cbox->blockSignals(true);
 
@@ -406,8 +400,7 @@ void VideoUtil::loadMediaUrl(QComboBox *cbox, const QString &mediaUrl, int type)
     cbox->blockSignals(false);
 }
 
-void VideoUtil::changeMediaUrl(QComboBox *cbox, QString &mediaUrl)
-{
+void VideoUtil::changeMediaUrl(QComboBox *cbox, QString &mediaUrl) {
     QString url = cbox->currentText().trimmed();
     if (cbox->lineEdit() && mediaUrl != url) {
         mediaUrl = url;
@@ -415,24 +408,21 @@ void VideoUtil::changeMediaUrl(QComboBox *cbox, QString &mediaUrl)
     }
 }
 
-void VideoUtil::loadScaleMode(QComboBox *cbox)
-{
+void VideoUtil::loadScaleMode(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("自动调整");
     cbox->addItem("等比缩放");
     cbox->addItem("拉伸填充");
 }
 
-void VideoUtil::loadVideoMode(QComboBox *cbox)
-{
+void VideoUtil::loadVideoMode(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("句柄");
     cbox->addItem("绘制");
     cbox->addItem("GPU");
 }
 
-void VideoUtil::loadDecodeType(QComboBox *cbox)
-{
+void VideoUtil::loadDecodeType(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("速度优先");
     cbox->addItem("质量优先");
@@ -440,8 +430,7 @@ void VideoUtil::loadDecodeType(QComboBox *cbox)
     cbox->addItem("最快速度");
 }
 
-void VideoUtil::loadEncodeVideo(QComboBox *cbox)
-{
+void VideoUtil::loadEncodeVideo(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("不做处理");
     cbox->addItem("自动转码");
@@ -449,8 +438,7 @@ void VideoUtil::loadEncodeVideo(QComboBox *cbox)
     cbox->addItem("强转265");
 }
 
-void VideoUtil::loadEncodeVideoRatio(QComboBox *cbox)
-{
+void VideoUtil::loadEncodeVideoRatio(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("10%", "0.1");
     cbox->addItem("30%", "0.3");
@@ -458,16 +446,14 @@ void VideoUtil::loadEncodeVideoRatio(QComboBox *cbox)
     cbox->addItem("100%", "1.0");
 }
 
-void VideoUtil::loadEncodeVideoScale(QComboBox *cbox)
-{
+void VideoUtil::loadEncodeVideoScale(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("1");
     cbox->addItem("0.5");
     cbox->addItem("640x480");
 }
 
-void VideoUtil::loadCopyNumber(QComboBox *cbox)
-{
+void VideoUtil::loadCopyNumber(QComboBox *cbox) {
     QStringList copyNumber;
     for (int i = 1; i <= 8; ++i) {
         copyNumber << QString::number(i);
@@ -479,8 +465,7 @@ void VideoUtil::loadCopyNumber(QComboBox *cbox)
     cbox->addItems(copyNumber);
 }
 
-void VideoUtil::loadHardware(QComboBox *cbox, const VideoCore &videoCore, QString &hardware)
-{
+void VideoUtil::loadHardware(QComboBox *cbox, const VideoCore &videoCore, QString &hardware) {
     //冻结该控件所有信号
     cbox->blockSignals(true);
     cbox->clear();
@@ -528,16 +513,14 @@ void VideoUtil::loadHardware(QComboBox *cbox, const VideoCore &videoCore, QStrin
     cbox->blockSignals(false);
 }
 
-void VideoUtil::loadTransport(QComboBox *cbox)
-{
+void VideoUtil::loadTransport(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("auto");
     cbox->addItem("tcp");
     cbox->addItem("udp");
 }
 
-void VideoUtil::loadCaching(QComboBox *cbox, const VideoCore &videoCore, int &caching)
-{
+void VideoUtil::loadCaching(QComboBox *cbox, const VideoCore &videoCore, int &caching) {
     //冻结该控件所有信号
     cbox->blockSignals(true);
     cbox->clear();
@@ -545,7 +528,8 @@ void VideoUtil::loadCaching(QComboBox *cbox, const VideoCore &videoCore, int &ca
     QStringList listText, listData;
     if (videoCore == VideoCore_FFmpeg || videoCore == VideoCore_Mdk || videoCore == VideoCore_Qtav) {
         listText << "1 MB" << "4 MB" << "8 MB" << "12 MB" << "16 MB" << "20 MB" << "30 MB" << "50 MB" << "100 MB";
-        listData << "1024000" << "4096000" << "8192000" << "12288000" << "16384000" << "20480000" << "30720000" << "51200000" << "102400000";
+        listData << "1024000" << "4096000" << "8192000" << "12288000" << "16384000" << "20480000" << "30720000"
+                 << "51200000" << "102400000";
     } else {
         listText << "0.2 秒" << "0.3 秒" << "0.5 秒" << "1.0 秒" << "3.0 秒" << "5.0 秒" << "8.0 秒";
         listData << "200" << "300" << "500" << "1000" << "3000" << "5000" << "8000";
@@ -565,16 +549,14 @@ void VideoUtil::loadCaching(QComboBox *cbox, const VideoCore &videoCore, int &ca
     cbox->blockSignals(false);
 }
 
-void VideoUtil::loadOpenSleepTime(QComboBox *cbox)
-{
+void VideoUtil::loadOpenSleepTime(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("1 秒", 1000);
     cbox->addItem("3 秒", 3000);
     cbox->addItem("5 秒", 5000);
 }
 
-void VideoUtil::loadReadTimeout(QComboBox *cbox)
-{
+void VideoUtil::loadReadTimeout(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("不处理", 0);
     cbox->addItem("5 秒", 5000);
@@ -585,8 +567,7 @@ void VideoUtil::loadReadTimeout(QComboBox *cbox)
     cbox->addItem("60 秒", 60000);
 }
 
-void VideoUtil::loadConnectTimeout(QComboBox *cbox)
-{
+void VideoUtil::loadConnectTimeout(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("不处理", 0);
     cbox->addItem("0.3 秒", 300);
@@ -596,8 +577,7 @@ void VideoUtil::loadConnectTimeout(QComboBox *cbox)
     cbox->addItem("5.0 秒", 5000);
 }
 
-void VideoUtil::loadSpeed(QComboBox *cbox)
-{
+void VideoUtil::loadSpeed(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("0.5x", "0.5");
     cbox->addItem("1.0x", "1.0");
@@ -609,8 +589,7 @@ void VideoUtil::loadSpeed(QComboBox *cbox)
     //cbox->addItem("30.0x", "30.0");
 }
 
-void VideoUtil::loadSpeed2(QComboBox *cbox)
-{
+void VideoUtil::loadSpeed2(QComboBox *cbox) {
     cbox->clear();
     cbox->addItem("0.5x", "0.5");
     cbox->addItem("0.75x", "0.75");
@@ -621,8 +600,7 @@ void VideoUtil::loadSpeed2(QComboBox *cbox)
 }
 
 //ffplay -ar 44100 -ac 2 -f s16le -i d:/out.pcm
-void VideoUtil::writeData(QFile *file, char *data, qint64 len)
-{
+void VideoUtil::writeData(QFile *file, char *data, qint64 len) {
     if (!file->isOpen()) {
         file->open(QFile::WriteOnly);
     }

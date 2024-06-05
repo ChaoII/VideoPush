@@ -85,18 +85,18 @@ void VideoWidget::setVideoPara(const VideoPara &videoPara) {
 
 QString VideoWidget::getBannerText() const {
     if (!getIsRunning()) {
-        return QString();
+        return "";
     }
 
     //悬浮条如果宽度不够则不显示文字信息
     int width = bannerWidget_->width();
     if (width < 200) {
-        return QString();
+        return "";
     }
 
     //线程已经开启并处于打开中/还未打开完成
     if (!videoThread->getIsOk()) {
-        return QString("打开中...");
+        return "打开中...";
     }
 
     QStringList list;
@@ -402,7 +402,6 @@ void VideoWidget::receivePoint(int type, const QPoint &point) {
     if (!videoThread) {
         return;
     }
-
     //处于电子放大阶段才处理(悬浮条按钮切换)
     if (bannerWidget_->getIsCrop()) {
         //限定只有一个电子放大滤镜
@@ -411,7 +410,6 @@ void VideoWidget::receivePoint(int type, const QPoint &point) {
                 return;
             }
         }
-
         //第一步: 鼠标按下开始记住坐标
         //第二步: 鼠标移动绘制选取区域
         //第三步: 鼠标松开发送裁剪滤镜
@@ -530,30 +528,34 @@ void VideoWidget::disconnectThreadSignal() {
         return;
     }
 
-    disconnect(videoThread, SIGNAL(started()), this, SLOT(started()));
-    disconnect(videoThread, SIGNAL(finished()), this, SLOT(finished()));
-    disconnect(videoThread, SIGNAL(receivePlayStart(int)), this, SLOT(receivePlayStart(int)));
-    disconnect(videoThread, SIGNAL(receivePlayFinsh()), this, SLOT(receivePlayFinsh()));
+    disconnect(videoThread, &VideoThread::started, this, &VideoWidget::started);
+    disconnect(videoThread, &VideoThread::finished, this, &VideoWidget::finished);
+    disconnect(videoThread, &VideoThread::receivePlayStart, this, &VideoWidget::receivePlayStart);
+    disconnect(videoThread, &VideoThread::receivePlayFinish, this, &VideoWidget::receivePlayFinish);
 
-    disconnect(videoThread, SIGNAL(receiveImage(QImage, int)), this, SLOT(receiveImage(QImage, int)));
-    disconnect(videoThread, SIGNAL(snapImage(QImage, QString)), this, SLOT(snapImage(QImage, QString)));
-    disconnect(videoThread, SIGNAL(receiveFrame(int, int, quint8 * , int)), this,
-               SLOT(receiveFrame(int, int, quint8 * , int)));
-    disconnect(videoThread, SIGNAL(receiveFrame(int, int, quint8 * , quint8 * , quint8 * , quint32, quint32, quint32)),
-               this, SLOT(receiveFrame(int, int, quint8 * , quint8 * , quint8 * , quint32, quint32, quint32)));
-    disconnect(videoThread, SIGNAL(receiveFrame(int, int, quint8 * , quint8 * , quint32, quint32)),
-               this, SLOT(receiveFrame(int, int, quint8 * , quint8 * , quint32, quint32)));
+    disconnect(videoThread, &VideoThread::receiveImage, this, &VideoWidget::receiveImage);
+    disconnect(videoThread, &VideoThread::snapImage, this, &VideoWidget::snapImage);
+    disconnect(videoThread, QOverload<int, int, quint8 *, int>::of(&VideoThread::receiveFrame), this,
+               QOverload<int, int, quint8 *, int>::of(&VideoWidget::receiveFrame));
 
-    disconnect(videoThread, SIGNAL(receiveLevel(qreal, qreal)), this, SIGNAL(sig_receiveLevel(qreal, qreal)));
-    disconnect(videoThread, SIGNAL(receiveKbps(qreal, int)), this, SIGNAL(sig_receiveKbps(qreal, int)));
-    disconnect(videoThread, SIGNAL(receivePlayStart(int)), this, SIGNAL(sig_receivePlayStart(int)));
-    disconnect(videoThread, SIGNAL(receivePlayFinsh()), this, SIGNAL(sig_receivePlayFinsh()));
+    disconnect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
+                       &VideoThread::receiveFrame), this,
+               QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
+                       &VideoWidget::receiveFrame));
 
-    disconnect(videoThread, SIGNAL(receivePlayFinsh()), bannerWidget_, SLOT(receivePlayFinsh()));
-    disconnect(videoThread, SIGNAL(receiveMuted(bool)), bannerWidget_, SLOT(receiveMuted(bool)));
-    disconnect(videoThread, SIGNAL(recorderStateChanged(RecorderState, QString)), bannerWidget_,
-               SLOT(recorderStateChanged(RecorderState, QString)));
-    disconnect(videoThread, SIGNAL(receiveSizeChanged()), this, SLOT(receiveSizeChanged()));
+    disconnect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint32, quint32>::of(&VideoThread::receiveFrame),
+               this, QOverload<int, int, quint8 *, quint8 *, quint32, quint32>::of(&VideoWidget::receiveFrame));
+
+    disconnect(videoThread, &VideoThread::receiveLevel, this, &VideoWidget::sigReceiveLevel);
+    disconnect(videoThread, &VideoThread::receiveKbps, this, &VideoWidget::sigReceiveKbps);
+    disconnect(videoThread, &VideoThread::receivePlayStart, this, &VideoWidget::sigReceivePlayStart);
+    disconnect(videoThread, &VideoThread::receivePlayFinish, this, &VideoWidget::sigReceivePlayFinish);
+
+    disconnect(videoThread, &VideoThread::receivePlayFinish, bannerWidget_, &BannerWidget::receivePlayFinish);
+    disconnect(videoThread, &VideoThread::receiveMuted, bannerWidget_, &BannerWidget::receiveMuted);
+    disconnect(videoThread, &VideoThread::recorderStateChanged, bannerWidget_,
+               &BannerWidget::recorderStateChanged);
+    disconnect(videoThread, &VideoThread::receiveSizeChanged, this, &VideoWidget::receiveSizeChanged);
 }
 
 bool VideoWidget::init() {

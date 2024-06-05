@@ -1,22 +1,8 @@
 ﻿#include "videomanage.h"
-#include "core_videobase/abstractsavethread.h"
+#include "abstractsavethread.h"
 
-QScopedPointer<VideoManage> VideoManage::self;
-VideoManage *VideoManage::Instance()
-{
-    if (self.isNull()) {
-        static QMutex mutex;
-        QMutexLocker locker(&mutex);
-        if (self.isNull()) {
-            self.reset(new VideoManage);
-        }
-    }
 
-    return self.data();
-}
-
-VideoManage::VideoManage(QObject *parent) : QThread(parent)
-{
+VideoManage::VideoManage(QObject *parent) : QThread(parent) {
     stopped = false;
     openIndex = -1;
     openInterval = 100;
@@ -31,13 +17,11 @@ VideoManage::VideoManage(QObject *parent) : QThread(parent)
     //AbstractVideoThread::debugInfo = 0;
 }
 
-VideoManage::~VideoManage()
-{
+VideoManage::~VideoManage() {
     this->stop();
 }
 
-void VideoManage::run()
-{
+void VideoManage::run() {
     //校验下数量是否一致
     int count1 = mediaUrls.count();
     int count2 = videoWidgets.count();
@@ -59,29 +43,26 @@ void VideoManage::run()
     stopped = false;
 }
 
-QList<VideoWidget *> VideoManage::getVideoWidgets()
-{
+QList<VideoWidget *> VideoManage::getVideoWidgets() {
     return this->videoWidgets;
 }
 
-VideoWidget *VideoManage::getVideoWidget(const QString &rtspMain, const QString &rtspSub)
-{
-    foreach (VideoWidget *videoWidget, videoWidgets) {
+VideoWidget *VideoManage::getVideoWidget(const QString &rtspMain, const QString &rtspSub) {
+    for (auto &videoWidget: videoWidgets) {
         QString url = videoWidget->getVideoPara().mediaUrl;
         if (url == rtspMain || url == rtspSub) {
             return videoWidget;
         }
     }
-    return 0;
+    return nullptr;
 }
 
-void VideoManage::openVideo()
-{
+void VideoManage::openVideo() {
     openIndex++;
     if (openIndex < videoWidgets.count()) {
         //判断是否到末尾发送打开完成信号
         if (openIndex == videoWidgets.count() - 1) {
-            emit openFinsh();
+            emit openFinish();
             //qDebug() << TIMEMS << "全部打开完成";
         }
 
@@ -98,16 +79,14 @@ void VideoManage::openVideo()
     }
 }
 
-void VideoManage::initPath()
-{
+void VideoManage::initPath() {
     //默认录像文件和截图文件存放路径
     //在线程中会实时更新/不用担心日期变了目录没变
     VideoWidget::recordPath = recordPath + "/" + QDATE;
     VideoWidget::snapPath = snapPath + "/" + QDATE;
 }
 
-int VideoManage::getRecordWeek(const QDateTime &dateTime)
-{
+int VideoManage::getRecordWeek(const QDateTime &dateTime) {
     //取出星期几
     int recordWeek = 0;
     QString week = dateTime.toString("dddd");
@@ -126,12 +105,10 @@ int VideoManage::getRecordWeek(const QDateTime &dateTime)
     } else {
         recordWeek = 6;
     }
-
     return recordWeek;
 }
 
-void VideoManage::doRecord(VideoWidget *videoWidget, const QDateTime &dateTime)
-{
+void VideoManage::doRecord(VideoWidget *videoWidget, const QDateTime &dateTime) {
     //运行阶段才能开启录像
     if (!videoWidget->getIsRunning() || !saveVideo) {
         return;
@@ -152,7 +129,7 @@ void VideoManage::doRecord(VideoWidget *videoWidget, const QDateTime &dateTime)
     //从录像计划表中找出对应的计划
     int index = videoWidgets.indexOf(videoWidget);
     QStringList recordTime = recordTimes.at(index);
-    QString time = recordTime.at(recordWeek);
+    const QString &time = recordTime.at(recordWeek);
     QStringList list = time.split(",");
     bool needRecord = (list.at(recordIndex) == "1");
     if (needRecord) {
@@ -162,15 +139,13 @@ void VideoManage::doRecord(VideoWidget *videoWidget, const QDateTime &dateTime)
     }
 }
 
-void VideoManage::receivePlayStart(int time)
-{
+void VideoManage::receivePlayStart(int time) {
     lastRecordTime = QDateTime::currentDateTime();
-    VideoWidget *videoWidget = (VideoWidget *)sender();
+    auto videoWidget = (VideoWidget *) sender();
     this->doRecord(videoWidget, lastRecordTime);
 }
 
-void VideoManage::checkRecord()
-{
+void VideoManage::checkRecord() {
     //如果还在打开阶段则不用继续
     if (openIndex < videoWidgets.count()) {
         return;
@@ -194,60 +169,51 @@ void VideoManage::checkRecord()
         if ((min == 0 || min == 30) && sec >= target) {
             lastRecordTime = now;
             //先对所有的通道停止录像再去判断是否需要录像再开启录像
-            foreach (VideoWidget *videoWidget, videoWidgets) {
+            for (auto &videoWidget: videoWidgets) {
                 videoWidget->recordStop();
                 this->doRecord(videoWidget, now);
             }
         }
-
         this->initPath();
     }
-
     msleep(1000);
 }
 
-void VideoManage::setMediaUrls(const QStringList &mediaUrls)
-{
+void VideoManage::setMediaUrls(const QStringList &mediaUrls) {
     this->mediaUrls = mediaUrls;
 }
 
-void VideoManage::setVideoWidgets(QList<VideoWidget *> videoWidgets)
-{
+void VideoManage::setVideoWidgets(QList<VideoWidget *> videoWidgets) {
     this->videoWidgets = videoWidgets;
     //关联打开成功信号开启录像(末尾参数用来过滤只关联一次)
-    foreach (VideoWidget *videoWidget, videoWidgets) {
-        connect(videoWidget, SIGNAL(sig_receivePlayStart(int)), this, SLOT(receivePlayStart(int)), Qt::UniqueConnection);
+    for (auto &videoWidget: videoWidgets) {
+        connect(videoWidget, &VideoWidget::sigReceivePlayStart, this, &VideoManage::receivePlayStart);
     }
 }
 
-void VideoManage::setRecordTimes(const QList<QStringList> &recordTimes)
-{
+void VideoManage::setRecordTimes(const QList<QStringList> &recordTimes) {
     this->recordTimes = recordTimes;
 }
 
-void VideoManage::setOpenInterval(int openInterval)
-{
+void VideoManage::setOpenInterval(int openInterval) {
     if (openInterval >= 0 && openInterval < 3000) {
         this->openInterval = openInterval;
     }
 }
 
-void VideoManage::setSaveVideo(bool saveVideo)
-{
+void VideoManage::setSaveVideo(bool saveVideo) {
     this->saveVideo = saveVideo;
 }
 
-void VideoManage::setPath(const QString &recordPath, const QString &snapPath)
-{
+void VideoManage::setPath(const QString &recordPath, const QString &snapPath) {
     this->recordPath = recordPath;
     this->snapPath = snapPath;
     this->initPath();
 }
 
-void VideoManage::stop()
-{
+void VideoManage::stop() {
     //关闭所有视频
-    foreach (VideoWidget *videoWidget, videoWidgets) {
+    for (auto &videoWidget: videoWidgets) {
         videoWidget->stop();
     }
 

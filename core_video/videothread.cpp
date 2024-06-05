@@ -1,7 +1,7 @@
 ﻿#include "videothread.h"
 #include "videohelper.h"
 #include "videotask.h"
-#include "core_videohelper/urlhelper.h"
+#include "urlhelper.h"
 
 QList<VideoThread *> VideoThread::videoThreads;
 
@@ -624,7 +624,7 @@ void VideoThread::stop2() {
     }
 }
 
-void VideoThread::snapFinsh() {
+void VideoThread::snapFinish() {
     //文件已经存在不用重新保存(png格式重新保存为jpg以减少体积)
     QImage image(snapName_);
     if (snapName_.endsWith(".png")) {
@@ -641,7 +641,7 @@ void VideoThread::snapFinsh() {
     emit snapImage(image, snapName_);
 }
 
-void VideoThread::openFinsh() {
+void VideoThread::openFinish() {
     isOk = true;
     this->updateTime();
     emit recorderStateChanged(RecorderState_Stopped, fileName_);
@@ -664,7 +664,7 @@ void VideoThread::step(bool backward) {
     }
 }
 
-void VideoThread::recordStartFinsh() {
+void VideoThread::recordStartFinish() {
     isRecord = true;
     emit recorderStateChanged(RecorderState_Recording, fileName_);
     if (fileName_.startsWith("rtmp://") || fileName_.startsWith("rtsp://")) {
@@ -674,7 +674,7 @@ void VideoThread::recordStartFinsh() {
     }
 }
 
-void VideoThread::recordStopFinsh() {
+void VideoThread::recordStopFinish() {
     isRecord = false;
     emit recorderStateChanged(RecorderState_Stopped, fileName_);
     if (fileName_.startsWith("rtmp://") || fileName_.startsWith("rtsp://")) {

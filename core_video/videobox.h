@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 /**
- * 监控画面切换控件 作者:feiyangqingyun(QQ:517216493) 2021-11-08
  * 1. 将所有通道切换处理全部集中到一个类。
  * 2. 通用整数倍数布局切换函数，比如4x4/5x5，可方便拓展到100/255通道等。
  * 3. 通用行列数量布局切换函数，比如1x4/4x2，可方便拓展各种axb行列数。
@@ -16,22 +15,21 @@
 #include <QObject>
 #include <QWidget>
 #include <QMap>
-
-class QMenu;
-class QWidget;
-class QGridLayout;
+#include <QMenu>
+#include <QGridLayout>
 
 #ifdef quc
 class Q_DECL_EXPORT VideoBox : public QObject
 #else
+
 class VideoBox : public QObject
 #endif
 
 {
-    Q_OBJECT
+Q_OBJECT
 
 public:
-    explicit VideoBox(QObject *parent = 0);
+    explicit VideoBox(QObject *parent = nullptr);
 
 private:
     //最大通道数量
@@ -53,11 +51,13 @@ private:
 
     //布局方案标识集合
     QMap<QString, QStringList> types;
+
     void addMenu(QMenu *menu, const QString &type);
 
 private:
     //常规及异形通道布局
     void change_layout_normal(int index, int row, int column);
+
     void change_layout_custom(int index, int type);
 
     //设置可见
@@ -65,15 +65,18 @@ private:
 
     //异形布局(l表示右侧底部环绕布局/o表示上下左右环绕布局)
     void change_layout_l(const QList<int> &indexs);
+
     void change_layout_o(const QList<int> &indexs);
 
 public:
     //获取和设置当前布局类型
     QString getLayoutType() const;
+
     void setLayoutType(const QString &layoutType);
 
     //获取和设置视频控件集合
     QWidgetList getWidgets() const;
+
     void setWidgets(QWidgetList widgets);
 
     //设置表格布局
@@ -81,6 +84,7 @@ public:
 
     //设置主菜单子菜单文字标识
     void setMenuFlag(const QString &menuFlag);
+
     void setActionFlag(const QString &actionFlag);
 
     //设置子菜单可见
@@ -88,41 +92,62 @@ public:
 
     //添加行列布局(必须在initMenu前调用)
     void appendType(int index, int row, int column);
+
     //初始化菜单
     void initMenu(QMenu *menu);
 
-public Q_SLOTS:
+public slots:
+
     //显示和隐藏所有通道
     void show_all();
+
     void hide_all();
 
     //菜单切换布局槽函数
     void change_layout();
+
     void change_layout(int type, int index);
 
     //自定义布局通道切换函数
     void change_layout_y_1_2(int index);
+
     void change_layout_y_1_3(int index);
+
     void change_layout_y_1_5(int index);
+
     void change_layout_y_1_8(int index);
+
     void change_layout_y_1_9(int index);
+
     void change_layout_y_1_10(int index);
+
     void change_layout_y_1_12(int index);
+
     void change_layout_y_1_16(int index);
 
     //常规布局通道切换函数
     void change_layout_1(int index);
+
     void change_layout_4(int index);
+
     void change_layout_6(int index);
+
     void change_layout_8(int index);
+
     void change_layout_9(int index);
+
     void change_layout_13(int index);
+
     void change_layout_16(int index);
+
     void change_layout_25(int index);
+
     void change_layout_36(int index);
+
     void change_layout_64(int index);
 
-Q_SIGNALS:
+signals:
+
     //画面布局切换信号
     void changeLayout(int type, const QString &layoutType, bool max);
 };

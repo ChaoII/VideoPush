@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 /**
- * 视频回放控件 作者:feiyangqingyun(QQ:517216493) 2019-04-19
  * 1. 可设置回放控件部件的边距、间距、左侧文字宽度。
  * 2. 可设置通道1-4的文字。
  * 3. 可设置线条宽度、线条颜色。
@@ -15,18 +14,21 @@
 #include <QWidget>
 
 class QGridLayout;
+
 class QLabel;
 
 //顶部时间控件
-class VideoTime : public QWidget
-{
-    Q_OBJECT
+class VideoTime : public QWidget {
+Q_OBJECT
+
 public:
-    explicit VideoTime(QWidget *parent = 0);
+    explicit VideoTime(QWidget *parent = nullptr);
 
 protected:
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
+
     void drawBg(QPainter *painter);
+
     void drawRuler(QPainter *painter);
 
 private:
@@ -42,24 +44,27 @@ private:
 public:
     //设置文字颜色+背景颜色
     void setTextColor(const QColor &textColor);
+
     void setBgColor(const QColor &bgColor);
 };
 
 //通道控件
-class VideoCh : public QWidget
-{
-    Q_OBJECT
+class VideoCh : public QWidget {
+Q_OBJECT
+
 public:
     struct VideoData {
         int startX; //起始X坐标
         int length; //长度
     };
 
-    explicit VideoCh(QWidget *parent = 0);
+    explicit VideoCh(QWidget *parent = nullptr);
 
 protected:
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
+
     void drawBg(QPainter *painter);
+
     void drawData(QPainter *painter);
 
 private:
@@ -70,6 +75,7 @@ private:
 public:
     //设置通道背景颜色+通道数据颜色
     void setChColor(const QColor &chColor);
+
     void setDataColor(const QColor &dataColor);
 
     //设置数据段
@@ -79,11 +85,12 @@ public:
 #ifdef quc
 class Q_DECL_EXPORT VideoPlayback : public QWidget
 #else
+
 class VideoPlayback : public QWidget
 #endif
 
 {
-    Q_OBJECT
+Q_OBJECT
 
     Q_PROPERTY(int margin READ getMargin WRITE setMargin)
     Q_PROPERTY(int spacing READ getSpacing WRITE setSpacing)
@@ -105,12 +112,14 @@ class VideoPlayback : public QWidget
     Q_PROPERTY(QColor videoDataColor READ getVideoDataColor WRITE setVideoDataColor)
 
 public:
-    explicit VideoPlayback(QWidget *parent = 0);
+    explicit VideoPlayback(QWidget *parent = nullptr);
 
 protected:
-    bool eventFilter(QObject *watched, QEvent *event);
-    void paintEvent(QPaintEvent *);
-    void resizeEvent(QResizeEvent *);
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
+    void paintEvent(QPaintEvent *) override;
+
+    void resizeEvent(QResizeEvent *) override;
 
 private:
     int margin;             //边距
@@ -152,59 +161,86 @@ private:
     QPoint pressPos;        //鼠标按下的坐标
 
 public:
-    int getMargin()         const;
-    int getSpacing()        const;
-    int getLabWidth()       const;
+    int getMargin() const;
 
-    QString getTextCh1()    const;
-    QString getTextCh2()    const;
-    QString getTextCh3()    const;
-    QString getTextCh4()    const;
+    int getSpacing() const;
 
-    int getLineWidth()      const;
-    QColor getLineColor()   const;
-    QColor getTextColor()   const;
-    QColor getBgColor()     const;
+    int getLabWidth() const;
 
-    QColor getVideoTextColor()const;
-    QColor getVideoBgColor()const;
-    QColor getVideoChColor()const;
-    QColor getVideoDataColor()const;
+    QString getTextCh1() const;
+
+    QString getTextCh2() const;
+
+    QString getTextCh3() const;
+
+    QString getTextCh4() const;
+
+    int getLineWidth() const;
+
+    QColor getLineColor() const;
+
+    QColor getTextColor() const;
+
+    QColor getBgColor() const;
+
+    QColor getVideoTextColor() const;
+
+    QColor getVideoBgColor() const;
+
+    QColor getVideoChColor() const;
+
+    QColor getVideoDataColor() const;
 
 private slots:
+
     void initControl();
 
 public Q_SLOTS:
+
     //设置边距+间距+左侧宽度
     void setMargin(int margin);
+
     void setSpacing(int spacing);
+
     void setLabWidth(int labWidth);
 
     //设置通道文字
     void setTextCh1(const QString &textCh1);
+
     void setTextCh2(const QString &textCh2);
+
     void setTextCh3(const QString &textCh3);
+
     void setTextCh4(const QString &textCh4);
+
     void setTextCh(const QString &textCh1, const QString &textCh2, const QString &textCh3, const QString &textCh4);
 
     //设置线条宽度+颜色
     void setLineWidth(int lineWidth);
+
     void setLineColor(const QColor &lineColor);
 
     //设置文字颜色+背景颜色
     void setTextColor(const QColor &textColor);
+
     void setBgColor(const QColor &bgColor);
 
     //设置时间标尺+通道颜色
     void setVideoTextColor(const QColor &videoTextColor);
+
     void setVideoBgColor(const QColor &videoBgColor);
+
     void setVideoChColor(const QColor &videoChColor);
+
     void setVideoDataColor(const QColor &videoDataColor);
 
     //设置各个通道的数据段
     void setDatas1(const QList<VideoCh::VideoData> &datas);
+
     void setDatas2(const QList<VideoCh::VideoData> &datas);
+
     void setDatas3(const QList<VideoCh::VideoData> &datas);
+
     void setDatas4(const QList<VideoCh::VideoData> &datas);
 };
 

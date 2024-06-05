@@ -2,16 +2,23 @@
 
 #include "videohead.h"
 
-class VideoTask : public QThread
-{
-    Q_OBJECT
+class VideoTask : public QThread {
+Q_OBJECT
+
 public:
-    static VideoTask *Instance();
-    explicit VideoTask(QObject *parent = 0);
-    ~VideoTask();
+    static VideoTask &Instance() {
+        static VideoTask videoTask;
+        return videoTask;
+    }
+
+
+private:
+    explicit VideoTask(QObject *parent = nullptr);
+
+    ~VideoTask() override;
 
 protected:
-    void run();
+    void run() override;
 
 private:
     //单例对象
@@ -27,15 +34,19 @@ private:
     QList<QString> paras;
 
 private slots:
+
     void resetCursor();
 
 public slots:
+
     //插入任务
     void append(const QString &type, const QString &para);
+
     //停止线程
     void stop();
 
 signals:
+
     //重命名完成
     void renameFinsh(const QString &fileName);
 };

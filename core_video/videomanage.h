@@ -2,20 +2,26 @@
 
 #include "videowidgetx.h"
 
-class VideoManage : public QThread
-{
-    Q_OBJECT
-public:
-    static VideoManage *Instance();
-    explicit VideoManage(QObject *parent = 0);
-    ~VideoManage();
+class VideoManage : public QThread {
+Q_OBJECT
 
-protected:
-    void run();
+public:
+    static VideoManage &Instance() {
+        static VideoManage videoManage;
+        return videoManage;
+
+
+    }
 
 private:
-    //单例对象
-    static QScopedPointer<VideoManage> self;
+    explicit VideoManage(QObject *parent = nullptr);
+
+    ~VideoManage() override;
+
+protected:
+    void run() override;
+
+private:
     //数据锁
     QMutex mutex;
     //停止线程标志位
@@ -49,43 +55,56 @@ private:
 public:
     //获取所有视频控件
     QList<VideoWidget *> getVideoWidgets();
+
     //根据播放地址找到对应视频控件
     VideoWidget *getVideoWidget(const QString &rtspMain, const QString &rtspSub);
 
 private slots:
+
     //逐个打开视频
     void openVideo();
+
     //设置默认目录
     void initPath();
 
     //获取对应星期的录像计划索引
     int getRecordWeek(const QDateTime &dateTime);
+
     //执行录像计划
     void doRecord(VideoWidget *videoWidget, const QDateTime &dateTime);
+
     //播放成功开启录像
     void receivePlayStart(int time);
+
     //检查录像计划
     void checkRecord();
 
 public slots:
+
     //设置媒体地址集合
     void setMediaUrls(const QStringList &mediaUrls);
+
     //设置视频控件集合
     void setVideoWidgets(QList<VideoWidget *> videoWidgets);
+
     //设置录像计划
     void setRecordTimes(const QList<QStringList> &recordTimes);
 
     //设置打开间隔
     void setOpenInterval(int openInterval);
+
     //设置存储录像
     void setSaveVideo(bool saveVideo);
+
     //设置存储目录
     void setPath(const QString &recordPath, const QString &snapPath);
+
     //停止服务
     void stop();
 
 signals:
+
     //全部打开完成
-    void openFinsh();
+    void openFinish();
 };
 

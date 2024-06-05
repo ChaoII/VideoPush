@@ -2,11 +2,16 @@
 
 //把这几个头文件全部包含下懒得每次增加一个新类又来引入对应头文件
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+
 #include <QtNetwork>
+
 #endif
-#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+
 #include <QtCore5Compat>
+
 #endif
 
 #ifdef Q_CC_MSVC

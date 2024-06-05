@@ -1,32 +1,16 @@
 ﻿#include "videotask.h"
 #include "videohelper.h"
 
-QScopedPointer<VideoTask> VideoTask::self;
-VideoTask *VideoTask::Instance()
-{
-    if (self.isNull()) {
-        static QMutex mutex;
-        QMutexLocker locker(&mutex);
-        if (self.isNull()) {
-            self.reset(new VideoTask);
-        }
-    }
 
-    return self.data();
-}
-
-VideoTask::VideoTask(QObject *parent) : QThread(parent)
-{
+VideoTask::VideoTask(QObject *parent) : QThread(parent) {
     stopped = false;
 }
 
-VideoTask::~VideoTask()
-{
+VideoTask::~VideoTask() {
     this->stop();
 }
 
-void VideoTask::run()
-{
+void VideoTask::run() {
     while (!stopped) {
         if (times.count() > 0) {
             mutex.lock();
@@ -61,13 +45,11 @@ void VideoTask::run()
     stopped = false;
 }
 
-void VideoTask::resetCursor()
-{    
+void VideoTask::resetCursor() {
     VideoHelper::resetCursor();
 }
 
-void VideoTask::append(const QString &type, const QString &para)
-{
+void VideoTask::append(const QString &type, const QString &para) {
     //复位光标只需要一次
     if (type == "resetCursor" && types.contains("resetCursor")) {
         return;
@@ -80,8 +62,7 @@ void VideoTask::append(const QString &type, const QString &para)
     mutex.unlock();
 }
 
-void VideoTask::stop()
-{
+void VideoTask::stop() {
     //处于运行状态才可以停止
     if (this->isRunning()) {
         stopped = true;
