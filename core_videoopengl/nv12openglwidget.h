@@ -7,33 +7,44 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 
-class Nv12Widget : public QOpenGLWidget, protected QOpenGLFunctions
-{
-    Q_OBJECT
+class Nv12Widget : public QOpenGLWidget, protected QOpenGLFunctions {
+Q_OBJECT
+
 public:
     explicit Nv12Widget(QWidget *parent = 0);
+
     ~Nv12Widget();
 
 public slots:
+
     //清空数据
     void clear();
+
     //设置图片尺寸
     void setFrameSize(int width, int height);
+
     //更新纹理数据
     void updateTextures(quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV);
+
     //统一一个函数
     void updateFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV);
 
 protected:
     void initializeGL();
+
     void paintGL();
 
 private:
     void initData();
+
     void initColor();
+
     void initShader();
+
     void initTextures();
+
     void initParamete();
+
     void deleteTextures();
 
 private:
@@ -42,7 +53,7 @@ private:
     //YUV原数据
     quint8 *dataY, *dataUV;
     //YUV数据尺寸
-    quint32 linesizeY, linesizeUV;
+    quint32 lineSizeY, lineSizeUV;
     //顶点着色器代码+片段着色器代码
     QString shaderVert, shaderFrag;
 
@@ -60,17 +71,21 @@ private:
     QTimer timer;
 
 private slots:
+
     //读取文件内容
     void read();
 
-public slots:    
+public slots:
+
     //播放本地文件
     void play(const QString &fileName, int frameRate);
+
     //停止播放
     void stop();
 
 signals:
+
     //播放文件结束
-    void playFinsh();
+    void playFinish();
 };
 

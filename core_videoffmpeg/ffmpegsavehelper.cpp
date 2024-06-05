@@ -13,8 +13,8 @@ QStringList FFmpegSaveHelper::anames_file = QStringList() << "aac" << "mp2" << "
 QStringList FFmpegSaveHelper::anames_rtmp = QStringList() << "aac" << "mp3";
 QStringList FFmpegSaveHelper::anames_rtsp = QStringList() << "aac" << "mp3" << anames_pcm;
 
-void FFmpegSaveHelper::checkEncode(FFmpegSave *thread, const QString &videoCodecName, const QString &audioCodecName, bool &videoEncode, bool &audioEncode, EncodeAudio &encodeAudio, bool &needAudio)
-{
+void FFmpegSaveHelper::checkEncode(FFmpegSave *thread, const QString &videoCodecName, const QString &audioCodecName,
+                                   bool &videoEncode, bool &audioEncode, EncodeAudio &encodeAudio, bool &needAudio) {
     //推流和录制要区分判断(推流更严格/主要限定在流媒体服务器端)
     bool notSupportVideo = false;
     bool notSupportAudio = false;
@@ -107,8 +107,9 @@ void FFmpegSaveHelper::checkEncode(FFmpegSave *thread, const QString &videoCodec
     }
 }
 
-void FFmpegSaveHelper::checkFileName(SaveVideoType saveVideoType, EncodeVideo encodeVideo, const QString &videoCodecName, QString &fileName)
-{
+void
+FFmpegSaveHelper::checkFileName(SaveVideoType saveVideoType, EncodeVideo encodeVideo, const QString &videoCodecName,
+                                QString &fileName) {
     //流文件自动纠正拓展名
     if (saveVideoType == SaveVideoType_Stream) {
         QString suffix = "." + fileName.split(".").last();
@@ -122,8 +123,7 @@ void FFmpegSaveHelper::checkFileName(SaveVideoType saveVideoType, EncodeVideo en
     }
 }
 
-const char *FFmpegSaveHelper::getFormat(AVDictionary **options, QString &fileName, bool mov, const QString &flag)
-{
+const char *FFmpegSaveHelper::getFormat(AVDictionary **options, QString &fileName, bool mov, const QString &flag) {
     //默认是mp4/mov更具兼容性比如音频支持pcma等
     const char *format = mov ? "mov" : "mp4";
     if (fileName.startsWith("rtmp://")) {
@@ -147,8 +147,7 @@ const char *FFmpegSaveHelper::getFormat(AVDictionary **options, QString &fileNam
     return format;
 }
 
-qint64 FFmpegSaveHelper::getBitRate(int width, int height)
-{
+qint64 FFmpegSaveHelper::getBitRate(int width, int height) {
     qint64 bitRate = 400;
     int size = width * height;
     if (size <= (640 * 360)) {
@@ -168,8 +167,7 @@ qint64 FFmpegSaveHelper::getBitRate(int width, int height)
     return bitRate * 1000;
 }
 
-QStringList FFmpegSaveHelper::getSizes(const QString &size)
-{
+QStringList FFmpegSaveHelper::getSizes(const QString &size) {
     QStringList sizes;
     if (size.contains("*")) {
         sizes = size.split("*");
@@ -179,8 +177,8 @@ QStringList FFmpegSaveHelper::getSizes(const QString &size)
     return sizes;
 }
 
-void FFmpegSaveHelper::getVideoSize(const QString &encodeVideoScale, int videoWidth, int videoHeight, int &width, int &height)
-{
+void FFmpegSaveHelper::getVideoSize(const QString &encodeVideoScale, int videoWidth, int videoHeight, int &width,
+                                    int &height) {
     //需要转换尺寸的启用目标尺寸
     width = videoWidth;
     height = videoHeight;
@@ -205,8 +203,8 @@ void FFmpegSaveHelper::getVideoSize(const QString &encodeVideoScale, int videoWi
     }
 }
 
-void FFmpegSaveHelper::initVideoCodec(AVCodecx **videoCodec, AVCodecID codecId, int encodeVideo, const QString &fileName)
-{
+void
+FFmpegSaveHelper::initVideoCodec(AVCodecx **videoCodec, AVCodecID codecId, int encodeVideo, const QString &fileName) {
     //指定了则按照指定的格式转码/没有指定则自动识别/源头是啥格式就转啥格式
     if (encodeVideo == EncodeVideo_H264) {
         (*videoCodec) = avcodec_find_encoder(AV_CODEC_ID_H264);
@@ -226,8 +224,9 @@ void FFmpegSaveHelper::initVideoCodec(AVCodecx **videoCodec, AVCodecID codecId, 
     }
 }
 
-void FFmpegSaveHelper::initVideoCodecCtx(AVCodecContext *videoCodecCtx, int mediaType, int width, int height, int frameRate, float encodeVideoRatio)
-{
+void
+FFmpegSaveHelper::initVideoCodecCtx(AVCodecContext *videoCodecCtx, int mediaType, int width, int height, int frameRate,
+                                    float encodeVideoRatio) {
     //AVCodecContext结构体参数: https://blog.csdn.net/weixin_44517656/article/details/109707539
     //放大系数是为了小数位能够正确放大到整型
     int ratio = 1000000;
@@ -287,8 +286,9 @@ void FFmpegSaveHelper::initVideoCodecCtx(AVCodecContext *videoCodecCtx, int medi
 
 //AVFrame分配方式 https://blog.csdn.net/xionglifei2014/article/details/90693048/
 //av_frame_get_buffer说明 https://blog.csdn.net/Hardy20200507/article/details/115491207
-bool FFmpegSaveHelper::initVideoConvert(FFmpegSave *thread, AVFrame *videoFrame, SwsContext **videoSwsCtx, int videoWidth, int videoHeight, int width, int height)
-{
+bool
+FFmpegSaveHelper::initVideoConvert(FFmpegSave *thread, AVFrame *videoFrame, SwsContext **videoSwsCtx, int videoWidth,
+                                   int videoHeight, int width, int height) {
     videoFrame->format = AV_PIX_FMT_YUV420P;
     videoFrame->width = width;
     videoFrame->height = height;
@@ -301,7 +301,8 @@ bool FFmpegSaveHelper::initVideoConvert(FFmpegSave *thread, AVFrame *videoFrame,
     }
 
     //创建转换对象
-    (*videoSwsCtx) = sws_getContext(videoWidth, videoHeight, AV_PIX_FMT_YUV420P, width, height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
+    (*videoSwsCtx) = sws_getContext(videoWidth, videoHeight, AV_PIX_FMT_YUV420P, width, height, AV_PIX_FMT_YUV420P,
+                                    SWS_BICUBIC, NULL, NULL, NULL);
     if (!(*videoSwsCtx)) {
         thread->debug(result, "视频编码", "sws_getContext");
         return false;
@@ -310,8 +311,8 @@ bool FFmpegSaveHelper::initVideoConvert(FFmpegSave *thread, AVFrame *videoFrame,
     return true;
 }
 
-void FFmpegSaveHelper::initAudioCodecCtx(AVCodecContext *audioCodecCtx, AVSampleFormat sampleFormat, int sampleRate, int channelCount, float encodeSpeed)
-{
+void FFmpegSaveHelper::initAudioCodecCtx(AVCodecContext *audioCodecCtx, AVSampleFormat sampleFormat, int sampleRate,
+                                         int channelCount, float encodeSpeed) {
     audioCodecCtx->bit_rate = 64000;
     audioCodecCtx->codec_type = AVMEDIA_TYPE_AUDIO;
     audioCodecCtx->sample_fmt = sampleFormat;
@@ -323,8 +324,9 @@ void FFmpegSaveHelper::initAudioCodecCtx(AVCodecContext *audioCodecCtx, AVSample
     FFmpegHelper::initChannel(audioCodecCtx, channelCount);
 }
 
-bool FFmpegSaveHelper::initAudioConvert(FFmpegSave *thread, AVFrame *audioFrame, SwrContext **audioSwrCtx, AVCodecContext *audioCodecCtx, AVSampleFormat sampleFormat, int sampleRate, int channelCount)
-{
+bool FFmpegSaveHelper::initAudioConvert(FFmpegSave *thread, AVFrame *audioFrame, SwrContext **audioSwrCtx,
+                                        AVCodecContext *audioCodecCtx, AVSampleFormat sampleFormat, int sampleRate,
+                                        int channelCount) {
     FFmpegHelper::initFrame(audioFrame, audioCodecCtx);
 
     //申请数据
@@ -335,7 +337,8 @@ bool FFmpegSaveHelper::initAudioConvert(FFmpegSave *thread, AVFrame *audioFrame,
     }
 
     //实例化音频转换对象
-    result = FFmpegHelper::initSwrContext(audioSwrCtx, channelCount, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, channelCount, sampleFormat, sampleRate);
+    result = FFmpegHelper::initSwrContext(audioSwrCtx, channelCount, audioCodecCtx->sample_fmt,
+                                          audioCodecCtx->sample_rate, channelCount, sampleFormat, sampleRate);
     if (result < 0) {
         thread->debug(result, "音频编码", "initSwrContext");
         return false;
@@ -344,8 +347,7 @@ bool FFmpegSaveHelper::initAudioConvert(FFmpegSave *thread, AVFrame *audioFrame,
     return true;
 }
 
-void FFmpegSaveHelper::initBsfCtx(AVStream *stream, AVBSFContextx **bsfCtx, bool h264)
-{
+void FFmpegSaveHelper::initBsfCtx(AVStream *stream, AVBSFContextx **bsfCtx, bool h264) {
     if (!(*bsfCtx)) {
         const char *name = (h264 ? "h264_mp4toannexb" : "hevc_mp4toannexb");
 #if (FFMPEG_VERSION_MAJOR > BSFVersion)
@@ -358,8 +360,7 @@ void FFmpegSaveHelper::initBsfCtx(AVStream *stream, AVBSFContextx **bsfCtx, bool
     }
 }
 
-void FFmpegSaveHelper::freeBsfCtx(AVBSFContextx **bsfCtx)
-{
+void FFmpegSaveHelper::freeBsfCtx(AVBSFContextx **bsfCtx) {
     if (*bsfCtx) {
 #if (FFMPEG_VERSION_MAJOR > BSFVersion)
         av_bsf_free(bsfCtx);
@@ -370,8 +371,7 @@ void FFmpegSaveHelper::freeBsfCtx(AVBSFContextx **bsfCtx)
     }
 }
 
-void FFmpegSaveHelper::writeBsf(AVPacket *packet, AVStream *stream, AVBSFContextx *bsfCtx)
-{
+void FFmpegSaveHelper::writeBsf(AVPacket *packet, AVStream *stream, AVBSFContextx *bsfCtx) {
     if (bsfCtx) {
 #if (FFMPEG_VERSION_MAJOR > BSFVersion)
         av_bsf_send_packet(bsfCtx, packet);
@@ -382,16 +382,14 @@ void FFmpegSaveHelper::writeBsf(AVPacket *packet, AVStream *stream, AVBSFContext
     }
 }
 
-void FFmpegSaveHelper::freeBsf(AVPacket *packet)
-{
+void FFmpegSaveHelper::freeBsf(AVPacket *packet) {
     //旧版本必须写入后释放/否则内存泄漏
 #if (FFMPEG_VERSION_MAJOR <= BSFVersion)
     av_free(packet->data);
 #endif
 }
 
-void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, qint64 &count, qreal fps)
-{
+void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, qint64 &count, qreal fps) {
     count++;
     qreal duration = AV_TIME_BASE / fps;
     packet->pts = (count * duration) / (av_q2d(timeBaseIn) * AV_TIME_BASE);
@@ -399,14 +397,15 @@ void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, qi
     packet->duration = duration / (av_q2d(timeBaseIn) * AV_TIME_BASE);
 }
 
-void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, AVRational timeBaseOut)
-{
+void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, AVRational timeBaseOut) {
     //1. av_rescale_q里面调用的av_rescale_q_rnd
     //2. av_rescale_q_rnd里面调用的av_rescale_rnd
     //3. av_packet_rescale_ts对pts/dts/duration三者调用av_rescale_q
 #if 1
-    packet->pts = av_rescale_q_rnd(packet->pts, timeBaseIn, timeBaseOut, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-    packet->dts = av_rescale_q_rnd(packet->dts, timeBaseIn, timeBaseOut, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
+    packet->pts = av_rescale_q_rnd(packet->pts, timeBaseIn, timeBaseOut,
+                                   AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
+    packet->dts = av_rescale_q_rnd(packet->dts, timeBaseIn, timeBaseOut,
+                                   AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
     packet->duration = av_rescale_q(packet->duration, timeBaseIn, timeBaseOut);
 #else
     av_packet_rescale_ts(packet, timeBaseIn, timeBaseOut);
@@ -414,16 +413,15 @@ void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, AV
     packet->pos = -1;
 }
 
-void FFmpegSaveHelper::rescalePacket(AVPacket *packet, qint64 &duration)
-{
+void FFmpegSaveHelper::rescalePacket(AVPacket *packet, qint64 &duration) {
     packet->pts = duration;
     packet->dts = duration;
     packet->pos = -1;
     duration += packet->duration;
 }
 
-void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, AVRational timeBaseOut, qint64 &duration)
-{
+void
+FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, AVRational timeBaseOut, qint64 &duration) {
     //qDebug() << TIMEMS << duration << packet->duration << packet->pts << packet->dts << timeBaseIn.den << timeBaseIn.num << timeBaseOut.den << timeBaseOut.num;
     packet->pts = av_rescale_q_rnd(duration, timeBaseIn, timeBaseOut, AV_ROUND_UP);
     packet->dts = packet->pts;//av_rescale_q_rnd(duration, timeBaseIn, timeBaseOut, AV_ROUND_UP);
@@ -432,8 +430,7 @@ void FFmpegSaveHelper::rescalePacket(AVPacket *packet, AVRational timeBaseIn, AV
     duration += packet->duration;
 }
 
-int FFmpegSaveHelper::encode(FFmpegSave *thread, AVCodecContext *avctx, AVPacket *packet, AVFrame *frame, bool video)
-{
+int FFmpegSaveHelper::encode(FFmpegSave *thread, AVCodecContext *avctx, AVPacket *packet, AVFrame *frame, bool video) {
     int result = -1;
     QString flag = video ? "视频编码" : "音频编码";
 #if (FFMPEG_VERSION_MAJOR < 3)
@@ -472,14 +469,13 @@ int FFmpegSaveHelper::encode(FFmpegSave *thread, AVCodecContext *avctx, AVPacket
 #endif
     return result;
 
-end:
+    end:
     thread->writePacket2(packet, video);
     return result;
 }
 
-int FFmpegSaveHelper::openAndWriteCallBack(void *ctx)
-{
-    FFmpegSave *thread = (FFmpegSave *)ctx;
+int FFmpegSaveHelper::openAndWriteCallBack(void *ctx) {
+    FFmpegSave *thread = (FFmpegSave *) ctx;
     if (thread->getTryOpen()) {
         //时间差值=当前时间-开始解码的时间(单位微秒)
         qint64 offset = av_gettime() - thread->getStartTime();

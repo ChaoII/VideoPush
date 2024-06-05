@@ -8,13 +8,14 @@
 #include "videohelper.h"
 
 #ifdef audiox
+
 #include "../core_audio/audioplayer.h"
+
 #else
 #include "core_videohelper/audioplayer.h"
 #endif
 
-FFmpegThread::FFmpegThread(QObject *parent) : VideoThread(parent)
-{
+FFmpegThread::FFmpegThread(QObject *parent) : VideoThread(parent) {
     //执行初始化
     FFmpegHelper::initLib();
 
@@ -38,30 +39,30 @@ FFmpegThread::FFmpegThread(QObject *parent) : VideoThread(parent)
     videoFirstPts = 0;
     audioFirstPts = 0;
 
-    packet = NULL;
+    packet = nullptr;
 
-    videoFrame = NULL;
-    tempFrame = NULL;
-    yuvFrame = NULL;
-    imageFrame = NULL;
-    imageData = NULL;
+    videoFrame = nullptr;
+    tempFrame = nullptr;
+    yuvFrame = nullptr;
+    imageFrame = nullptr;
+    imageData = nullptr;
 
-    audioFrame = NULL;
-    pcmFrame = NULL;
+    audioFrame = nullptr;
+    pcmFrame = nullptr;
 
-    yuvSwsCtx = NULL;
-    imageSwsCtx = NULL;
-    pcmSwrCtx = NULL;
+    yuvSwsCtx = nullptr;
+    imageSwsCtx = nullptr;
+    pcmSwrCtx = nullptr;
 
-    options = NULL;
-    ifmt = NULL;
-    formatCtx = NULL;
+    options = nullptr;
+    ifmt = nullptr;
+    formatCtx = nullptr;
 
-    videoCodec = NULL;
-    audioCodec = NULL;
+    videoCodec = nullptr;
+    audioCodec = nullptr;
 
-    videoCodecCtx = NULL;
-    audioCodecCtx = NULL;
+    videoCodecCtx = nullptr;
+    audioCodecCtx = nullptr;
 
     saveVideoType_ = SaveVideoType_Mp4;
     saveAudioType_ = SaveAudioType_None;
@@ -69,43 +70,41 @@ FFmpegThread::FFmpegThread(QObject *parent) : VideoThread(parent)
     //初始化音频解码同步线程(本线程释放的时候也会自动释放)
     useSync = true;
     audioSync = new FFmpegSync(FFmpegSync::StreamType_Audio, this);
-    connect(audioSync, SIGNAL(receivePosition(qint64)), this, SIGNAL(receivePosition(qint64)));
+    connect(audioSync, &FFmpegSync::receivePosition, this, &FFmpegThread::receivePosition);
 
     //初始化视频解码同步线程(本线程释放的时候也会自动释放)
     videoSync = new FFmpegSync(FFmpegSync::StreamType_Video, this);
-    connect(videoSync, SIGNAL(receivePosition(qint64)), this, SIGNAL(receivePosition(qint64)));
+    connect(videoSync, &FFmpegSync::receivePosition, this, &FFmpegThread::receivePosition);
 
     //实例化恢复暂停定时器(单次定时器)
     timerPause = new QTimer(this);
-    connect(timerPause, SIGNAL(timeout()), this, SLOT(pause()));
+    connect(timerPause, &QTimer::timeout, this, &FFmpegThread::pause);
     timerPause->setInterval(100);
     timerPause->setSingleShot(true);
 
     //实例化切换进度定时器(单次定时器)
     timerPosition = new QTimer(this);
-    connect(timerPosition, SIGNAL(timeout()), this, SLOT(setPosition()));
+    connect(timerPosition, &QTimer::timeout, this, static_cast<void (FFmpegThread::*)()>(&FFmpegThread::setPosition));
     timerPosition->setInterval(200);
     timerPosition->setSingleShot(true);
 
     //实例化音频播放类
     audioPlayer = new AudioPlayer;
-    connect(audioPlayer, SIGNAL(receiveVolume(int)), this, SIGNAL(receiveVolume(int)));
-    connect(audioPlayer, SIGNAL(receiveMuted(bool)), this, SIGNAL(receiveMuted(bool)));
-    connect(audioPlayer, SIGNAL(receiveLevel(qreal, qreal)), this, SIGNAL(receiveLevel(qreal, qreal)));
+    connect(audioPlayer, &AudioPlayer::receiveVolume, this, &FFmpegThread::receiveVolume);
+    connect(audioPlayer, &AudioPlayer::receiveMuted, this, &FFmpegThread::receiveMuted);
+    connect(audioPlayer, &AudioPlayer::receiveLevel, this, &FFmpegThread::receiveLevel);
 
     //裁剪标志位和最后结束裁剪时间
     isCrop = false;
     cropTime = QDateTime::currentDateTime().addDays(-1);
 }
 
-FFmpegThread::~FFmpegThread()
-{
+FFmpegThread::~FFmpegThread() {
     //关闭音频播放类
     audioPlayer->close();
 }
 
-void FFmpegThread::run()
-{
+void FFmpegThread::run() {
     while (!stopped) {
         if (!isOk) {
             //记住开始解码的时间用于用音视频同步等
@@ -187,8 +186,7 @@ void FFmpegThread::run()
     debug(0, "线程结束", "");
 }
 
-void FFmpegThread::readAndClear()
-{
+void FFmpegThread::readAndClear() {
     //视频流要继续读取不然会一直累积
     if (!getIsFile() && mediaType != MediaType_Screen /*&& mediaType != MediaType_Device*/) {
         av_read_frame(formatCtx, packet);
@@ -196,8 +194,7 @@ void FFmpegThread::readAndClear()
     }
 }
 
-void FFmpegThread::replay()
-{
+void FFmpegThread::replay() {
     //加个时间限制防止频繁执行
     QDateTime now = QDateTime::currentDateTime();
     if (qAbs(now.msecsTo(lastTime_)) < 300) {
@@ -213,16 +210,14 @@ void FFmpegThread::replay()
     debug(0, "循环播放", "");
 }
 
-void FFmpegThread::reopen()
-{
+void FFmpegThread::reopen() {
     //释放数据并判断是否需要重连
     av_packet_unref(packet);
     this->stop2();
     msleep(100);
 }
 
-bool FFmpegThread::checkFrameSize(AVFrame *frame)
-{
+bool FFmpegThread::checkFrameSize(AVFrame *frame) {
     //有些视频流会动态改变分辨率需要重新打开(主动设置过旋转角度的不用处理)
     //执行了裁剪滤镜也会触发变化
     int width = frame->width;
@@ -240,7 +235,8 @@ bool FFmpegThread::checkFrameSize(AVFrame *frame)
             if (offset < 1000) {
                 this->checkVideoSize(w, h);
             } else if (rotate_ <= 0 && mediaType == MediaType_Rtsp && hardware == "none") {
-                debug(0, "尺寸变化", QString("变化: %1x%2 -> %3x%4").arg(videoWidth_).arg(videoHeight_).arg(width).arg(height));
+                debug(0, "尺寸变化",
+                      QString("变化: %1x%2 -> %3x%4").arg(videoWidth_).arg(videoHeight_).arg(width).arg(height));
                 isOk = false;
                 return false;
             }
@@ -250,8 +246,7 @@ bool FFmpegThread::checkFrameSize(AVFrame *frame)
     return true;
 }
 
-bool FFmpegThread::scaleAndSaveVideo(bool &needScale, AVFrame *frame)
-{
+bool FFmpegThread::scaleAndSaveVideo(bool &needScale, AVFrame *frame) {
     if (!checkFrameSize(frame)) {
         return false;
     }
@@ -280,7 +275,8 @@ bool FFmpegThread::scaleAndSaveVideo(bool &needScale, AVFrame *frame)
     if (needScale) {
         //默认没有pts需要拷贝下pts/不拷贝的话在保存那边可能有问题
         yuvFrame->pts = frame->pts;
-        int result = sws_scale(yuvSwsCtx, (const quint8 **)frame->data, frame->linesize, 0, videoHeight_, yuvFrame->data, yuvFrame->linesize);
+        int result = sws_scale(yuvSwsCtx, (const quint8 **) frame->data, frame->linesize, 0, videoHeight_,
+                               yuvFrame->data, yuvFrame->linesize);
         if (result < 0) {
             debug(result, "转换失败", QString("格式: %1").arg(FFmpegHelper::getPixFormatString(format)));
             return false;
@@ -292,14 +288,14 @@ bool FFmpegThread::scaleAndSaveVideo(bool &needScale, AVFrame *frame)
     return true;
 }
 
-void FFmpegThread::checkAndShowVideo(bool needScale, AVFrame *frame)
-{
+void FFmpegThread::checkAndShowVideo(bool needScale, AVFrame *frame) {
     //截图和绘制都转成图片
     if (isSnap || videoMode_ == VideoMode_Painter) {
         //启动计时
         timer_.restart();
         //将数据转成图片
-        int result = sws_scale(imageSwsCtx, (const quint8 **)frame->data, frame->linesize, 0, videoHeight_, imageFrame->data, imageFrame->linesize);
+        int result = sws_scale(imageSwsCtx, (const quint8 **) frame->data, frame->linesize, 0, videoHeight_,
+                               imageFrame->data, imageFrame->linesize);
         if (result < 0) {
             return;
         }
@@ -339,20 +335,23 @@ void FFmpegThread::checkAndShowVideo(bool needScale, AVFrame *frame)
         //qDebug() << TIMEMS << videoWidth << videoHeight << frame->width << frame->height << frame->linesize[0] << frame->linesize[1] << frame->linesize[2];
         if (hardware == "none") {
             if (needScale) {
-                emit receiveFrame(videoWidth_, videoHeight_, yuvFrame->data[0], yuvFrame->data[1], yuvFrame->data[2], videoWidth_, videoWidth_ / 2, videoWidth_ / 2);
-                this->writeVideoData(videoWidth_, videoHeight_, yuvFrame->data[0], yuvFrame->data[1], yuvFrame->data[2]);
+                emit receiveFrame(videoWidth_, videoHeight_, yuvFrame->data[0], yuvFrame->data[1], yuvFrame->data[2],
+                                  videoWidth_, videoWidth_ / 2, videoWidth_ / 2);
+                this->writeVideoData(videoWidth_, videoHeight_, yuvFrame->data[0], yuvFrame->data[1],
+                                     yuvFrame->data[2]);
             } else {
-                emit receiveFrame(frame->width, frame->height, frame->data[0], frame->data[1], frame->data[2], frame->linesize[0], frame->linesize[1], frame->linesize[2]);
+                emit receiveFrame(frame->width, frame->height, frame->data[0], frame->data[1], frame->data[2],
+                                  frame->linesize[0], frame->linesize[1], frame->linesize[2]);
                 this->writeVideoData(frame->linesize[0], frame->height, frame->data[0], frame->data[1], frame->data[2]);
             }
         } else {
-            emit receiveFrame(videoWidth_, videoHeight_, frame->data[0], frame->data[1], frame->linesize[0], frame->linesize[1]);
+            emit receiveFrame(videoWidth_, videoHeight_, frame->data[0], frame->data[1], frame->linesize[0],
+                              frame->linesize[1]);
         }
     }
 }
 
-void FFmpegThread::decodeVideo0(AVPacket *packet)
-{
+void FFmpegThread::decodeVideo0(AVPacket *packet) {
     //统计关键帧间隔和实时码率
     //FFmpegThreadHelper::checkKeyPacketCount(this, packet, keyPacketIndex, keyPacketCount);
     if (realBitRate) {
@@ -382,8 +381,7 @@ void FFmpegThread::decodeVideo0(AVPacket *packet)
     }
 }
 
-void FFmpegThread::decodeVideo1(AVPacket *packet)
-{
+void FFmpegThread::decodeVideo1(AVPacket *packet) {
     this->writeFile(packet, true);
     //未编码推流不用继续(可以节约大量CPU/预览还需要继续解码)
     //未编码的才存在缓存数据需要清空
@@ -413,8 +411,7 @@ void FFmpegThread::decodeVideo1(AVPacket *packet)
     }
 }
 
-void FFmpegThread::decodeVideo2(AVPacket *packet)
-{
+void FFmpegThread::decodeVideo2(AVPacket *packet) {
     //判断帧类型 I B P
 #if 0
     int type = (hardware == "none" ? videoFrame->pict_type : tempFrame->pict_type);
@@ -466,8 +463,7 @@ void FFmpegThread::decodeVideo2(AVPacket *packet)
     }
 }
 
-void FFmpegThread::decodeAudio0(AVPacket *packet)
-{
+void FFmpegThread::decodeAudio0(AVPacket *packet) {
     //如果没有开启则不用继续
     if (!decodeAudio) {
         return;
@@ -490,8 +486,7 @@ void FFmpegThread::decodeAudio0(AVPacket *packet)
     }
 }
 
-void FFmpegThread::decodeAudio1(AVPacket *packet)
-{
+void FFmpegThread::decodeAudio1(AVPacket *packet) {
     //限制超过一定倍速不解码音频数据
     if (speed >= 5) {
         //return;
@@ -506,14 +501,14 @@ void FFmpegThread::decodeAudio1(AVPacket *packet)
     FFmpegThreadHelper::decode(this, audioCodecCtx, packet, audioFrame, false);
 }
 
-void FFmpegThread::decodeAudio2(AVPacket *packet)
-{
-    char *data = (char *)audioFrame->data[0];
+void FFmpegThread::decodeAudio2(AVPacket *packet) {
+    char *data = (char *) audioFrame->data[0];
     int size = audioFrame->nb_samples;
 
     //执行音频数据转换/将原始收到的音频数据audioFrame转换到可以直接播放的pcm数据pcmFrame
     if (pcmSwrCtx) {
-        int result = swr_convert(pcmSwrCtx, pcmFrame->data, audioFrame->nb_samples, (const quint8 **)audioFrame->data, audioFrame->nb_samples);
+        int result = swr_convert(pcmSwrCtx, pcmFrame->data, audioFrame->nb_samples, (const quint8 **) audioFrame->data,
+                                 audioFrame->nb_samples);
         if (result < 0) {
             return;
         }
@@ -521,7 +516,7 @@ void FFmpegThread::decodeAudio2(AVPacket *packet)
         //纠正下采样率/不然可能是设置的默认的9600
         pcmFrame->nb_samples = audioFrame->nb_samples;
         //取出声音数据
-        data = (char *)pcmFrame->data[0];
+        data = (char *) pcmFrame->data[0];
         //计算重采样后的大小/可能采样率变了/比如源头是44100而指定了转换成48000
         size = av_rescale_rnd(audioFrame->nb_samples, pcmFrame->sample_rate, audioFrame->sample_rate, AV_ROUND_UP);
     }
@@ -538,15 +533,14 @@ void FFmpegThread::decodeAudio2(AVPacket *packet)
     if (saveAudioType_ == SaveAudioType_Pcm || saveAudioType_ == SaveAudioType_Wav) {
         this->writeAudioData(data, len);
     } else if (saveAudioType_ == SaveAudioType_Aac) {
-        this->writeAudioData((char *)packet->data, packet->size);
+        this->writeAudioData((char *) packet->data, packet->size);
     }
 
     //写入音频数据
     this->writeFile(pcmSwrCtx ? pcmFrame : audioFrame, false);
 }
 
-void FFmpegThread::writeFile(AVPacket *packet, bool video)
-{
+void FFmpegThread::writeFile(AVPacket *packet, bool video) {
     //启用了转发数据包则先发送对应信号
     if (sendPacket) {
         emit writePacket(packet, video ? videoIndex : audioIndex);
@@ -568,8 +562,7 @@ void FFmpegThread::writeFile(AVPacket *packet, bool video)
     }
 }
 
-void FFmpegThread::writeFile(AVFrame *frame, bool video)
-{
+void FFmpegThread::writeFile(AVFrame *frame, bool video) {
     //启用了转发数据帧则先发送对应信号
     if (sendFrame) {
         emit writeFrame(frame, video ? videoIndex : audioIndex);
@@ -603,8 +596,7 @@ void FFmpegThread::writeFile(AVFrame *frame, bool video)
     }
 }
 
-void FFmpegThread::initOption()
-{
+void FFmpegThread::initOption() {
     //增加rtp/sdp支持/貌似网络地址带.sdp结尾的这种可以不用加
     if (mediaType == MediaType_FileLocal && mediaUrl.endsWith(".sdp")) {
         av_dict_set(&options, "protocol_whitelist", "file,rtp,udp", 0);
@@ -627,8 +619,7 @@ void FFmpegThread::initOption()
     }
 }
 
-bool FFmpegThread::initInput()
-{
+bool FFmpegThread::initInput() {
     //本地摄像头/桌面录屏/linux系统可以打开cheese程序查看本地摄像头(如果是在虚拟机中需要设置usb选项3.1)
     if (mediaType == MediaType_Device) {
         ifmt = av_find_input_format(mediaUrl.startsWith("audio=") ? Device_Audio : Device_Video);
@@ -669,7 +660,7 @@ bool FFmpegThread::initInput()
     }
 
     //获取流信息
-    result = avformat_find_stream_info(formatCtx, NULL);
+    result = avformat_find_stream_info(formatCtx, nullptr);
     if (result < 0) {
         debug(result, "找流失败", "");
         return false;
@@ -681,7 +672,7 @@ bool FFmpegThread::initInput()
     FFmpegThreadHelper::checkHardware(formatName_, hardware);
 
     //获取文件时长(这里获取到的是秒)
-    double length = (double)formatCtx->duration / AV_TIME_BASE;
+    double length = (double) formatCtx->duration / AV_TIME_BASE;
     //如果是本地文件而且没有时长则用最原始方法读取时长
     //有部分设备导出的视频文件读取出来时长不对也可以用此方法读取
     if (mediaType == MediaType_FileLocal && duration <= 0) {
@@ -706,10 +697,9 @@ bool FFmpegThread::initInput()
     return true;
 }
 
-bool FFmpegThread::initVideo()
-{
+bool FFmpegThread::initVideo() {
     //找到视频流索引
-    videoIndex = av_find_best_stream(formatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    videoIndex = av_find_best_stream(formatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
     if (videoIndex < 0) {
         //有些没有视频流所以这里不用返回
         videoIndex = -1;
@@ -746,7 +736,7 @@ bool FFmpegThread::initVideo()
         FFmpegThreadHelper::initVideoCodec(&videoCodec, codecId, videoCodecName_, hardware);
 
         //创建视频解码器上下文
-        videoCodecCtx = avcodec_alloc_context3(NULL);
+        videoCodecCtx = avcodec_alloc_context3(nullptr);
         if (!videoCodecCtx) {
             debug(result, "创建视解", "");
             return false;
@@ -778,7 +768,7 @@ bool FFmpegThread::initVideo()
         }
 
         //打开视频解码器
-        result = avcodec_open2(videoCodecCtx, videoCodec, NULL);
+        result = avcodec_open2(videoCodecCtx, videoCodec, nullptr);
         if (result < 0) {
             debug(result, "打开视解", "");
             return false;
@@ -801,7 +791,8 @@ bool FFmpegThread::initVideo()
         videoFirstPts = videoStream->start_time;
         videoCodecName_ = videoCodec->name;
         frameRate_ = FFmpegHelper::getFrameRate(videoStream, formatName_);
-        QString msg = QString("索引: %1 解码: %2 帧率: %3 宽高: %4x%5 角度: %6").arg(videoIndex).arg(videoCodecName_).arg(frameRate_).arg(videoWidth_).arg(videoHeight_).arg(rotate_);
+        QString msg = QString("索引: %1 解码: %2 帧率: %3 宽高: %4x%5 角度: %6").arg(videoIndex).arg(
+                videoCodecName_).arg(frameRate_).arg(videoWidth_).arg(videoHeight_).arg(rotate_);
         debug(0, "视频信息", msg);
         //FFmpegUtil::getExtraData(videoCodecCtx);
     }
@@ -809,10 +800,9 @@ bool FFmpegThread::initVideo()
     return true;
 }
 
-bool FFmpegThread::initAudio()
-{
+bool FFmpegThread::initAudio() {
     //找到音频流索引
-    audioIndex = av_find_best_stream(formatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+    audioIndex = av_find_best_stream(formatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
     if (audioIndex < 0) {
         //有些没有音频流所以这里不用返回
         audioIndex = -1;
@@ -855,7 +845,7 @@ bool FFmpegThread::initAudio()
         }
 
         //打开音频解码器
-        result = avcodec_open2(audioCodecCtx, audioCodec, NULL);
+        result = avcodec_open2(audioCodecCtx, audioCodec, nullptr);
         if (result < 0) {
             debug(result, "打开音解", "");
             return false;
@@ -878,15 +868,15 @@ bool FFmpegThread::initAudio()
         }
 
         qint64 bitrate = FFmpegHelper::getBitRate(audioStream);
-        QString msg = QString("索引: %1 解码: %2 比特: %3 声道: %4 采样: %5 品质: %6").arg(audioIndex).arg(audioCodecName_).arg(bitrate).arg(channelCount_).arg(sampleRate_).arg(profile_);
+        QString msg = QString("索引: %1 解码: %2 比特: %3 声道: %4 采样: %5 品质: %6").arg(audioIndex).arg(
+                audioCodecName_).arg(bitrate).arg(channelCount_).arg(sampleRate_).arg(profile_);
         debug(0, "音频信息", msg);
     }
 
     return true;
 }
 
-void FFmpegThread::initData()
-{
+void FFmpegThread::initData() {
     if (videoIndex >= 0) {
         videoFrame = av_frame_alloc();
         tempFrame = av_frame_alloc();
@@ -898,7 +888,8 @@ void FFmpegThread::initData()
         //定义及获取像素格式/硬件加速需要指定格式
         AVPixelFormat srcFormat = (hardware == "none" ? videoCodecCtx->pix_fmt : AV_PIX_FMT_NV12);
         AVPixelFormat dstFormat = (videoMode_ == VideoMode_Painter ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_YUV420P);
-        bool ok = FFmpegThreadHelper::initVideoData(this, yuvFrame, imageFrame, &yuvSwsCtx, &imageSwsCtx, &imageData, srcFormat, dstFormat, videoWidth_, videoHeight_, hardware, flags);
+        bool ok = FFmpegThreadHelper::initVideoData(this, yuvFrame, imageFrame, &yuvSwsCtx, &imageSwsCtx, &imageData,
+                                                    srcFormat, dstFormat, videoWidth_, videoHeight_, hardware, flags);
         if (!ok) {
             videoIndex = -1;
         }
@@ -914,7 +905,8 @@ void FFmpegThread::initData()
     if (audioIndex >= 0) {
         audioFrame = av_frame_alloc();
         pcmFrame = av_frame_alloc();
-        bool ok = FFmpegThreadHelper::initAudioData(this, audioCodecCtx, pcmFrame, &pcmSwrCtx, pcmSampleFormat, pcmSampleRate, pcmChannels, audioCodecName_);
+        bool ok = FFmpegThreadHelper::initAudioData(this, audioCodecCtx, pcmFrame, &pcmSwrCtx, pcmSampleFormat,
+                                                    pcmSampleRate, pcmChannels, audioCodecName_);
         if (!ok) {
             audioIndex = -1;
         }
@@ -926,8 +918,7 @@ void FFmpegThread::initData()
     FFmpegThreadHelper::checkSaveAudioType(mediaType, audioIndex, audioCodecName_, formatCtx->bit_rate, saveAudioType_);
 }
 
-void FFmpegThread::initAudioPlayer()
-{
+void FFmpegThread::initAudioPlayer() {
     //设置是否需要计算音频振幅
     audioPlayer->setLevel(audioLevel);
     //初始化音频输出
@@ -938,14 +929,13 @@ void FFmpegThread::initAudioPlayer()
     }
 }
 
-void FFmpegThread::initAudioOutput()
-{
+void FFmpegThread::initAudioOutput() {
     //打开音频播放设备
-    QMetaObject::invokeMethod(audioPlayer, "openAudioOutput", Q_ARG(QString, audioDevice), Q_ARG(int, pcmSampleRate), Q_ARG(int, pcmChannels), Q_ARG(int, 16));
+    QMetaObject::invokeMethod(audioPlayer, "openAudioOutput", Q_ARG(QString, audioDevice), Q_ARG(int, pcmSampleRate),
+                              Q_ARG(int, pcmChannels), Q_ARG(int, 16));
 }
 
-void FFmpegThread::initAudioEffect()
-{
+void FFmpegThread::initAudioEffect() {
     if (audioIndex >= 0) {
         //打开音效库/速度不为1则启用
         bool useSonic = (speed != 1);
@@ -953,8 +943,7 @@ void FFmpegThread::initAudioEffect()
     }
 }
 
-void FFmpegThread::initMetadata()
-{
+void FFmpegThread::initMetadata() {
     //限制本地mp3文件才需要读取
     if (!getIsMp3()) {
         return;
@@ -964,7 +953,7 @@ void FFmpegThread::initMetadata()
     videoIndex = -1;
 
     //读取专辑信息
-    AVDictionaryEntry *tag = NULL;
+    AVDictionaryEntry *tag = nullptr;
     while ((tag = av_dict_get(formatCtx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
         debug(0, "专辑信息", QString("名称: %1 键值: %2").arg(tag->key).arg(tag->value));
     }
@@ -976,10 +965,9 @@ void FFmpegThread::initMetadata()
     }
 }
 
-void FFmpegThread::initFilter()
-{
+void FFmpegThread::initFilter() {
     //不存在视频或者低分辨率的本地摄像头禁用滤镜/很奇怪会变成左右对称的两个画面
-    if (videoIndex < 0 || (videoCodecName_== "rawvideo" && videoWidth_ <= 640)) {
+    if (videoIndex < 0 || (videoCodecName_ == "rawvideo" && videoWidth_ <= 640)) {
         videoFilter.enable = false;
         return;
     }
@@ -1007,15 +995,13 @@ void FFmpegThread::initFilter()
     }
 }
 
-void FFmpegThread::resetFilter()
-{
+void FFmpegThread::resetFilter() {
     if (videoFilter.enable && isOk) {
         videoFilter.init = false;
     }
 }
 
-bool FFmpegThread::openVideo()
-{
+bool FFmpegThread::openVideo() {
     //先检查地址是否正常(文件是否存在或者网络地址是否可达)
     if (!VideoHelper::checkUrl(this, mediaType, mediaUrl, connectTimeout)) {
         return false;
@@ -1074,13 +1060,12 @@ bool FFmpegThread::openVideo()
         }
     }
 
-    this->openFinsh();
+    this->openFinish();
     this->checkOnlyAudio();
     return isOk;
 }
 
-void FFmpegThread::closeVideo()
-{
+void FFmpegThread::closeVideo() {
     speed = 1.0;
     tryOpen = false;
     tryRead = false;
@@ -1198,8 +1183,7 @@ void FFmpegThread::closeVideo()
     }
 }
 
-QImage FFmpegThread::getImage()
-{
+QImage FFmpegThread::getImage() {
     //还没有开始或者没有图片转换对象则不用继续/说明是纯音频
     QImage image;
     if (!isOk || !imageSwsCtx) {
@@ -1207,7 +1191,8 @@ QImage FFmpegThread::getImage()
     }
 
     //将数据转成图片
-    int result = sws_scale(imageSwsCtx, (const quint8 **)videoFrame->data, videoFrame->linesize, 0, videoHeight_, imageFrame->data, imageFrame->linesize);
+    int result = sws_scale(imageSwsCtx, (const quint8 **) videoFrame->data, videoFrame->linesize, 0, videoHeight_,
+                           imageFrame->data, imageFrame->linesize);
     if (result < 0) {
         return image;
     }
@@ -1222,23 +1207,19 @@ QImage FFmpegThread::getImage()
     return image;
 }
 
-qint64 FFmpegThread::getStartTime()
-{
+qint64 FFmpegThread::getStartTime() {
     return this->startTime;
 }
 
-QDateTime FFmpegThread::getLastTime()
-{
+QDateTime FFmpegThread::getLastTime() {
     return this->lastTime_;
 }
 
-FFmpegSave *FFmpegThread::getSaveFile()
-{
+FFmpegSave *FFmpegThread::getSaveFile() {
     return this->saveFile_;
 }
 
-AVStream *FFmpegThread::getVideoStream()
-{
+AVStream *FFmpegThread::getVideoStream() {
     if (videoIndex >= 0) {
         return formatCtx->streams[videoIndex];
     } else {
@@ -1246,8 +1227,7 @@ AVStream *FFmpegThread::getVideoStream()
     }
 }
 
-AVStream *FFmpegThread::getAudioStream()
-{
+AVStream *FFmpegThread::getAudioStream() {
     if (audioIndex >= 0) {
         return formatCtx->streams[audioIndex];
     } else {
@@ -1255,43 +1235,35 @@ AVStream *FFmpegThread::getAudioStream()
     }
 }
 
-bool FFmpegThread::getPushPreview()
-{
+bool FFmpegThread::getPushPreview() {
     return this->pushPreview;
 }
 
-void FFmpegThread::setPushPreview(bool pushPreview)
-{
+void FFmpegThread::setPushPreview(bool pushPreview) {
     this->pushPreview = pushPreview;
 }
 
-void FFmpegThread::setSendPacket(bool sendPacket)
-{
+void FFmpegThread::setSendPacket(bool sendPacket) {
     this->sendPacket = sendPacket;
 }
 
-void FFmpegThread::setSendFrame(bool sendFrame)
-{
+void FFmpegThread::setSendFrame(bool sendFrame) {
     this->sendFrame = sendFrame;
 }
 
-bool FFmpegThread::getTryOpen()
-{
+bool FFmpegThread::getTryOpen() {
     return this->tryOpen;
 }
 
-bool FFmpegThread::getTryRead()
-{
+bool FFmpegThread::getTryRead() {
     return this->tryRead;
 }
 
-bool FFmpegThread::getTryStop()
-{
+bool FFmpegThread::getTryStop() {
     return this->stopped;
 }
 
-void FFmpegThread::clearBuffer(bool direct)
-{
+void FFmpegThread::clearBuffer(bool direct) {
     if (direct) {
         needClear = false;
         if (videoCodecCtx) {
@@ -1305,16 +1277,14 @@ void FFmpegThread::clearBuffer(bool direct)
     }
 }
 
-void FFmpegThread::clearAndReset()
-{
+void FFmpegThread::clearAndReset() {
     audioSync->clear();
     videoSync->clear();
     audioSync->reset();
     videoSync->reset();
 }
 
-int FFmpegThread::getRotate()
-{
+int FFmpegThread::getRotate() {
     //不是默认值说明已经获取过旋转角度不用再去获取
     if (rotate_ != -1) {
         return rotate_;
@@ -1331,8 +1301,7 @@ int FFmpegThread::getRotate()
     return rotate_;
 }
 
-void FFmpegThread::setRotate(int rotate)
-{
+void FFmpegThread::setRotate(int rotate) {
     if (rotate < 0) {
         return;
     }
@@ -1347,18 +1316,15 @@ void FFmpegThread::setRotate(int rotate)
     }
 }
 
-qint64 FFmpegThread::getDuration()
-{
+qint64 FFmpegThread::getDuration() {
     return duration;
 }
 
-qint64 FFmpegThread::getPosition()
-{
+qint64 FFmpegThread::getPosition() {
     return position;
 }
 
-void FFmpegThread::setPosition(qint64 position)
-{
+void FFmpegThread::setPosition(qint64 position) {
     if (isOk && getIsFile()) {
         //设置切换进度标志位以便暂停解析
         changePosition = true;
@@ -1369,8 +1335,7 @@ void FFmpegThread::setPosition(qint64 position)
     }
 }
 
-void FFmpegThread::setPosition()
-{
+void FFmpegThread::setPosition() {
     if (!isOk) {
         return;
     }
@@ -1403,15 +1368,14 @@ void FFmpegThread::setPosition()
     this->next();
 }
 
-double FFmpegThread::getSpeed()
-{
+double FFmpegThread::getSpeed() {
     return this->speed;
 }
 
-void FFmpegThread::setSpeed(double speed)
-{
+void FFmpegThread::setSpeed(double speed) {
     //启用了音视频同步的h264裸流也需要设置
-    if (isOk && this->speed != speed && (getIsFile() || (useSync && (formatName_ == "h264" || formatName_ == "hevc")))) {
+    if (isOk && this->speed != speed &&
+        (getIsFile() || (useSync && (formatName_ == "h264" || formatName_ == "hevc")))) {
         this->pause();
         this->speed = speed;
         this->initAudioEffect();
@@ -1419,41 +1383,34 @@ void FFmpegThread::setSpeed(double speed)
     }
 }
 
-int FFmpegThread::getVolume()
-{
+int FFmpegThread::getVolume() {
     return audioPlayer->getVolume();
 }
 
-void FFmpegThread::setVolume(int volume)
-{
+void FFmpegThread::setVolume(int volume) {
     audioPlayer->setVolume(volume);
 }
 
-bool FFmpegThread::getMuted()
-{
+bool FFmpegThread::getMuted() {
     return audioPlayer->getMuted();
 }
 
-void FFmpegThread::setMuted(bool muted)
-{
+void FFmpegThread::setMuted(bool muted) {
     audioPlayer->setMuted(muted);
 }
 
-void FFmpegThread::setAudioLevel(bool audioLevel)
-{
+void FFmpegThread::setAudioLevel(bool audioLevel) {
     this->audioLevel = audioLevel;
     audioPlayer->setLevel(audioLevel);
 }
 
-void FFmpegThread::setRealBitRate(bool realBitRate)
-{
+void FFmpegThread::setRealBitRate(bool realBitRate) {
     realPacketSize = 0;
     realPacketCount = 0;
     this->realBitRate = realBitRate;
 }
 
-void FFmpegThread::setAudioDevice(const QString &audioDevice)
-{
+void FFmpegThread::setAudioDevice(const QString &audioDevice) {
     //默认设备不用处理
     if (audioDevice == "default") {
         return;
@@ -1467,24 +1424,21 @@ void FFmpegThread::setAudioDevice(const QString &audioDevice)
     this->initAudioOutput();
 }
 
-void FFmpegThread::setCrop(bool isCrop)
-{
+void FFmpegThread::setCrop(bool isCrop) {
     this->isCrop = isCrop;
     if (!isCrop) {
         cropTime = QDateTime::currentDateTime();
     }
 }
 
-void FFmpegThread::setFlag(const QString &flag)
-{
+void FFmpegThread::setFlag(const QString &flag) {
     //先执行父类的设置
     AbstractVideoThread::setFlag(flag);
     //设置音频对象名称
     audioPlayer->setObjectName("audioPlayer_" + flag);
 }
 
-void FFmpegThread::debug(int result, const QString &head, const QString &msg)
-{
+void FFmpegThread::debug(int result, const QString &head, const QString &msg) {
     if (result < 0) {
         QString text = (msg.isEmpty() ? "" : (" " + msg));
         VideoThread::debug(head, QString("错误: %1%2").arg(FFmpegHelper::getError(result)).arg(text));
@@ -1493,15 +1447,13 @@ void FFmpegThread::debug(int result, const QString &head, const QString &msg)
     }
 }
 
-void FFmpegThread::pause()
-{
+void FFmpegThread::pause() {
     if (this->isRunning()) {
         isPause = true;
     }
 }
 
-void FFmpegThread::next()
-{
+void FFmpegThread::next() {
     if (this->isRunning()) {
         isPause = false;
         changePosition = false;
@@ -1511,20 +1463,20 @@ void FFmpegThread::next()
     }
 }
 
-void FFmpegThread::step(bool backward)
-{
+void FFmpegThread::step(bool backward) {
     if (getIsFile() && playStep) {
         this->next();
     }
 }
 
-void FFmpegThread::initSaveFile()
-{
+void FFmpegThread::initSaveFile() {
     bool mp4ToAnnexB = false;
     bool audioEncode = false;
     bool videoEncode = false;
-    FFmpegThreadHelper::checkVideoEncode(mediaType, mediaUrl, saveVideoType_, formatName_, getIsFile(), mp4ToAnnexB, videoEncode);
-    saveFile_->setEncodePara(mp4ToAnnexB, audioEncode, videoEncode, encodeSpeed_, encodeAudio_, encodeVideo_, encodeVideoFps_, encodeVideoRatio_, encodeVideoScale_);
+    FFmpegThreadHelper::checkVideoEncode(mediaType, mediaUrl, saveVideoType_, formatName_, getIsFile(), mp4ToAnnexB,
+                                         videoEncode);
+    saveFile_->setEncodePara(mp4ToAnnexB, audioEncode, videoEncode, encodeSpeed_, encodeAudio_, encodeVideo_,
+                             encodeVideoFps_, encodeVideoRatio_, encodeVideoScale_);
     saveFile_->setSavePara(mediaType, saveVideoType_, getVideoStream(), getAudioStream());
 
     //设置秘钥数据
@@ -1541,8 +1493,7 @@ void FFmpegThread::initSaveFile()
     saveFile_->setProperty("channelCount", pcmChannels);
 }
 
-void FFmpegThread::recordStart(const QString &fileName)
-{
+void FFmpegThread::recordStart(const QString &fileName) {
     AbstractVideoThread::recordStart(fileName);
     if (saveVideoType_ > 1) {
         this->setFileName(fileName);
@@ -1562,8 +1513,7 @@ void FFmpegThread::recordStart(const QString &fileName)
     }
 }
 
-void FFmpegThread::recordPause()
-{
+void FFmpegThread::recordPause() {
     AbstractVideoThread::recordPause();
     if (saveVideoType_ > 1) {
         if (saveFile_->getIsOk()) {
@@ -1574,8 +1524,7 @@ void FFmpegThread::recordPause()
     }
 }
 
-void FFmpegThread::recordStop()
-{
+void FFmpegThread::recordStop() {
     AbstractVideoThread::recordStop();
     if (saveVideoType_ > 1) {
         if (saveFile_->getIsOk()) {
@@ -1586,16 +1535,14 @@ void FFmpegThread::recordStop()
     }
 }
 
-void FFmpegThread::setOsdInfo(const QList<OsdInfo> &listOsd)
-{
+void FFmpegThread::setOsdInfo(const QList<OsdInfo> &listOsd) {
     mutex.lock();
     this->listOsd_ = listOsd;
     this->resetFilter();
     mutex.unlock();
 }
 
-void FFmpegThread::setGraphInfo(const QList<GraphInfo> &listGraph)
-{
+void FFmpegThread::setGraphInfo(const QList<GraphInfo> &listGraph) {
     mutex.lock();
     this->listGraph_ = listGraph;
     this->resetFilter();

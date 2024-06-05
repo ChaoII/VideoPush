@@ -4,8 +4,7 @@
 #include "qstringlist.h"
 
 //http://ruiy.leanote.com/post/c-使用ffmpeg
-void FFmpegUtil::debugCodec()
-{
+void FFmpegUtil::debugCodec() {
     //输出所有支持的解码器名称
     QStringList listEncoderVideo, listEncoderAudio, listEncoderOther;
     QStringList listDecoderVideo, listDecoderAudio, listDecoderOther;
@@ -13,9 +12,9 @@ void FFmpegUtil::debugCodec()
     AVCodec *coder = av_codec_next(NULL);
     while (coder != NULL) {
 #else
-    void *opaque = NULL;
+    void *opaque = nullptr;
     const AVCodec *coder;
-    while ((coder = av_codec_iterate(&opaque)) != NULL) {
+    while ((coder = av_codec_iterate(&opaque)) != nullptr) {
 #endif
         QString name = QString("%1").arg(coder->name);
         if (av_codec_is_encoder(coder)) {
@@ -49,18 +48,18 @@ void FFmpegUtil::debugCodec()
 
     //输出支持的协议
     QStringList listProtocolsIn, listProtocolsOut;
-    struct URLProtocol *protocol = NULL;
+    struct URLProtocol *protocol = nullptr;
     struct URLProtocol **protocol2 = &protocol;
 
-    avio_enum_protocols((void **)protocol2, 0);
+    avio_enum_protocols((void **) protocol2, 0);
     while ((*protocol2)) {
-        listProtocolsIn << avio_enum_protocols((void **)protocol2, 0);
+        listProtocolsIn << avio_enum_protocols((void **) protocol2, 0);
     }
 
-    protocol = NULL;
-    avio_enum_protocols((void **)protocol2, 1);
+    protocol = nullptr;
+    avio_enum_protocols((void **) protocol2, 1);
     while ((*protocol2)) {
-        listProtocolsOut << avio_enum_protocols((void **)protocol2, 1);
+        listProtocolsOut << avio_enum_protocols((void **) protocol2, 1);
     }
 
     qDebug() << TIMEMS << QString("输入协议 -> %1").arg(listProtocolsIn.join("/"));
@@ -68,15 +67,13 @@ void FFmpegUtil::debugCodec()
     qDebug() << TIMEMS << QString("编译参数 -> %1").arg(avformat_configuration());
 }
 
-void FFmpegUtil::debugHardware()
-{
+void FFmpegUtil::debugHardware() {
     //硬解类型名称
     QStringList listHardware = FFmpegUtil::getHardware();
     qDebug() << TIMEMS << QString("硬解类型 -> %1").arg(listHardware.join("/"));
 }
 
-QStringList FFmpegUtil::getHardware()
-{
+QStringList FFmpegUtil::getHardware() {
     //硬解类型名称 ffmpeg -hwaccels
     QStringList listHardware;
     //其实ffmpeg2/ffmpeg3也有但是不完整一般建议3以上
@@ -89,8 +86,7 @@ QStringList FFmpegUtil::getHardware()
     return listHardware;
 }
 
-void FFmpegUtil::debugPara(AVCodecContext *codecCtx)
-{
+void FFmpegUtil::debugPara(AVCodecContext *codecCtx) {
     QStringList list;
     list << QString("width: %1").arg(codecCtx->width);
     list << QString("height: %1").arg(codecCtx->height);
@@ -110,8 +106,7 @@ void FFmpegUtil::debugPara(AVCodecContext *codecCtx)
     qDebug() << TIMEMS << QString("参数信息 -> %1").arg(list.join("  "));
 }
 
-void FFmpegUtil::debugPara(AVStream *stream)
-{
+void FFmpegUtil::debugPara(AVStream *stream) {
     qint64 bitrate;
     int id, type, format, width, height, sampleRate, channelCount;
 
@@ -156,8 +151,7 @@ void FFmpegUtil::debugPara(AVStream *stream)
     qDebug() << TIMEMS << QString("参数信息 -> %1").arg(list.join("  "));
 }
 
-static void logCallback(void *ptr, int level, const char *fmt, va_list vl)
-{
+static void logCallback(void *ptr, int level, const char *fmt, va_list vl) {
     char buf[1024];
     vsprintf(buf, fmt, vl);
     QString line = buf;
@@ -167,25 +161,23 @@ static void logCallback(void *ptr, int level, const char *fmt, va_list vl)
     qDebug() << TIMEMS << line;
 }
 
-void FFmpegUtil::showDevice()
-{
+void FFmpegUtil::showDevice() {
     showDevice(Device_Video);
 }
 
 //ffmpeg -list_devices true -f dshow -i dummy
-void FFmpegUtil::showDevice(const char *flag)
-{
+void FFmpegUtil::showDevice(const char *flag) {
     //启用日志回调接收输出信息
     av_log_set_callback(logCallback);
 
     AVFormatContext *ctx = avformat_alloc_context();
     AVInputFormatx *fmt = av_find_input_format(flag);
 
-    AVDictionary *opts = NULL;
+    AVDictionary *opts = nullptr;
     av_dict_set(&opts, "list_devices", "true", 0);
 
     if (strcmp(flag, "vfwcap") == 0) {
-        avformat_open_input(&ctx, "list", fmt, NULL);
+        avformat_open_input(&ctx, "list", fmt, nullptr);
     } else if (strcmp(flag, "dshow") == 0) {
         avformat_open_input(&ctx, "dummy", fmt, &opts);
     } else {
@@ -200,8 +192,7 @@ void FFmpegUtil::showDevice(const char *flag)
     av_log_set_callback(av_log_default_callback);
 }
 
-void FFmpegUtil::showDeviceOption(const QString &url)
-{
+void FFmpegUtil::showDeviceOption(const QString &url) {
     const char *flag = (url.startsWith("video=") ? Device_Video : Device_Audio);
     QString device = url;
 #ifndef Q_OS_WIN
@@ -211,15 +202,14 @@ void FFmpegUtil::showDeviceOption(const QString &url)
     showDeviceOption(flag, device);
 }
 
-void FFmpegUtil::showDeviceOption(const char *flag, const QString &device)
-{
+void FFmpegUtil::showDeviceOption(const char *flag, const QString &device) {
     //启用日志回调接收输出信息
     av_log_set_callback(logCallback);
 
     AVFormatContext *ctx = avformat_alloc_context();
     AVInputFormatx *fmt = av_find_input_format(flag);
 
-    AVDictionary *opts = NULL;
+    AVDictionary *opts = nullptr;
     av_dict_set(&opts, "list_options", "true", 0);
     avformat_open_input(&ctx, device.toUtf8().constData(), fmt, &opts);
 
@@ -232,27 +222,26 @@ void FFmpegUtil::showDeviceOption(const char *flag, const QString &device)
 }
 
 #ifdef ffmpegdevice
-void FFmpegUtil::getInputDevices(bool video, QStringList &devices)
-{
+
+void FFmpegUtil::getInputDevices(bool video, QStringList &devices) {
     QStringList names = getInputDevices(video);
-    foreach (QString name, names) {
-        if (!devices.contains(name)) {
-            devices << name;
+            foreach (QString name, names) {
+            if (!devices.contains(name)) {
+                devices << name;
+            }
         }
-    }
 }
 
-QStringList FFmpegUtil::getInputDevices(bool video)
-{
+QStringList FFmpegUtil::getInputDevices(bool video) {
     FFmpegHelper::initLib();
 
     //测试发现从ffmpeg5开始才能获取到值(以前的版本内部没有实现)
     QStringList names;
-    AVDeviceInfoList *devices = NULL;
-    AVInputFormatx *fmt = NULL;
+    AVDeviceInfoList *devices = nullptr;
+    AVInputFormatx *fmt = nullptr;
     fmt = av_find_input_format(video ? Device_Video : Device_Audio);
     if (fmt) {
-        if (avdevice_list_input_sources(fmt, NULL, NULL, &devices) >= 0) {
+        if (avdevice_list_input_sources(fmt, nullptr, nullptr, &devices) >= 0) {
             names = getDeviceNames(devices, video);
         }
     }
@@ -260,31 +249,30 @@ QStringList FFmpegUtil::getInputDevices(bool video)
     return names;
 }
 
-QStringList FFmpegUtil::getDeviceNames(bool input, bool video)
-{
+QStringList FFmpegUtil::getDeviceNames(bool input, bool video) {
     FFmpegHelper::initLib();
 
     QStringList names;
-    AVDeviceInfoList *devices = NULL;
+    AVDeviceInfoList *devices = nullptr;
     if (input) {
-        AVInputFormatx *fmt = NULL;
+        AVInputFormatx *fmt = nullptr;
         do {
             names.clear();
             fmt = (video ? av_input_video_device_next(fmt) : av_input_audio_device_next(fmt));
             if (fmt) {
-                if (avdevice_list_input_sources(fmt, NULL, NULL, &devices) >= 0) {
+                if (avdevice_list_input_sources(fmt, nullptr, nullptr, &devices) >= 0) {
                     names = getDeviceNames(devices, video);
                 }
                 //qDebug() << "input" << fmt->name << names;
             }
         } while (fmt);
     } else {
-        AVOutputFormatx *fmt = NULL;
+        AVOutputFormatx *fmt = nullptr;
         do {
             names.clear();
             fmt = (video ? av_output_video_device_next(fmt) : av_output_audio_device_next(fmt));
             if (fmt) {
-                if (avdevice_list_output_sinks(fmt, NULL, NULL, &devices) >= 0) {
+                if (avdevice_list_output_sinks(fmt, nullptr, nullptr, &devices) >= 0) {
                     names = getDeviceNames(devices, video);
                 }
                 //qDebug() << "output" << fmt->name << names;
@@ -295,8 +283,7 @@ QStringList FFmpegUtil::getDeviceNames(bool input, bool video)
     return names;
 }
 
-QStringList FFmpegUtil::getDeviceNames(AVDeviceInfoList *devices, bool video)
-{
+QStringList FFmpegUtil::getDeviceNames(AVDeviceInfoList *devices, bool video) {
     QStringList names;
     int count = devices->nb_devices;
     for (int i = 0; i < count; ++i) {
@@ -321,10 +308,10 @@ QStringList FFmpegUtil::getDeviceNames(AVDeviceInfoList *devices, bool video)
     avdevice_free_list_devices(&devices);
     return names;
 }
+
 #endif
 
-void FFmpegUtil::rotateFrame(int rotate, AVFrame *frameSrc, AVFrame *frameDst)
-{
+void FFmpegUtil::rotateFrame(int rotate, AVFrame *frameSrc, AVFrame *frameDst) {
     int n = 0;
     int pos = 0;
     int w = frameSrc->width;
@@ -350,8 +337,8 @@ void FFmpegUtil::rotateFrame(int rotate, AVFrame *frameSrc, AVFrame *frameDst)
             pos = hsize;
             for (int i = hh - 1; i >= 0; i--) {
                 pos -= hw;
-                frameDst->data[1][n] = frameSrc->data[1][ pos + j];
-                frameDst->data[2][n] = frameSrc->data[2][ pos + j];
+                frameDst->data[1][n] = frameSrc->data[1][pos + j];
+                frameDst->data[2][n] = frameSrc->data[2][pos + j];
                 n++;
             }
         }
@@ -370,8 +357,8 @@ void FFmpegUtil::rotateFrame(int rotate, AVFrame *frameSrc, AVFrame *frameDst)
         for (int i = 0; i < hh; i++) {
             pos -= hw;
             for (int j = 0; j < hw; j++) {
-                frameDst->data[1][n] = frameSrc->data[1][ pos + j];
-                frameDst->data[2][n] = frameSrc->data[2][ pos + j];
+                frameDst->data[1][n] = frameSrc->data[1][pos + j];
+                frameDst->data[2][n] = frameSrc->data[2][pos + j];
                 n++;
             }
         }
@@ -419,18 +406,17 @@ void FFmpegUtil::rotateFrame(int rotate, AVFrame *frameSrc, AVFrame *frameDst)
     frameDst->flags = frameSrc->flags;
 }
 
-qint64 FFmpegUtil::getDuration(const QString &fileName, quint64 *useTime)
-{
+qint64 FFmpegUtil::getDuration(const QString &fileName, quint64 *useTime) {
     qint64 duration = 0;
     QElapsedTimer timer;
     timer.start();
 
     //打开文件
-    AVFormatContext *formatCtx = NULL;
+    AVFormatContext *formatCtx = nullptr;
     QString url = FFmpegHelper::getPlayUrl(fileName);
-    avformat_open_input(&formatCtx, url.toUtf8().constData(), NULL, NULL);
-    avformat_find_stream_info(formatCtx, NULL);
-    int videoIndex = av_find_best_stream(formatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    avformat_open_input(&formatCtx, url.toUtf8().constData(), nullptr, nullptr);
+    avformat_find_stream_info(formatCtx, nullptr);
+    int videoIndex = av_find_best_stream(formatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
     if (videoIndex < 0) {
         return duration;
     }
@@ -440,7 +426,7 @@ qint64 FFmpegUtil::getDuration(const QString &fileName, quint64 *useTime)
     double fps = FFmpegHelper::getFrameRate(videoStream);
 
     //没有获取到帧数则从头读取到尾部统计
-    AVPacket *packet = FFmpegHelper::creatPacket(NULL);
+    AVPacket *packet = FFmpegHelper::creatPacket(nullptr);
     if (frameCount <= 0) {
         while (av_read_frame(formatCtx, packet) >= 0) {
             if (packet->stream_index == videoIndex) {
@@ -451,7 +437,7 @@ qint64 FFmpegUtil::getDuration(const QString &fileName, quint64 *useTime)
     }
 
     //计算总时长
-    duration = (double)frameCount / fps;
+    duration = (double) frameCount / fps;
     QString type = (videoStream->nb_frames == 0 ? "循环计算" : "文件信息");
     //qDebug() << TIMEMS << QString("文件时长: %1s 统计用时: %2ms 统计方式: %3").arg(duration).arg(timer.elapsed()).arg(type);
     if (useTime) {
@@ -464,38 +450,37 @@ qint64 FFmpegUtil::getDuration(const QString &fileName, quint64 *useTime)
     return duration;
 }
 
-bool FFmpegUtil::hasB(const QString &fileName, int maxFrame)
-{
+bool FFmpegUtil::hasB(const QString &fileName, int maxFrame) {
     bool b = false;
     int ret = -1;
     int frameCount = 0;
 
-    AVFormatContext *formatCtx = NULL;
-    AVStream *videoStream = NULL;
-    AVCodecx *videoCodec = NULL;
-    AVCodecContext *videoCodecCtx = NULL;
-    AVPacket *packet = NULL;
-    AVFrame *frame = NULL;
+    AVFormatContext *formatCtx = nullptr;
+    AVStream *videoStream = nullptr;
+    AVCodecx *videoCodec = nullptr;
+    AVCodecContext *videoCodecCtx = nullptr;
+    AVPacket *packet = nullptr;
+    AVFrame *frame = nullptr;
 
     //打开文件
     QString url = FFmpegHelper::getPlayUrl(fileName);
-    avformat_open_input(&formatCtx, url.toUtf8().constData(), NULL, NULL);
-    avformat_find_stream_info(formatCtx, NULL);
+    avformat_open_input(&formatCtx, url.toUtf8().constData(), nullptr, nullptr);
+    avformat_find_stream_info(formatCtx, nullptr);
     int videoIndex = av_find_best_stream(formatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &videoCodec, 0);
     if (videoIndex < 0) {
         goto end;
     }
 
     videoStream = formatCtx->streams[videoIndex];
-    videoCodecCtx = avcodec_alloc_context3(NULL);
+    videoCodecCtx = avcodec_alloc_context3(nullptr);
     //videoCodec = avcodec_find_decoder(FFmpegHelper::getCodecId(videoStream));
     FFmpegHelper::copyContext(videoCodecCtx, videoStream, false);
-    if ((ret = avcodec_open2(videoCodecCtx, videoCodec, NULL)) < 0) {
+    if ((ret = avcodec_open2(videoCodecCtx, videoCodec, nullptr)) < 0) {
         goto end;
     }
 
     //取出前XX帧解码出来判断有没有B帧
-    packet = FFmpegHelper::creatPacket(NULL);
+    packet = FFmpegHelper::creatPacket(nullptr);
     frame = av_frame_alloc();
     while (av_read_frame(formatCtx, packet) >= 0) {
 #if (FFMPEG_VERSION_MAJOR < 3)
@@ -523,7 +508,7 @@ bool FFmpegUtil::hasB(const QString &fileName, int maxFrame)
         }
     }
 
-end:
+    end:
     if (packet) {
         FFmpegHelper::freePacket(packet);
     }
@@ -540,13 +525,11 @@ end:
     return b;
 }
 
-int FFmpegUtil::binToDecimal(const QString &bin)
-{
-    return bin.toInt(NULL, 2);
+int FFmpegUtil::binToDecimal(const QString &bin) {
+    return bin.toInt(nullptr, 2);
 }
 
-QString FFmpegUtil::decimalToBin(int decimal)
-{
+QString FFmpegUtil::decimalToBin(int decimal) {
     QString bin = QString::number(decimal, 2);
     quint8 len = bin.length();
     if (len <= 8) {
@@ -557,8 +540,7 @@ QString FFmpegUtil::decimalToBin(int decimal)
     return bin;
 }
 
-int FFmpegUtil::dataToInt(quint8 data1, quint8 data2)
-{
+int FFmpegUtil::dataToInt(quint8 data1, quint8 data2) {
     int result = 0;
     result = data2 & 0x000000ff;
     result |= ((data1 << 8) & 0x0000ff00);
@@ -569,8 +551,7 @@ int FFmpegUtil::dataToInt(quint8 data1, quint8 data2)
 }
 
 //http://www.taodudu.cc/news/show-983932.html
-void FFmpegUtil::getExtraData(AVCodecContext *codecCtx)
-{
+void FFmpegUtil::getExtraData(AVCodecContext *codecCtx) {
     QString codecName = codecCtx->codec_descriptor->name;
     if (codecName != "h264") {
         return;
@@ -633,8 +614,7 @@ void FFmpegUtil::getExtraData(AVCodecContext *codecCtx)
     qDebug() << "extradata" << nalulen << spsnum << spslen << spsdata.toHex() << ppsnum << ppslen << ppsdata.toHex();
 }
 
-void FFmpegUtil::test()
-{
+void FFmpegUtil::test() {
     FFmpegHelper::initLib();
 
     AVCodecx *codec = avcodec_find_encoder(AV_CODEC_ID_MP3);
@@ -644,17 +624,15 @@ void FFmpegUtil::test()
     codecCtx->sample_fmt = AV_SAMPLE_FMT_FLTP;
     FFmpegHelper::initChannel(codecCtx, AV_CH_LAYOUT_STEREO);
 
-    qDebug() << avcodec_open2(codecCtx, codec, NULL);
+    qDebug() << avcodec_open2(codecCtx, codec, nullptr);
     qDebug() << "xxx" << codecCtx->frame_size;
 }
 
-QString FFmpegUtil::dataToString(char *data, qint64 len)
-{
+QString FFmpegUtil::dataToString(char *data, qint64 len) {
     return dataToStringList(data, len).join(",");
 }
 
-QStringList FFmpegUtil::dataToStringList(char *data, qint64 len)
-{
+QStringList FFmpegUtil::dataToStringList(char *data, qint64 len) {
     QStringList list;
     for (int i = 0; i < len; ++i) {
         list << QString::number(data[i]);

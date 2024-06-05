@@ -1,17 +1,21 @@
 ﻿#include <QScreen>
 #include <QCursor>
 #include "deviceinfohelper.h"
+
 #ifdef multimedia
+
 #include <QtMultimedia>
+
 #endif
 #ifdef ffmpegdevice
+
 #include "ffmpegutil.h"
+
 #endif
 
-QList<QRect> DeviceInfoHelper::getScreenRects()
-{
+QList<QRect> DeviceInfoHelper::getScreenRects() {
     QList<QRect> rects;
-#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     int screenCount = qApp->screens().count();
     QList<QScreen *> screens = qApp->screens();
     for (int i = 0; i < screenCount; ++i) {
@@ -34,8 +38,7 @@ QList<QRect> DeviceInfoHelper::getScreenRects()
     return rects;
 }
 
-QRect DeviceInfoHelper::getScreenRect(int screenIndex)
-{
+QRect DeviceInfoHelper::getScreenRect(int screenIndex) {
     //指定了屏幕索引则取指定的(没有指定则取当前鼠标所在屏幕)
     QRect rect;
     QList<QRect> rects = DeviceInfoHelper::getScreenRects();
@@ -44,18 +47,17 @@ QRect DeviceInfoHelper::getScreenRect(int screenIndex)
     } else {
         //当前屏幕区域包含当前鼠标所在坐标则说明是当前屏幕
         QPoint pos = QCursor::pos();
-        foreach (QRect r, rects) {
-            if (r.contains(pos)) {
-                rect = r;
-                break;
+                foreach (QRect r, rects) {
+                if (r.contains(pos)) {
+                    rect = r;
+                    break;
+                }
             }
-        }
     }
     return rect;
 }
 
-QStringList DeviceInfoHelper::getScreenInfo()
-{
+QStringList DeviceInfoHelper::getScreenInfo() {
     QStringList infos;
     QList<QRect> rects = DeviceInfoHelper::getScreenRects();
     for (int i = 0; i < rects.count(); ++i) {
@@ -65,8 +67,7 @@ QStringList DeviceInfoHelper::getScreenInfo()
     return infos;
 }
 
-QString DeviceInfoHelper::getScreenUrl(const QString &url)
-{
+QString DeviceInfoHelper::getScreenUrl(const QString &url) {
     QString device = url;
     int index = device.mid(7, 1).toInt();
     device.replace("(", "");
@@ -86,8 +87,7 @@ QString DeviceInfoHelper::getScreenUrl(const QString &url)
     return device;
 }
 
-QString DeviceInfoHelper::getResolution(int width, int height)
-{
+QString DeviceInfoHelper::getResolution(int width, int height) {
     //取偶数(虚拟机中很可能是奇数的分辨率)
     if (width % 2 != 0) {
         width--;
@@ -100,14 +100,12 @@ QString DeviceInfoHelper::getResolution(int width, int height)
     return QString("%1x%2").arg(width).arg(height);
 }
 
-QString DeviceInfoHelper::getResolution(const QString &resolution)
-{
+QString DeviceInfoHelper::getResolution(const QString &resolution) {
     QStringList sizes = DeviceInfoHelper::getSizes(resolution);
     return getResolution(sizes.at(0).toInt(), sizes.at(1).toInt());
 }
 
-QStringList DeviceInfoHelper::getSizes(const QString &size)
-{
+QStringList DeviceInfoHelper::getSizes(const QString &size) {
     QStringList sizes;
     if (size.contains("*")) {
         sizes = size.split("*");
@@ -117,8 +115,7 @@ QStringList DeviceInfoHelper::getSizes(const QString &size)
     return sizes;
 }
 
-void DeviceInfoHelper::checkRect(int screenIndex, QString &resolution, int &offsetX, int &offsetY)
-{
+void DeviceInfoHelper::checkRect(int screenIndex, QString &resolution, int &offsetX, int &offsetY) {
     QRect rect = DeviceInfoHelper::getScreenRect(screenIndex);
     if (resolution == "0x0") {
         resolution = DeviceInfoHelper::getResolution(rect.width(), rect.height());
@@ -164,15 +161,14 @@ void DeviceInfoHelper::checkRect(int screenIndex, QString &resolution, int &offs
     //qDebug() << TIMEMS << screenIndex << offsetX << offsetY << resolution;
 }
 
-QStringList DeviceInfoHelper::getAudioDevices()
-{
+QStringList DeviceInfoHelper::getAudioDevices() {
     QStringList names;
 #ifdef multimedia
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     QList<QAudioDevice> devices = QMediaDevices::audioInputs();
-    foreach (QAudioDevice device, devices) {
-        names << device.description();
-    }
+            foreach (QAudioDevice device, devices) {
+            names << device.description();
+        }
 #else
     QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     foreach (QAudioDeviceInfo device, devices) {
@@ -187,16 +183,15 @@ QStringList DeviceInfoHelper::getAudioDevices()
     return names;
 }
 
-QStringList DeviceInfoHelper::getVideoDevices()
-{
+QStringList DeviceInfoHelper::getVideoDevices() {
     QStringList names;
 #ifdef multimedia
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
-    QList<QCameraDevice>cameras = QMediaDevices::videoInputs();
-    foreach (QCameraDevice camera, cameras) {
-        names << camera.description();
-    }
-#elif (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
+    QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
+            foreach (QCameraDevice camera, cameras) {
+            names << camera.description();
+        }
+#elif (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
     foreach (QCameraInfo camera, cameras) {
         names << camera.description();
@@ -206,8 +201,7 @@ QStringList DeviceInfoHelper::getVideoDevices()
     return names;
 }
 
-void DeviceInfoHelper::getInputDevices(QStringList &audioDevices, QStringList &videoDevices, bool screen)
-{
+void DeviceInfoHelper::getInputDevices(QStringList &audioDevices, QStringList &videoDevices, bool screen) {
     //优先用Qt自带的方式获取
     audioDevices << DeviceInfoHelper::getAudioDevices();
     videoDevices << DeviceInfoHelper::getVideoDevices();
@@ -229,8 +223,7 @@ void DeviceInfoHelper::getInputDevices(QStringList &audioDevices, QStringList &v
     }
 }
 
-QString DeviceInfoHelper::getDeviceUrl(const QString &audioDevice, const QString &videoDevice)
-{
+QString DeviceInfoHelper::getDeviceUrl(const QString &audioDevice, const QString &videoDevice) {
     QString url;
     if (audioDevice.isEmpty() && videoDevice.isEmpty()) {
         return url;
@@ -260,36 +253,32 @@ QString DeviceInfoHelper::getDeviceUrl(const QString &audioDevice, const QString
     return url;
 }
 
-void DeviceInfoHelper::setPara(const QStringList &list, int count, int index, int &para)
-{
+void DeviceInfoHelper::setPara(const QStringList &list, int count, int index, int &para) {
     if (count > index && !list.at(index).isEmpty()) {
         para = list.at(index).toInt();
     }
 }
 
-void DeviceInfoHelper::setPara(const QStringList &list, int count, int index, float &para)
-{
+void DeviceInfoHelper::setPara(const QStringList &list, int count, int index, float &para) {
     if (count > index && !list.at(index).isEmpty()) {
         para = list.at(index).toFloat();
     }
 }
 
-void DeviceInfoHelper::setPara(const QStringList &list, int count, int index, QString &para)
-{
+void DeviceInfoHelper::setPara(const QStringList &list, int count, int index, QString &para) {
     if (count > index && !list.at(index).isEmpty()) {
         para = list.at(index);
     }
 }
 
-void DeviceInfoHelper::getDevicePara(const QString &url, QString &resolution, int &frameRate, QString &codecName)
-{
+void DeviceInfoHelper::getDevicePara(const QString &url, QString &resolution, int &frameRate, QString &codecName) {
     int offsetX, offsetY;
     QString encodeScale;
     DeviceInfoHelper::getDevicePara(url, resolution, frameRate, codecName, offsetX, offsetY, encodeScale);
 }
 
-void DeviceInfoHelper::getDevicePara(const QString &url, QString &resolution, int &frameRate, QString &codecName, int &offsetX, int &offsetY, QString &encodeScale)
-{
+void DeviceInfoHelper::getDevicePara(const QString &url, QString &resolution, int &frameRate, QString &codecName,
+                                     int &offsetX, int &offsetY, QString &encodeScale) {
     //无论是否带分隔符第一个约定是设备名称
     QStringList list = url.split("|");
     int count = list.count();
@@ -352,8 +341,8 @@ void DeviceInfoHelper::getDevicePara(const QString &url, QString &resolution, in
     }
 }
 
-void DeviceInfoHelper::getNormalPara(const QString &url, QString &transport, int &decodeType, int &encodeVideo, int &encodeVideoFps, float &encodeVideoRatio, QString &encodeVideoScale)
-{
+void DeviceInfoHelper::getNormalPara(const QString &url, QString &transport, int &decodeType, int &encodeVideo,
+                                     int &encodeVideoFps, float &encodeVideoRatio, QString &encodeVideoScale) {
     QStringList list = url.split("|");
     int count = list.count();
 

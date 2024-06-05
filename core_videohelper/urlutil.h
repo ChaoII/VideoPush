@@ -2,8 +2,7 @@
 
 #include <QStringList>
 
-class UrlUtil
-{
+class UrlUtil {
 public:
     //地址类型
     enum UrlType {
@@ -20,10 +19,12 @@ public:
 
     //读取和写入地址
     static void readUrls(const QString &fileName, QStringList &urls);
+
     static void writeUrls(const QString &fileName, const QStringList &urls);
 
     //获取地址集合
     static QStringList getUrls(int type);
+
     //去重插入地址
     static void appendUrl(QStringList &urls, const QString &url);
 

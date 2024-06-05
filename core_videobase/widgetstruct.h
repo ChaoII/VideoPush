@@ -54,8 +54,7 @@ enum EncodeAudio {
 };
 
 //编码结构体参数
-struct EncodePara
-{
+struct EncodePara {
     double encodeSpeed;         //编码播放速度
     EncodeAudio encodeAudio;    //音频编码格式(自动处理/转aac/转pcma)
     EncodeVideo encodeVideo;    //视频编码格式(自动处理/转264/转265)
@@ -191,6 +190,7 @@ enum BannerPosition {
 
 //悬浮条参数
 #include <QMargins>
+
 struct BannerPara {
     QMargins margin;            //边距
     int spacing;                //间距
@@ -218,7 +218,8 @@ struct BannerPara {
         //采用iconfont图形字体
         icons = QList<int>() << 0xea1b << 0xeb15 << 0xe674 << 0xe703 << 0xe502 << 0xe74c;
         //为了避免和其他控件重名建议前面加上前缀用来区分
-        names = QList<QString>() << "banner_btnRecord" << "banner_btnSnap" << "banner_btnSound" << "banner_btnCrop" << "banner_btnAlarm" << "banner_btnClose";
+        names = QList<QString>() << "banner_btnRecord" << "banner_btnSnap" << "banner_btnSound" << "banner_btnCrop"
+                                 << "banner_btnAlarm" << "banner_btnClose";
         tips = QList<QString>() << "录制" << "抓图" << "声音" << "放大" << "警情" << "关闭";
     }
 };

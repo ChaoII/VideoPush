@@ -1,12 +1,8 @@
 ﻿#include "urlutil.h"
 #include "qfile.h"
 #include "qdebug.h"
-#ifdef Q_CC_MSVC
-#pragma execution_character_set("utf-8")
-#endif
 
-void UrlUtil::readUrls(const QString &fileName, QStringList &urls)
-{
+void UrlUtil::readUrls(const QString &fileName, QStringList &urls) {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         return;
@@ -42,8 +38,7 @@ void UrlUtil::readUrls(const QString &fileName, QStringList &urls)
     file.close();
 }
 
-void UrlUtil::writeUrls(const QString &fileName, const QStringList &urls)
-{
+void UrlUtil::writeUrls(const QString &fileName, const QStringList &urls) {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         return;
@@ -61,8 +56,7 @@ void UrlUtil::writeUrls(const QString &fileName, const QStringList &urls)
     file.close();
 }
 
-QStringList UrlUtil::getUrls(int type)
-{
+QStringList UrlUtil::getUrls(int type) {
     QStringList urls;
 
     //安卓上暂时就放几个测试就好
@@ -82,12 +76,18 @@ QStringList UrlUtil::getUrls(int type)
     if (type & 0x01) {
         appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.15:554/media/video1");
         appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.15:554/media/video2");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.160:554/stream0?username=admin&password=E10ADC3949BA59ABBE56E057F20F883E");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.160:554/stream1?username=admin&password=E10ADC3949BA59ABBE56E057F20F883E");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.160:554/stream0?username=admin&password=E10ADC3949BA59ABBE56E057F20F883E");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.160:554/stream1?username=admin&password=E10ADC3949BA59ABBE56E057F20F883E");
     }
 
     //全网最全音视频媒体流 https://blog.csdn.net/weixin_42182599/article/details/126054178
@@ -106,10 +106,14 @@ QStringList UrlUtil::getUrls(int type)
         appendUrl(urls, "http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8");
 
         appendUrl(urls, "http://vd3.bdstatic.com/mda-jennyc5ci1ugrxzi/mda-jennyc5ci1ugrxzi.mp4");
-        appendUrl(urls, "http://vd2.bdstatic.com/mda-mhhf5mr00yyhpfjs/1080p/cae_h264/1629284581057661229/mda-mhhf5mr00yyhpfjs.mp4");
-        appendUrl(urls, "http://vd2.bdstatic.com/mda-mhig1c3sw223mx8p/1080p/cae_h264/1629380139191731149/mda-mhig1c3sw223mx8p.mp4");
-        appendUrl(urls, "http://vd3.bdstatic.com/mda-mekfm7wu6f4rtt99/1080p/cae_h264/1621595318412084671/mda-mekfm7wu6f4rtt99.mp4");
-        appendUrl(urls, "http://vd2.bdstatic.com/mda-mesdm11tdp69a9ye/1080p/cae_h264/1622115758783335310/mda-mesdm11tdp69a9ye.mp4");
+        appendUrl(urls,
+                  "http://vd2.bdstatic.com/mda-mhhf5mr00yyhpfjs/1080p/cae_h264/1629284581057661229/mda-mhhf5mr00yyhpfjs.mp4");
+        appendUrl(urls,
+                  "http://vd2.bdstatic.com/mda-mhig1c3sw223mx8p/1080p/cae_h264/1629380139191731149/mda-mhig1c3sw223mx8p.mp4");
+        appendUrl(urls,
+                  "http://vd3.bdstatic.com/mda-mekfm7wu6f4rtt99/1080p/cae_h264/1621595318412084671/mda-mekfm7wu6f4rtt99.mp4");
+        appendUrl(urls,
+                  "http://vd2.bdstatic.com/mda-mesdm11tdp69a9ye/1080p/cae_h264/1622115758783335310/mda-mesdm11tdp69a9ye.mp4");
     }
 
     if (type & 0x04) {
@@ -197,10 +201,14 @@ QStringList UrlUtil::getUrls(int type)
         appendUrl(urls, "http://222.175.159.226:808/hls/20231/index.m3u8");
 
         appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.15:554/media/video1");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
-        appendUrl(urls, "rtsp://admin:Admin123456@192.168.0.108:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
+        appendUrl(urls,
+                  "rtsp://admin:Admin123456@192.168.0.108:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif");
     }
 
     if (type & 0x80) {
@@ -213,15 +221,13 @@ QStringList UrlUtil::getUrls(int type)
     return urls;
 }
 
-void UrlUtil::appendUrl(QStringList &urls, const QString &url)
-{
+void UrlUtil::appendUrl(QStringList &urls, const QString &url) {
     if (!urls.contains(url)) {
         urls << url;
     }
 }
 
-QStringList UrlUtil::getUrlByType(int type)
-{
+QStringList UrlUtil::getUrlByType(int type) {
     QStringList urls;
     if (type == 1) {
         for (int i = 1; i <= 4; ++i) {
@@ -256,38 +262,48 @@ QStringList UrlUtil::getUrlByType(int type)
         }
     } else if (type == 8) {
         urls << "rtsp://admin:Admin123456@192.168.0.15:554/media/video1";
-        urls << "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2";
-        urls << "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
-        urls << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
+        urls
+                << "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2";
+        urls
+                << "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
+        urls
+                << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
     } else if (type == 9) {
         for (int i = 1; i <= 16; ++i) {
-            urls << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
+            urls
+                    << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
         }
     } else if (type == 10) {
         for (int i = 1; i <= 4; ++i) {
             urls << "rtsp://admin:Admin123456@192.168.0.15:554/media/video1";
         }
         for (int i = 1; i <= 4; ++i) {
-            urls << "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2";
+            urls
+                    << "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/101?transportmode=unicast&profile=Profile_2";
         }
         for (int i = 1; i <= 4; ++i) {
-            urls << "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
+            urls
+                    << "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
         }
         for (int i = 1; i <= 4; ++i) {
-            urls << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
+            urls
+                    << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif";
         }
     } else if (type == 11) {
         for (int i = 1; i <= 4; ++i) {
             urls << "rtsp://admin:Admin123456@192.168.0.15:554/media/video2";
         }
         for (int i = 1; i <= 4; ++i) {
-            urls << "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2";
+            urls
+                    << "rtsp://admin:Admin123456@192.168.0.64:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2";
         }
         for (int i = 1; i <= 4; ++i) {
-            urls << "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif";
+            urls
+                    << "rtsp://admin:Admin123456@192.168.0.100:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif";
         }
         for (int i = 1; i <= 4; ++i) {
-            urls << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif";
+            urls
+                    << "rtsp://admin:Admin123456@192.168.0.106:554/cam/realmonitor?channel=1&subtype=1&unicast=true&proto=Onvif";
         }
     }
 

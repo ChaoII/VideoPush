@@ -1,27 +1,24 @@
 ﻿#include "filepushserver.h"
 
-FilePushServer::FilePushServer(QObject *parent) : QTcpServer(parent)
-{
+FilePushServer::FilePushServer(QObject *parent) : QTcpServer(parent) {
     playMode = 0;
     maxCount = 1000;
 }
 
-FilePushServer::~FilePushServer()
-{
+FilePushServer::~FilePushServer() {
     this->stop();
 }
 
-void FilePushServer::incomingConnection(intptr handle)
-{
+void FilePushServer::incomingConnection(intptr handle) {
     int count = clients.count();
     if (count <= maxCount) {
-        FilePushClient *client = new FilePushClient(handle, this);
+        auto client = new FilePushClient(handle, this);
         client->setPlayMode(playMode);
-        connect(client, SIGNAL(finish()), this, SLOT(finish()));
-        connect(client, SIGNAL(sendData(QByteArray)), this, SIGNAL(sendData(QByteArray)));
-        connect(client, SIGNAL(receiveData(QByteArray)), this, SIGNAL(receiveData(QByteArray)));
-        connect(client, SIGNAL(changeFile(QString)), this, SLOT(changeFile(QString)));
-        connect(client, SIGNAL(receiveConnection(QString)), this, SIGNAL(receiveConnection(QString)));
+        connect(client, &FilePushClient::finish, this, &FilePushServer::finish);
+        connect(client, &FilePushClient::sendData, this, &FilePushServer::sendData);
+        connect(client, &FilePushClient::receiveData, this, &FilePushServer::receiveData);
+        connect(client, &FilePushClient::changeFile, this, &FilePushServer::changeFile);
+        connect(client, &FilePushClient::receiveConnection, this, &FilePushServer::receiveConnection);
         clients << client;
         client->start();
     } else {
@@ -34,21 +31,18 @@ void FilePushServer::incomingConnection(intptr handle)
     }
 }
 
-void FilePushServer::finish()
-{
-    FilePushClient *client = (FilePushClient *)sender();
+void FilePushServer::finish() {
+    auto client = dynamic_cast<FilePushClient *>( sender());
     clients.removeOne(client);
     client->deleteLater();
     this->calcConnection();
 }
 
-void FilePushServer::changeFile(const QString &fileName)
-{
+void FilePushServer::changeFile(const QString &fileName) {
     this->calcConnection();
 }
 
-void FilePushServer::calcConnection()
-{
+void FilePushServer::calcConnection() {
     QList<int> counts;
     QList<QString> names;
     int count = clients.count();
@@ -67,29 +61,23 @@ void FilePushServer::calcConnection()
             counts << 1;
         }
     }
-
-    //qDebug() << TIMEMS << names << counts;
     emit receiveCount(names, counts);
 }
 
-bool FilePushServer::addFile(const QString &file, QString &flag)
-{
+bool FilePushServer::addFile(const QString &file, QString &flag) {
     //可以自行改变对应格式(比如后面可以加上拓展名)
     //如果指定了值则采用指定的否则采用生成的
     if (flag.isEmpty()) {
         flag = VideoPushHelper::getCryptoString(file);
     }
-
     if (!files.contains(flag)) {
         files[flag] = file;
         return true;
     }
-
     return false;
 }
 
-void FilePushServer::updateFile(const QString &file, const QString &srcFlag, const QString &dstFlag)
-{
+void FilePushServer::updateFile(const QString &file, const QString &srcFlag, const QString &dstFlag) {
     //旧的不存在不用继续/新的存在说明重复了也不用继续
     if (!files.contains(srcFlag) || files.contains(dstFlag)) {
         return;
@@ -100,31 +88,25 @@ void FilePushServer::updateFile(const QString &file, const QString &srcFlag, con
     files[dstFlag] = file;
 }
 
-void FilePushServer::removeFile(const QString &flag)
-{
+void FilePushServer::removeFile(const QString &flag) {
     files.remove(flag);
 }
 
-void FilePushServer::clearFile()
-{
+void FilePushServer::clearFile() {
     files.clear();
 }
 
-QString FilePushServer::findFile(const QString &flag)
-{
+QString FilePushServer::findFile(const QString &flag) {
     //去掉末尾的拓展名再去查找
     QString key = flag.split(".").first();
     return files.value(key, "");
 }
 
-QString FilePushServer::getHttpUrl(const QString &file)
-{
+QString FilePushServer::getHttpUrl(const QString &file) {
     if (!this->isListening()) {
         return "";
     }
-
     QString http = QString("http://%1:%2").arg(serverAddress().toString()).arg(serverPort());
-
     //如果名称不为空则查找指定文件的唯一标识作为地址后缀
     if (!file.isEmpty()) {
         //找到文件名对应的唯一标识
@@ -151,20 +133,17 @@ QString FilePushServer::getHttpUrl(const QString &file)
     return http;
 }
 
-void FilePushServer::setPlayMode(int playMode)
-{
+void FilePushServer::setPlayMode(int playMode) {
     this->playMode = playMode;
 }
 
-void FilePushServer::setMaxCount(int maxCount)
-{
+void FilePushServer::setMaxCount(int maxCount) {
     if (maxCount > 0) {
         this->maxCount = maxCount;
     }
 }
 
-bool FilePushServer::start(const QString &ip, int port)
-{
+bool FilePushServer::start(const QString &ip, int port) {
     //已经监听则先停止
     if (this->isListening()) {
         this->stop();
@@ -190,13 +169,11 @@ bool FilePushServer::start(const QString &ip, int port)
     return true;
 }
 
-void FilePushServer::stop()
-{
+void FilePushServer::stop() {
     //释放所有资源
-    foreach (FilePushClient *client, clients) {
+    for (auto &client: clients) {
         client->deleteLater();
     }
-
     clients.clear();
     this->close();
     this->calcConnection();

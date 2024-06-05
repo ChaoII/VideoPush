@@ -2,13 +2,11 @@
 #include "qpainter.h"
 #include "qdebug.h"
 
-ImageLabel::ImageLabel(QWidget *parent) : QLabel(parent)
-{
+ImageLabel::ImageLabel(QWidget *parent) : QLabel(parent) {
 
 }
 
-void ImageLabel::paintEvent(QPaintEvent *event)
-{
+void ImageLabel::paintEvent(QPaintEvent *event) {
     QLabel::paintEvent(event);
     if (image.isNull()) {
         return;
@@ -26,13 +24,11 @@ void ImageLabel::paintEvent(QPaintEvent *event)
 #endif
 }
 
-void ImageLabel::clear()
-{
+void ImageLabel::clear() {
     this->setImage(QImage());
 }
 
-void ImageLabel::setImage(const QImage &image, bool scale)
-{
+void ImageLabel::setImage(const QImage &image, bool scale) {
     //QImage默认会浅拷贝,采用copy则深拷贝,不然图像快了会产生断层,开启copy会增加CPU
     this->image = image;
     //this->image = image.copy();

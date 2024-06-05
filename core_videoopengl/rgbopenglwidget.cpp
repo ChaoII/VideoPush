@@ -1,8 +1,7 @@
 ﻿#include "rgbopenglwidget.h"
 #include "openglinclude.h"
 
-RgbWidget::RgbWidget(QWidget *parent) : QOpenGLWidget(parent)
-{
+RgbWidget::RgbWidget(QWidget *parent) : QOpenGLWidget(parent) {
     QStringList list;
     list << "#version 330 \n";
     list << "attribute vec4 vertexIn;";
@@ -26,45 +25,40 @@ RgbWidget::RgbWidget(QWidget *parent) : QOpenGLWidget(parent)
     shaderFrag = list.join("");
 }
 
-RgbWidget::~RgbWidget()
-{
+RgbWidget::~RgbWidget() {
     makeCurrent();
     vbo.destroy();
     doneCurrent();
 }
 
-void RgbWidget::clear()
-{
+void RgbWidget::clear() {
     this->initData();
     this->update();
 }
 
-void RgbWidget::setFrameSize(int width, int height)
-{
+void RgbWidget::setFrameSize(int width, int height) {
     this->width = width;
     this->height = height;
 }
 
-void RgbWidget::updateTextures(quint8 *dataRGB, int type)
-{
+void RgbWidget::updateTextures(quint8 *dataRGB, int type) {
     this->dataRGB = dataRGB;
     this->type = type;
     this->update();
 }
 
-void RgbWidget::updateFrame(int width, int height, quint8 *dataRGB, int type)
-{
+void RgbWidget::updateFrame(int width, int height, quint8 *dataRGB, int type) {
     this->setFrameSize(width, height);
     this->updateTextures(dataRGB, type);
 }
 
-void RgbWidget::initializeGL()
-{
+void RgbWidget::initializeGL() {
     initializeOpenGLFunctions();
     glDisable(GL_DEPTH_TEST);
 
     //录制顶点坐标和纹理坐标
-    static const GLfloat points[] = {-1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+    static const GLfloat points[] = {-1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+                                     1.0f, 0.0f, 1.0f};
 
     //顶点缓冲对象初始化
     vbo.create();
@@ -79,8 +73,7 @@ void RgbWidget::initializeGL()
     this->initColor();
 }
 
-void RgbWidget::paintGL()
-{
+void RgbWidget::paintGL() {
     if (!dataRGB || width == 0 || height == 0) {
         this->initColor();
         return;
@@ -111,14 +104,12 @@ void RgbWidget::paintGL()
     program.release();
 }
 
-void RgbWidget::initData()
-{
+void RgbWidget::initData() {
     width = height = 0;
     dataRGB = 0;
 }
 
-void RgbWidget::initColor()
-{
+void RgbWidget::initColor() {
     //取画板背景颜色
     QColor color = palette().window().color();
     //设置背景清理色
@@ -127,34 +118,29 @@ void RgbWidget::initColor()
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void RgbWidget::initShader()
-{
+void RgbWidget::initShader() {
     program.addShaderFromSourceCode(QOpenGLShader::Vertex, shaderVert);
     program.addShaderFromSourceCode(QOpenGLShader::Fragment, shaderFrag);
     program.link();
     program.bind();
 }
 
-void RgbWidget::initTextures()
-{
+void RgbWidget::initTextures() {
     glGenTextures(1, &texture);
 }
 
-void RgbWidget::initParamete()
-{
+void RgbWidget::initParamete() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-void RgbWidget::read()
-{
+void RgbWidget::read() {
 
 }
 
-void RgbWidget::setImage(const QImage &image)
-{
+void RgbWidget::setImage(const QImage &image) {
     QImage img = image;
     if (img.format() != QImage::Format_RGB888) {
         img = img.convertToFormat(QImage::Format_RGB888);
@@ -163,8 +149,7 @@ void RgbWidget::setImage(const QImage &image)
     this->updateFrame(img.width(), img.height(), img.bits(), 1);
 }
 
-void RgbWidget::play(const QString &fileName, int frameRate)
-{
+void RgbWidget::play(const QString &fileName, int frameRate) {
     image = QImage(fileName);
     if (image.isNull()) {
         return;
@@ -175,10 +160,9 @@ void RgbWidget::play(const QString &fileName, int frameRate)
     }
 
     this->updateFrame(image.width(), image.height(), image.bits(), 2);
-    emit playFinsh();
+    emit playFinish();
 }
 
-void RgbWidget::stop()
-{
+void RgbWidget::stop() {
 
 }

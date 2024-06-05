@@ -314,7 +314,7 @@ void VideoWidget::finished() {
 void VideoWidget::receivePlayStart(int time) {
     //vlc内核句柄模式下在打开后鼠标打圈圈需要复位下
     if (widgetPara_.videoMode == VideoMode_Hwnd) {
-        VideoTask::Instance()->append("resetCursor", "");
+        VideoTask::Instance().append("resetCursor", "");
     }
 
     //句柄模式下句柄控件要禁用绘制防止闪烁(尤其是海康大华厂家sdk内核)
@@ -343,7 +343,7 @@ void VideoWidget::receivePlayStart(int time) {
 void VideoWidget::receivePlayFinsh() {
     //mpv内核句柄模式下在关闭后鼠标打圈圈需要复位下
     if (widgetPara_.videoMode == VideoMode_Hwnd) {
-        VideoTask::Instance()->append("resetCursor", "");
+        VideoTask::Instance().append("resetCursor", "");
     }
 
     //句柄模式下句柄控件要禁用绘制防止闪烁(尤其是海康大华厂家sdk内核)

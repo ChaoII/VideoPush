@@ -1,49 +1,43 @@
 ﻿#include "imagepushserver.h"
 
-ImagePushServer::ImagePushServer(QObject *parent) : QTcpServer(parent)
-{
+ImagePushServer::ImagePushServer(QObject *parent) : QTcpServer(parent) {
 
 }
 
-void ImagePushServer::incomingConnection(intptr handle)
-{
-    ImagePushClient *client = new ImagePushClient(handle, this);
+void ImagePushServer::incomingConnection(intptr handle) {
+    auto client = new ImagePushClient(handle, this);
     emit receiveConnection(client->getAddress());
     QString flag = VideoPushHelper::getCryptoString(QString("name%1").arg(rand() % 100));
     client->setFlag(flag);
-    connect(client, SIGNAL(finish()), this, SLOT(finish()));
-    connect(client, SIGNAL(sendData(QByteArray)), this, SIGNAL(sendData(QByteArray)));
-    connect(client, SIGNAL(receiveData(QByteArray)), this, SIGNAL(receiveData(QByteArray)));
+    connect(client, &ImagePushClient::finish, this, &ImagePushServer::finish);
+    connect(client, &ImagePushClient::sendData, this, &ImagePushServer::sendData);
+    connect(client, &ImagePushClient::receiveData, this, &ImagePushServer::receiveData);
     clients << client;
     client->start();
-    emit receiveCount(clients.count());
+    emit receiveCount(clients.size());
 }
 
-void ImagePushServer::finish()
-{
+void ImagePushServer::finish() {
     //断开的连接从队列中移除
-    ImagePushClient *client = (ImagePushClient *)sender();
+    ImagePushClient *client = (ImagePushClient *) sender();
     clients.removeOne(client);
     client->stop();
     client->deleteLater();
     emit receiveCount(clients.count());
 }
 
-QString ImagePushServer::getHttpAddr()
-{
+QString ImagePushServer::getHttpAddr() {
     return QString("http://%1:%2").arg(this->serverAddress().toString()).arg(this->serverPort());
 }
 
-void ImagePushServer::sendImage(const QImage &image)
-{
+void ImagePushServer::sendImage(const QImage &image) {
     //对所有在线连接发送
-    foreach (ImagePushClient *client, clients) {
-        client->append(image);
-    }
+            foreach (ImagePushClient *client, clients) {
+            client->append(image);
+        }
 }
 
-bool ImagePushServer::start(const QString &ip, int port)
-{
+bool ImagePushServer::start(const QString &ip, int port) {
     //已经监听则先停止
     if (this->isListening()) {
         this->stop();
@@ -69,12 +63,11 @@ bool ImagePushServer::start(const QString &ip, int port)
     return true;
 }
 
-void ImagePushServer::stop()
-{
+void ImagePushServer::stop() {
     //释放所有资源
-    foreach (ImagePushClient *client, clients) {
-        client->deleteLater();
-    }
+            foreach (ImagePushClient *client, clients) {
+            client->deleteLater();
+        }
 
     clients.clear();
     this->close();

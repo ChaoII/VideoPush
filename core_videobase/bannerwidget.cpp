@@ -1,7 +1,6 @@
 ﻿#include "bannerwidget.h"
 
-BannerWidget::BannerWidget(QWidget *parent) : QWidget(parent)
-{
+BannerWidget::BannerWidget(QWidget *parent) : QWidget(parent) {
     //设置可以应用样式表
     this->setAttribute(Qt::WA_StyledBackground, true);
 
@@ -18,7 +17,7 @@ BannerWidget::BannerWidget(QWidget *parent) : QWidget(parent)
     if (fontDb.families().contains("iconfont")) {
         iconFont = QFont("iconfont");
         iconFont.setPixelSize(17);
-#if (QT_VERSION >= QT_VERSION_CHECK(4,8,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 0))
         iconFont.setHintingPreference(QFont::PreferNoHinting);
 #endif
     }
@@ -36,53 +35,48 @@ BannerWidget::BannerWidget(QWidget *parent) : QWidget(parent)
     this->initStyle();
 }
 
-BannerPara BannerWidget::getBannerPara()
-{
+BannerPara BannerWidget::getBannerPara() {
     return this->bannerPara;
 }
 
-bool BannerWidget::getIsRecord() const
-{
+bool BannerWidget::getIsRecord() const {
     return this->isRecord;
 }
 
-bool BannerWidget::getIsCrop() const
-{
+bool BannerWidget::getIsCrop() const {
     return this->isCrop;
 }
 
-void BannerWidget::btnClicked()
-{
-    QPushButton *btn = (QPushButton *)sender();
+void BannerWidget::btnClicked() {
+    QPushButton *btn = (QPushButton *) sender();
     QString objName = btn->objectName();
     emit btnClicked(objName);
 
     //根据需要切换图标以及标识
     if (objName.endsWith("btnRecord")) {
-        btn->setText((QChar)0xea1c);
+        btn->setText((QChar) 0xea1c);
         btn->setObjectName(objName.replace("Record", "Stop"));
     } else if (objName.endsWith("btnStop")) {
-        btn->setText((QChar)0xea1b);
+        btn->setText((QChar) 0xea1b);
         btn->setObjectName(objName.replace("Stop", "Record"));
     } else if (objName.endsWith("btnSound")) {
-        btn->setText((QChar)0xe667);
+        btn->setText((QChar) 0xe667);
         btn->setObjectName(objName.replace("Sound", "Muted"));
     } else if (objName.endsWith("btnMuted")) {
-        btn->setText((QChar)0xe674);
+        btn->setText((QChar) 0xe674);
         btn->setObjectName(objName.replace("Muted", "Sound"));
     } else if (objName.endsWith("btnCrop")) {
         this->isCrop = true;
-        btn->setText((QChar)0xe793);
+        btn->setText((QChar) 0xe793);
         btn->setObjectName(objName.replace("Crop", "Reset"));
     } else if (objName.endsWith("btnReset")) {
         this->isCrop = false;
-        btn->setText((QChar)0xe703);
+        btn->setText((QChar) 0xe703);
         btn->setObjectName(objName.replace("Reset", "Crop"));
     }
 }
 
-void BannerWidget::receivePlayFinish()
-{
+void BannerWidget::receivePlayFinish() {
     this->isRecord = false;
     this->isCrop = false;
     this->changeStatus("Stop", "Record", 0xea1b);
@@ -90,8 +84,7 @@ void BannerWidget::receivePlayFinish()
     this->changeStatus("Reset", "Crop", 0xe703);
 }
 
-void BannerWidget::receiveMuted(bool muted)
-{
+void BannerWidget::receiveMuted(bool muted) {
     if (muted) {
         this->changeStatus("Sound", "Muted", 0xe667);
     } else {
@@ -99,8 +92,7 @@ void BannerWidget::receiveMuted(bool muted)
     }
 }
 
-void BannerWidget::recorderStateChanged(const RecorderState &state, const QString &file)
-{
+void BannerWidget::recorderStateChanged(const RecorderState &state, const QString &file) {
     if (state == RecorderState_Recording) {
         this->isRecord = true;
         this->recordFile = file;
@@ -113,13 +105,11 @@ void BannerWidget::recorderStateChanged(const RecorderState &state, const QStrin
     this->showInfo(text);
 }
 
-void BannerWidget::setBannerPara(const BannerPara &bannerPara)
-{
+void BannerWidget::setBannerPara(const BannerPara &bannerPara) {
     this->bannerPara = bannerPara;
 }
 
-void BannerWidget::initButton()
-{
+void BannerWidget::initButton() {
     //检查数量是否一致
     int iconCount = bannerPara.icons.count();
     int nameCount = bannerPara.names.count();
@@ -196,7 +186,7 @@ void BannerWidget::initButton()
         btn->setIcon(icons.at(i));
 #else
         btn->setFont(iconFont);
-        btn->setText((QChar)bannerPara.icons.at(i));
+        btn->setText((QChar) bannerPara.icons.at(i));
 #endif
 
         //将按钮加到布局中
@@ -205,12 +195,12 @@ void BannerWidget::initButton()
     }
 }
 
-void BannerWidget::initStyle()
-{
+void BannerWidget::initStyle() {
     //应用样式表
     QStringList list;
     QColor bgColor = bannerPara.bgColor;
-    QString rgba = QString("rgba(%1,%2,%3,%4)").arg(bgColor.red()).arg(bgColor.green()).arg(bgColor.blue()).arg(bannerPara.bgAlpha);
+    QString rgba = QString("rgba(%1,%2,%3,%4)").arg(bgColor.red()).arg(bgColor.green()).arg(bgColor.blue()).arg(
+            bannerPara.bgAlpha);
     list << QString("#bannerWidget{background:%1;border:none;}").arg(rgba);
     list << QString("QLabel{margin:0px;padding:0px;}");
     list << QString("QPushButton,QLabel{color:%1;}").arg(bannerPara.textColor.name());
@@ -219,8 +209,7 @@ void BannerWidget::initStyle()
     this->setStyleSheet(list.join(""));
 }
 
-void BannerWidget::showInfo(const QString &text)
-{
+void BannerWidget::showInfo(const QString &text) {
     this->text = text;
     if (isRecord) {
         QString flag = (recordFile.contains("://") ? "推流" : "录制");
@@ -230,15 +219,14 @@ void BannerWidget::showInfo(const QString &text)
     }
 }
 
-void BannerWidget::changeStatus(const QString &objNameSrc, const QString &objNameDst, int icon)
-{
-    foreach (QPushButton *btn, btns) {
-        QString objName = btn->objectName();
-        if (objName.endsWith(objNameSrc)) {
-            objName.replace(objNameSrc, objNameDst);
-            btn->setObjectName(objName);
-            btn->setText((QChar)icon);
-            break;
+void BannerWidget::changeStatus(const QString &objNameSrc, const QString &objNameDst, int icon) {
+            foreach (QPushButton *btn, btns) {
+            QString objName = btn->objectName();
+            if (objName.endsWith(objNameSrc)) {
+                objName.replace(objNameSrc, objNameDst);
+                btn->setObjectName(objName);
+                btn->setText((QChar) icon);
+                break;
+            }
         }
-    }
 }

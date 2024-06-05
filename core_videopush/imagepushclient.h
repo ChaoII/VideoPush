@@ -2,11 +2,12 @@
 
 #include "videopushhelper.h"
 
-class ImagePushClient : public QThread
-{
-    Q_OBJECT
+class ImagePushClient : public QThread {
+Q_OBJECT
+
 public:
-    explicit ImagePushClient(intptr socketDescriptor, QObject *parent = 0);
+    explicit ImagePushClient(intptr socketDescriptor, QObject *parent = nullptr);
+
     ~ImagePushClient();
 
 protected:
@@ -27,8 +28,10 @@ private:
     QList<QImage> images;
 
 private slots:
+
     //读取数据
     void readData();
+
     //发送数据
     void writeData(const QByteArray &data);
 
@@ -38,6 +41,7 @@ public:
 
     //设置唯一标识
     void setFlag(const QString &flag);
+
     //添加图片
     void append(const QImage &image);
 
@@ -45,13 +49,16 @@ public:
     void stop();
 
 signals:
+
     //发送数据
     void sendData(const QByteArray &data);
+
     //接收数据
     void receiveData(const QByteArray &data);
 
     //通信结束
     void finish();
+
     //发送数据
     void readyWrite(const QByteArray &data);
 };

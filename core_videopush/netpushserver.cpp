@@ -1,18 +1,16 @@
 ﻿#include "netpushserver.h"
 
-NetPushServer::NetPushServer(QObject *parent) : QObject(parent)
-{
+NetPushServer::NetPushServer(QObject *parent) : QObject(parent) {
     isStart = false;
     pushUrl = "rtmp://127.0.0.1:6908";
 
     //定时器处理启动推流线程
     timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(startPush()));
+    connect(timer, &QTimer::timeout, this, &NetPushServer::startPush);
     timer->setInterval(50);
 }
 
-void NetPushServer::startPush()
-{
+void NetPushServer::startPush() {
     if (pushIndex >= clients.count()) {
         timer->stop();
         return;
@@ -22,10 +20,9 @@ void NetPushServer::startPush()
     pushIndex++;
 }
 
-NetPushClient *NetPushServer::getClient(const QString &mediaUrl)
-{
-    NetPushClient *pushClient = NULL;
-    foreach (NetPushClient *client, clients) {
+NetPushClient *NetPushServer::getClient(const QString &mediaUrl) {
+    NetPushClient *pushClient = nullptr;
+    for (auto &client: clients) {
         if (client->getMediaUrl() == mediaUrl) {
             pushClient = client;
             break;
@@ -34,8 +31,7 @@ NetPushClient *NetPushServer::getClient(const QString &mediaUrl)
     return pushClient;
 }
 
-QString NetPushServer::getPushUrl(const QString &mediaUrl)
-{
+QString NetPushServer::getPushUrl(const QString &mediaUrl) {
     //补充完整的推流前缀
     QString url = pushUrl;
     if (!url.endsWith("/")) {
@@ -60,8 +56,7 @@ QString NetPushServer::getPushUrl(const QString &mediaUrl)
     return url;
 }
 
-bool NetPushServer::addUrl(const QString &url, QString &flag)
-{
+bool NetPushServer::addUrl(const QString &url, QString &flag) {
     //如果指定了值则采用指定的否则采用生成的
     if (flag.isEmpty()) {
         flag = VideoPushHelper::getCryptoString(url);
@@ -70,9 +65,9 @@ bool NetPushServer::addUrl(const QString &url, QString &flag)
     if (!urls.contains(flag)) {
         urls[flag] = url;
         //一个地址对应一个推流类
-        NetPushClient *client = new NetPushClient;
-        connect(client, SIGNAL(pushStart(QString, int, int, int, int, bool)), this, SIGNAL(pushStart(QString, int, int, int, int, bool)), Qt::DirectConnection);
-        connect(client, SIGNAL(pushChanged(QString, int)), this, SIGNAL(pushChanged(QString, int)));
+        auto client = new NetPushClient;
+        connect(client, &NetPushClient::pushStart, this, &NetPushServer::pushStart);
+        connect(client, &NetPushClient::pushChanged, this, &NetPushServer::pushChanged);
         client->setMediaUrl(url);
         client->setPushUrl(getPushUrl(url));
         //启动服务状态下自动启动线程
@@ -84,12 +79,11 @@ bool NetPushServer::addUrl(const QString &url, QString &flag)
         return true;
     }
 
-    QMessageBox::critical(0, "错误", "推流码重复, 请重新填写!");
+    QMessageBox::critical(nullptr, "错误", "推流码重复, 请重新填写!");
     return false;
 }
 
-void NetPushServer::updateUrl(const QString &url, const QString &srcFlag, const QString &dstFlag)
-{
+void NetPushServer::updateUrl(const QString &url, const QString &srcFlag, const QString &dstFlag) {
     //旧的不存在不用继续/新的存在说明重复了也不用继续
     if (!urls.contains(srcFlag) || urls.contains(dstFlag)) {
         return;
@@ -100,7 +94,7 @@ void NetPushServer::updateUrl(const QString &url, const QString &srcFlag, const 
     urls[dstFlag] = url;
 
     //更新推流类对应的推流码
-    foreach (NetPushClient *client, clients) {
+    for (auto &client: clients) {
         if (client->getMediaUrl() == url) {
             client->setPushUrl(getPushUrl(url));
             break;
@@ -108,10 +102,9 @@ void NetPushServer::updateUrl(const QString &url, const QString &srcFlag, const 
     }
 }
 
-void NetPushServer::removeUrl(const QString &flag)
-{
+void NetPushServer::removeUrl(const QString &flag) {
     urls.remove(flag);
-    foreach (NetPushClient *client, clients) {
+    for (NetPushClient *client: clients) {
         if (client->getPushUrl().endsWith(flag)) {
             client->stop();
             client->deleteLater();
@@ -121,10 +114,9 @@ void NetPushServer::removeUrl(const QString &flag)
     }
 }
 
-void NetPushServer::clearUrl()
-{
+void NetPushServer::clearUrl() {
     //释放所有资源
-    foreach (NetPushClient *client, clients) {
+    for (auto &client: clients) {
         client->stop();
         client->deleteLater();
     }
@@ -133,22 +125,20 @@ void NetPushServer::clearUrl()
     urls.clear();
 }
 
-void NetPushServer::setPushUrl(const QString &pushUrl)
-{
+void NetPushServer::setPushUrl(const QString &pushUrl) {
     this->pushUrl = pushUrl;
     //需要立即更新所有的推流地址
-    foreach (NetPushClient *client, clients) {
+    for (auto &client: clients) {
         QString mediaUrl = client->getMediaUrl();
         client->setPushUrl(getPushUrl(mediaUrl));
     }
 }
 
-void NetPushServer::start(const QString &mediaUrl)
-{
+void NetPushServer::start(const QString &mediaUrl) {
     isStart = true;
     if (mediaUrl.isEmpty()) {
 #if 0
-        foreach (NetPushClient *client, clients) {
+        for (auto &client: clients) {
             client->start();
         }
 #else
@@ -157,22 +147,21 @@ void NetPushServer::start(const QString &mediaUrl)
         timer->start();
 #endif
     } else {
-        NetPushClient *client = getClient(mediaUrl);
+        auto client = getClient(mediaUrl);
         if (client) {
             client->start();
         }
     }
 }
 
-void NetPushServer::stop(const QString &mediaUrl)
-{
+void NetPushServer::stop(const QString &mediaUrl) {
     isStart = false;
     if (mediaUrl.isEmpty()) {
-        foreach (NetPushClient *client, clients) {
+        for (auto &client: clients) {
             client->stop();
         }
     } else {
-        NetPushClient *client = getClient(mediaUrl);
+        auto client = getClient(mediaUrl);
         if (client) {
             client->stop();
         }

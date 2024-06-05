@@ -1,10 +1,9 @@
 ﻿#include "ffmpegfilter.h"
 #include "ffmpeghelper.h"
-#include "core_videohelper/filterhelper.h"
-#include "core_videobase/abstractvideothread.h"
+#include "filterhelper.h"
+#include "abstractvideothread.h"
 
-QString FFmpegFilter::getFilter(const FilterData &filterData)
-{
+QString FFmpegFilter::getFilter(const FilterData &filterData) {
     //滤镜内容字符串集合
     QStringList listFilter;
     if (filterData.rotate != 0) {
@@ -19,8 +18,8 @@ QString FFmpegFilter::getFilter(const FilterData &filterData)
     return FilterHelper::getFilters(listFilter);
 }
 
-int FFmpegFilter::initFilter(AbstractVideoThread *thread, AVStream *stream, AVCodecContext *avctx, FilterData &filterData)
-{
+int
+FFmpegFilter::initFilter(AbstractVideoThread *thread, AVStream *stream, AVCodecContext *avctx, FilterData &filterData) {
     int result = -1;
     QString step;
     if (!filterData.enable) {
@@ -64,21 +63,24 @@ int FFmpegFilter::initFilter(AbstractVideoThread *thread, AVStream *stream, AVCo
     }
 
     //创建输入滤镜
-    result = avfilter_graph_create_filter(&filterData.filterSrcCtx, filterSrc, "in", args.toUtf8().constData(), NULL, filterData.filterGraph);
+    result = avfilter_graph_create_filter(&filterData.filterSrcCtx, filterSrc, "in", args.toUtf8().constData(), NULL,
+                                          filterData.filterGraph);
     if (result < 0) {
         step = "创建输入滤镜";
         goto end;
     }
 
     //创建输出滤镜
-    result = avfilter_graph_create_filter(&filterData.filterSinkCtx, filterSink, "out", NULL, NULL, filterData.filterGraph);
+    result = avfilter_graph_create_filter(&filterData.filterSinkCtx, filterSink, "out", NULL, NULL,
+                                          filterData.filterGraph);
     if (result < 0) {
         step = "创建输出滤镜";
         goto end;
     }
 
     //设置输出滤镜格式
-    result = av_opt_set_int_list(filterData.filterSinkCtx, "pix_fmts", pix_fmts, filterData.formatOut, AV_OPT_SEARCH_CHILDREN);
+    result = av_opt_set_int_list(filterData.filterSinkCtx, "pix_fmts", pix_fmts, filterData.formatOut,
+                                 AV_OPT_SEARCH_CHILDREN);
     if (result < 0) {
         step = "设置输出格式";
         goto end;
@@ -109,17 +111,17 @@ int FFmpegFilter::initFilter(AbstractVideoThread *thread, AVStream *stream, AVCo
         goto end;
     }
 
-end:
+    end:
     //释放对应的输入输出
     avfilter_inout_free(&inputs);
     avfilter_inout_free(&outputs);
     filterData.isOk = (result >= 0);
-    thread->debug("滤镜处理", filterData.isOk ? "结果: 成功" : QString("结果: 失败 步骤: %1 原因: %2").arg(step).arg(FFmpegHelper::getError(result)), "");
+    thread->debug("滤镜处理", filterData.isOk ? "结果: 成功" : QString("结果: 失败 步骤: %1 原因: %2").arg(step).arg(
+            FFmpegHelper::getError(result)), "");
     return result;
 }
 
-void FFmpegFilter::freeFilter(FilterData &filterData)
-{
+void FFmpegFilter::freeFilter(FilterData &filterData) {
     if (filterData.isOk) {
         filterData.enable = true;
         filterData.init = true;

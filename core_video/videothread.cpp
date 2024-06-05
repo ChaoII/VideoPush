@@ -89,7 +89,7 @@ VideoThread::VideoThread(QObject *parent) : AbstractVideoThread(parent) {
     }
 
     //启动任务处理线程做一些额外的处理
-    VideoTask::Instance()->start();
+    VideoTask::Instance().start();
 }
 
 void VideoThread::checkOpen() {

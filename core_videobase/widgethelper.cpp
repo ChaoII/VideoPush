@@ -1,7 +1,6 @@
 ﻿#include "widgethelper.h"
 
-int WidgetHelper::getBorderWidth(AbstractVideoWidget *widget, int *size)
-{
+int WidgetHelper::getBorderWidth(AbstractVideoWidget *widget, int *size) {
     //根据画面尺寸主动加大边框
     int offset = widget->getVideoWidth() / 35;
     if (size) {
@@ -13,8 +12,7 @@ int WidgetHelper::getBorderWidth(AbstractVideoWidget *widget, int *size)
     return borderWidth;
 }
 
-QRect WidgetHelper::getRect(const QString &p1, const QString &p2)
-{
+QRect WidgetHelper::getRect(const QString &p1, const QString &p2) {
     QStringList list1 = p1.split(",");
     QStringList list2 = p2.split(",");
     QPoint pos1(list1.at(0).toInt(), list1.at(1).toInt());
@@ -22,8 +20,7 @@ QRect WidgetHelper::getRect(const QString &p1, const QString &p2)
     return WidgetHelper::getRect(pos1, pos2);
 }
 
-QRect WidgetHelper::getRect(const QPoint &p1, const QPoint &p2)
-{
+QRect WidgetHelper::getRect(const QPoint &p1, const QPoint &p2) {
     //qrect参数只支持左上角右下角坐标点参数传入/要先换算好
     int x1 = p1.x();
     int y1 = p1.y();
@@ -34,8 +31,8 @@ QRect WidgetHelper::getRect(const QPoint &p1, const QPoint &p2)
     return QRect(topleft, bottomright);
 }
 
-QRect WidgetHelper::getCenterRect(const QSize &imageSize, const QRect &widgetRect, int borderWidth, const ScaleMode &scaleMode)
-{
+QRect WidgetHelper::getCenterRect(const QSize &imageSize, const QRect &widgetRect, int borderWidth,
+                                  const ScaleMode &scaleMode) {
     QSize newSize = imageSize;
     QSize widgetSize = widgetRect.size() - QSize(borderWidth * 1, borderWidth * 1);
 
@@ -57,8 +54,7 @@ QRect WidgetHelper::getCenterRect(const QSize &imageSize, const QRect &widgetRec
     return QRect(x, y, newSize.width(), newSize.height());
 }
 
-void WidgetHelper::getScaledImage(QImage &image, const QSize &widgetSize, const ScaleMode &scaleMode, bool fast)
-{
+void WidgetHelper::getScaledImage(QImage &image, const QSize &widgetSize, const ScaleMode &scaleMode, bool fast) {
     Qt::TransformationMode mode = fast ? Qt::FastTransformation : Qt::SmoothTransformation;
     if (scaleMode == ScaleMode_Auto) {
         if (image.width() > widgetSize.width() || image.height() > widgetSize.height()) {
@@ -71,8 +67,7 @@ void WidgetHelper::getScaledImage(QImage &image, const QSize &widgetSize, const 
     }
 }
 
-void WidgetHelper::rotateSize(int rotate, int &width, int &height)
-{
+void WidgetHelper::rotateSize(int rotate, int &width, int &height) {
     int w = width;
     int h = height;
     if (rotate == 90 || rotate == 270) {
@@ -81,8 +76,7 @@ void WidgetHelper::rotateSize(int rotate, int &width, int &height)
     }
 }
 
-QString WidgetHelper::getTextByFormat(const OsdInfo &osd)
-{
+QString WidgetHelper::getTextByFormat(const OsdInfo &osd) {
     QString text = osd.text;
     QDateTime now = QDateTime::currentDateTime();
     if (osd.format == OsdFormat_Date) {
@@ -98,8 +92,7 @@ QString WidgetHelper::getTextByFormat(const OsdInfo &osd)
     return text;
 }
 
-QPoint WidgetHelper::getPointByPosition(const OsdInfo &osd, const QRect &rect, int &flag)
-{
+QPoint WidgetHelper::getPointByPosition(const OsdInfo &osd, const QRect &rect, int &flag) {
     //如果存在图片则取图片的尺寸(否则取当前字体下的文字的尺寸)
     int width = 0;
     int height = 0;
@@ -146,8 +139,7 @@ QPoint WidgetHelper::getPointByPosition(const OsdInfo &osd, const QRect &rect, i
     return point;
 }
 
-void WidgetHelper::drawOsd(QPainter *painter, const OsdInfo &osd, const QRect &rect)
-{
+void WidgetHelper::drawOsd(QPainter *painter, const OsdInfo &osd, const QRect &rect) {
     //绘制下区域看下效果
     //painter->setPen(Qt::red);
     //painter->drawRect(rect);
@@ -178,8 +170,7 @@ void WidgetHelper::drawOsd(QPainter *painter, const OsdInfo &osd, const QRect &r
     }
 }
 
-void WidgetHelper::drawRect(QPainter *painter, const QRect &rect, int borderWidth, QColor borderColor, bool angle)
-{
+void WidgetHelper::drawRect(QPainter *painter, const QRect &rect, int borderWidth, QColor borderColor, bool angle) {
     painter->setPen(QPen(borderColor, borderWidth));
     //背景颜色
     borderColor.setAlpha(50);
@@ -206,8 +197,7 @@ void WidgetHelper::drawRect(QPainter *painter, const QRect &rect, int borderWidt
     }
 }
 
-void WidgetHelper::drawPoints(QPainter *painter, const QList<QPoint> &pts, int borderWidth, QColor borderColor)
-{
+void WidgetHelper::drawPoints(QPainter *painter, const QList<QPoint> &pts, int borderWidth, QColor borderColor) {
     //至少要两个点
     if (pts.count() < 2) {
         return;
@@ -233,14 +223,12 @@ void WidgetHelper::drawPoints(QPainter *painter, const QList<QPoint> &pts, int b
     painter->drawPath(path);
 }
 
-void WidgetHelper::drawPath(QPainter *painter, QPainterPath path, int borderWidth, QColor borderColor)
-{
+void WidgetHelper::drawPath(QPainter *painter, QPainterPath path, int borderWidth, QColor borderColor) {
     painter->setPen(QPen(borderColor, borderWidth));
     painter->drawPath(path);
 }
 
-QLabel *WidgetHelper::showImage(QLabel *label, QWidget *widget, const QImage &image)
-{
+QLabel *WidgetHelper::showImage(QLabel *label, QWidget *widget, const QImage &image) {
     //等比缩放下分辨率过大的图片
 #ifdef Q_OS_ANDROID
     int maxWidth = widget->width();
@@ -283,8 +271,7 @@ QLabel *WidgetHelper::showImage(QLabel *label, QWidget *widget, const QImage &im
     return label;
 }
 
-void WidgetHelper::addOsd(AbstractVideoWidget *widget, int &index)
-{
+void WidgetHelper::addOsd(AbstractVideoWidget *widget, int &index) {
     index++;
     if (index > 8) {
         index = 1;
@@ -355,8 +342,7 @@ void WidgetHelper::addOsd(AbstractVideoWidget *widget, int &index)
     }
 }
 
-void WidgetHelper::addOsd2(AbstractVideoWidget *widget, int count)
-{
+void WidgetHelper::addOsd2(AbstractVideoWidget *widget, int count) {
     int width = widget->getVideoWidth() - 100;
     int height = widget->getVideoHeight() - 100;
     int fontSize = widget->getVideoWidth() / 50;
@@ -374,8 +360,7 @@ void WidgetHelper::addOsd2(AbstractVideoWidget *widget, int count)
     }
 }
 
-void WidgetHelper::addGraph(AbstractVideoWidget *widget, int &index)
-{
+void WidgetHelper::addGraph(AbstractVideoWidget *widget, int &index) {
     index++;
     if (index > 6) {
         index = 1;
@@ -423,7 +408,9 @@ void WidgetHelper::addGraph(AbstractVideoWidget *widget, int &index)
         } else if (index == 3) {
             //点集合
             graph.borderColor = Qt::green;
-            graph.points = QList<QPoint>() << QPoint(300, 100) << QPoint(400, 50) << QPoint(500, 150) << QPoint(450, 200) << QPoint(350, 180);
+            graph.points =
+                    QList<QPoint>() << QPoint(300, 100) << QPoint(400, 50) << QPoint(500, 150) << QPoint(450, 200)
+                                    << QPoint(350, 180);
         } else if (index == 4) {
             //路径(圆形/圆角矩形)
             graph.borderColor = "#22A3A9";
@@ -443,8 +430,7 @@ void WidgetHelper::addGraph(AbstractVideoWidget *widget, int &index)
     }
 }
 
-void WidgetHelper::addGraph2(AbstractVideoWidget *widget, int count)
-{
+void WidgetHelper::addGraph2(AbstractVideoWidget *widget, int count) {
     int width = widget->getVideoWidth() - 100;
     int height = widget->getVideoHeight() - 100;
     int borderWidth = WidgetHelper::getBorderWidth(widget);
@@ -466,8 +452,7 @@ void WidgetHelper::addGraph2(AbstractVideoWidget *widget, int count)
     }
 }
 
-QList<OsdInfo> WidgetHelper::getTestOsd(int height)
-{
+QList<OsdInfo> WidgetHelper::getTestOsd(int height) {
     QList<OsdInfo> osds;
     OsdInfo osd;
     osd.name = "osd1";

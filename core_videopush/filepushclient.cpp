@@ -2,17 +2,15 @@
 #include "filepushserver.h"
 #include "core_videopush/http_parser/qhttpparser.h"
 
-FilePushClient::FilePushClient(intptr socketDescriptor, QObject *parent) : QThread(parent)
-{
-    file = NULL;
-    tcpSocket = NULL;
+FilePushClient::FilePushClient(intptr socketDescriptor, QObject *parent) : QThread(parent) {
+    file = nullptr;
+    tcpSocket = nullptr;
     writeByteCount = 0;
     playMode = 0;
     this->socketDescriptor = socketDescriptor;
 }
 
-FilePushClient::~FilePushClient()
-{
+FilePushClient::~FilePushClient() {
     //如果处于运行状态则先取消所有信号槽连接并等待退出
     if (this->isRunning()) {
         this->disconnect();
@@ -21,8 +19,7 @@ FilePushClient::~FilePushClient()
     }
 }
 
-void FilePushClient::run()
-{
+void FilePushClient::run() {
     //实例化通信对象
     tcpSocket = new QTcpSocket;
     //设置描述符为传过来的则相当于就是服务端接收到的连接
@@ -40,8 +37,7 @@ void FilePushClient::run()
     this->exec();
 }
 
-bool FilePushClient::setFile(const QString &fileName)
-{
+bool FilePushClient::setFile(const QString &fileName) {
     if (fileName.isEmpty()) {
         return false;
     }
@@ -64,26 +60,23 @@ bool FilePushClient::setFile(const QString &fileName)
     return file->open(QIODevice::ReadOnly);
 }
 
-void FilePushClient::closeFile()
-{
+void FilePushClient::closeFile() {
     if (file) {
         file->close();
         file->deleteLater();
-        file = NULL;
+        file = nullptr;
     }
 }
 
-void FilePushClient::closeSocket()
-{
+void FilePushClient::closeSocket() {
     if (tcpSocket) {
         tcpSocket->abort();
         tcpSocket->deleteLater();
-        tcpSocket = NULL;
+        tcpSocket = nullptr;
     }
 }
 
-void FilePushClient::readData()
-{
+void FilePushClient::readData() {
     //GET /后缀 HTTP/1.1
     //Host: 192.168.0.110:6908
     //Connection: keep-alive (一般网页请求是keep-alive/其他都是close)
@@ -131,7 +124,7 @@ void FilePushClient::readData()
 
     //根据请求中的唯一标识查找文件
     QString flag = url.mid(1, url.length());
-    FilePushServer *server = (FilePushServer *)this->parent();
+    auto server = (FilePushServer *) this->parent();
     QString fileName = server->findFile(flag);
     if (!this->setFile(fileName)) {
         quit();
@@ -173,8 +166,7 @@ void FilePushClient::readData()
     this->writeData206(startPos, endPos);
 }
 
-void FilePushClient::writeData(qint64 bytes)
-{
+void FilePushClient::writeData(qint64 bytes) {
     writeByteCount -= bytes;
     if (tcpSocket && writeByteCount > 0) {
         qint64 size = 512 * 1024;
@@ -183,8 +175,7 @@ void FilePushClient::writeData(qint64 bytes)
     }
 }
 
-QByteArray FilePushClient::getHeadData(const QString &flag, qint64 startPos, qint64 endPos, qint64 bufferSize)
-{
+QByteArray FilePushClient::getHeadData(const QString &flag, qint64 startPos, qint64 endPos, qint64 bufferSize) {
     QStringList list;
     list << flag;
     list << "Server: QQ_517216493 WX_feiyangqingyun";
@@ -206,8 +197,7 @@ QByteArray FilePushClient::getHeadData(const QString &flag, qint64 startPos, qin
     return data.toUtf8();
 }
 
-void FilePushClient::writeData200(qint64 startPos)
-{
+void FilePushClient::writeData200(qint64 startPos) {
     if (!file->isOpen()) {
         return;
     }
@@ -229,8 +219,7 @@ void FilePushClient::writeData200(qint64 startPos)
     //qDebug() << TIMEMS << "writeData200";
 }
 
-void FilePushClient::writeData206(qint64 startPos, qint64 endPos)
-{
+void FilePushClient::writeData206(qint64 startPos, qint64 endPos) {
     if (!file->isOpen()) {
         return;
     }
@@ -251,12 +240,10 @@ void FilePushClient::writeData206(qint64 startPos, qint64 endPos)
     //qDebug() << TIMEMS << "writeData206";
 }
 
-QString FilePushClient::getFileName()
-{
+QString FilePushClient::getFileName() {
     return this->fileName;
 }
 
-void FilePushClient::setPlayMode(int playMode)
-{
+void FilePushClient::setPlayMode(int playMode) {
     this->playMode = playMode;
 }

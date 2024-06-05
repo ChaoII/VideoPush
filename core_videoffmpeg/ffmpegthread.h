@@ -3,20 +3,24 @@
 #include "ffmpeginclude.h"
 #include "ffmpegstruct.h"
 #include "core_video/videothread.h"
+
 class FFmpegSync;
+
 class AudioPlayer;
 
-class FFmpegThread : public VideoThread
-{
-    Q_OBJECT
+class FFmpegThread : public VideoThread {
+Q_OBJECT
+
 public:
     //解码同步线程定义成友元类(这样可以直接使用主解码线程的变量)
     friend class FFmpegSync;
-    explicit FFmpegThread(QObject *parent = 0);
-    ~FFmpegThread();
+
+    explicit FFmpegThread(QObject *parent = nullptr);
+
+    ~FFmpegThread() override;
 
 protected:
-    void run();
+    void run() override;
 
 private:
     //正在切换进度
@@ -137,105 +141,136 @@ private:
 private:
     //读取并清空(视频流暂停期间)
     void readAndClear();
+
     //重新播放(循环播放)
     void replay();
+
     //重新打开(重连打开)
     void reopen();
 
     //动态监测尺寸变化
     bool checkFrameSize(AVFrame *frame);
+
     //转换和保存视频
     bool scaleAndSaveVideo(bool &needScale, AVFrame *frame);
+
     //处理和显示视频
     void checkAndShowVideo(bool needScale, AVFrame *frame);
 
 public slots:
+
     //解码视频
     void decodeVideo0(AVPacket *packet);
+
     void decodeVideo1(AVPacket *packet);
+
     void decodeVideo2(AVPacket *packet);
 
     //解码音频
     void decodeAudio0(AVPacket *packet);
+
     void decodeAudio1(AVPacket *packet);
+
     void decodeAudio2(AVPacket *packet);
 
 private:
     //初始化保存类的属性
     void initSaveFile();
+
     //写入视音频数据到文件
     void writeFile(AVPacket *packet, bool video);
+
     void writeFile(AVFrame *frame, bool video);
 
 private slots:
+
     //初始化参数
     void initOption();
+
     //初始化输入
     bool initInput();
 
     //初始化视频
     bool initVideo();
+
     //初始化音频
     bool initAudio();
 
     //初始化相关数据
     void initData();
+
     //初始化音频播放
     void initAudioPlayer();
+
     //初始化音频输出
     void initAudioOutput();
+
     //初始化音效库
     void initAudioEffect();
+
     //初始化专辑
     void initMetadata();
 
     //初始化滤镜
     void initFilter();
+
     //重置滤镜
     void resetFilter();
 
     //打开视频
     bool openVideo();
+
     //关闭视频
     void closeVideo();
 
 public slots:
+
     //获取图片
     QImage getImage();
+
     //获取初始化的时间
     qint64 getStartTime();
+
     //获取最后的活动时间
     QDateTime getLastTime();
 
     //获取视频保存类
     FFmpegSave *getSaveFile();
+
     //获取视频流对象
     AVStream *getVideoStream();
+
     //获取音频流对象
     AVStream *getAudioStream();
 
     //获取和设置开启推流预览
     bool getPushPreview();
+
     void setPushPreview(bool pushPreview);
 
     //设置是否转发数据包或数据帧
     void setSendPacket(bool sendPacket);
+
     void setSendFrame(bool sendFrame);
 
     //获取是否已经尝试打开过
     bool getTryOpen();
+
     //获取是否已经尝试读取过
     bool getTryRead();
+
     //获取是否尝试停止线程
     bool getTryStop();
 
     //清空缓存数据
     void clearBuffer(bool direct);
+
     //清空复位同步线程
     void clearAndReset();
 
     //获取和设置旋转角度
     int getRotate();
+
     void setRotate(int rotate);
 
     //获取文件时长
@@ -243,23 +278,29 @@ public slots:
 
     //获取和设置播放位置
     qint64 getPosition();
+
     void setPosition(qint64 position);
+
     void setPosition();
 
     //获取和设置播放速度
     double getSpeed();
+
     void setSpeed(double speed);
 
     //获取和设置音量大小
     int getVolume();
+
     void setVolume(int volume);
 
     //获取和设置静音状态
     bool getMuted();
+
     void setMuted(bool muted);
 
     //开启音频振幅和统计实时码率
     void setAudioLevel(bool audioLevel);
+
     void setRealBitRate(bool realBitRate);
 
     //切换声卡
@@ -267,35 +308,44 @@ public slots:
 
     //设置裁剪状态
     void setCrop(bool isCrop);
+
     //设置唯一标识
     void setFlag(const QString &flag);
+
     //打印信息
     void debug(int result, const QString &head, const QString &msg);
 
 public slots:
+
     //暂停播放
     void pause();
+
     //继续播放
     void next();
 
     //按帧播放
-    void step(bool backward = false);    
+    void step(bool backward = false);
 
     //开始录制
     void recordStart(const QString &fileName);
+
     //暂停录制
     void recordPause();
+
     //停止录制
     void recordStop();
 
     //设置标签信息集合
     void setOsdInfo(const QList<OsdInfo> &listOsd);
+
     //设置图形信息集合
     void setGraphInfo(const QList<GraphInfo> &listGraph);
 
 signals:
+
     //转发数据包或数据帧(用于单独取出解码数据处理)
     void writePacket(AVPacket *packet, int index);
+
     void writeFrame(AVFrame *frame, int index);
 };
 

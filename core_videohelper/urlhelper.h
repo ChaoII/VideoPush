@@ -35,7 +35,7 @@ struct UrlPara {
     }
 
     //重载打印输出格式
-    friend QDebug operator << (QDebug debug, const UrlPara &urlPara) {
+    friend QDebug operator<<(QDebug debug, const UrlPara &urlPara) {
         QStringList list;
         list << QString("通信地址: %1").arg(urlPara.deviceIP);
         list << QString("通信端口: %1").arg(urlPara.devicePort);
@@ -47,7 +47,7 @@ struct UrlPara {
         list << QString("厂家标识: %1").arg(urlPara.companyName);
         list << QString("厂家类型: %1").arg(urlPara.companyType);
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5,4,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
         debug.noquote() << list.join("\n");
 #else
         debug << list.join("\n");
@@ -56,32 +56,40 @@ struct UrlPara {
     }
 };
 
-class UrlHelper
-{
+class UrlHelper {
 public:
     //校验网络地址是否可达
     static bool checkUrl(const QString &url, int timeout = 500);
+
     //校验地址取消前缀大小写
     static void checkPrefix(QString &url);
 
     //各个厂家的实时及回放视频流字符串(通道和码流默认约定从0开始)
     static QString getRtspUrl(const CompanyType &companyType, int channel = 0, int streamType = 0);
+
     static QString getRtspUrl(const UrlPara &urlPara);
 
     //去掉默认端口号
     static void removeDefaultPort(QString &url);
+
     //判断是否是合法的IP
     static bool isIP(const QString &ip);
 
     //根据地址获取地址对应的各种信息
     static QString getUrlHost(const QString &url);
+
     static QString getUrlIP(const QString &url);
+
     static int getUrlPort(const QString &url);
 
     static void getUserInfo(const QString &url, QString &userName, QString &userPwd);
+
     static QString getCompanyName(const QString &url);
+
     static CompanyType getCompanyType(const QString &url);
+
     static void getOtherInfo(const QString &url, int &channel, int &streamType);
+
     static void getUrlPara(const QString &url, UrlPara &urlPara);
 };
 

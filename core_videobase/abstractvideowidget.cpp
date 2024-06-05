@@ -48,14 +48,15 @@ AbstractVideoWidget::AbstractVideoWidget(QWidget *parent) : QWidget(parent) {
     //顶部工具栏(默认隐藏/鼠标进入显示/鼠标离开隐藏)
     bannerWidget_ = new BannerWidget(this);
     bannerWidget_->setObjectName("bannerWidget");
-    connect(bannerWidget_, SIGNAL(btnClicked(QString)), this, SIGNAL(sigBtnClicked(QString)));
+    connect(bannerWidget_, QOverload<const QString &>::of(&BannerWidget::btnClicked), this,
+            &AbstractVideoWidget::sigBtnClicked);
     bannerWidget_->setVisible(false);
 
     this->installEventFilter(this);
 
     //定时器刷新标签信息
     timerUpdate_ = new QTimer(this);
-    connect(timerUpdate_, SIGNAL(timeout()), coverWidget_, SLOT(update()));
+    connect(timerUpdate_, &QTimer::timeout, this, [&]() { coverWidget_->update(); });
     timerUpdate_->setInterval(1000);
 
     //关联码率采集信号用于统计显示实时码率
@@ -860,7 +861,7 @@ void AbstractVideoWidget::receiveImage(const QImage &image, int time) {
 
 void AbstractVideoWidget::snapImage(const QImage &image, const QString &snapName) {
     if (preview_ && !image.isNull()) {
-        preview_= false;
+        preview_ = false;
         label_ = WidgetHelper::showImage(label_, this, image);
     }
 }
@@ -880,22 +881,22 @@ void AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataRGB, i
 }
 
 void
-AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY,
-                                  quint32 linesizeU, quint32 linesizeV) {
+AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 lineSizeY,
+                                  quint32 lineSizeU, quint32 lineSizeV) {
 #ifdef openglx
     //这里要过滤下可能线程刚好结束了但是信号已经到这里
     if (sender()) {
-        yuvWidget_->updateFrame(width, height, dataY, dataU, dataV, linesizeY, linesizeU, linesizeV);
+        yuvWidget_->updateFrame(width, height, dataY, dataU, dataV, lineSizeY, lineSizeU, lineSizeV);
     }
 #endif
 }
 
-void AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 linesizeY,
-                                       quint32 linesizeUV) {
+void AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 lineSizeY,
+                                       quint32 lineSizeUV) {
 #ifdef openglx
     //这里要过滤下可能线程刚好结束了但是信号已经到这里
     if (sender()) {
-        nv12Widget_->updateFrame(width, height, dataY, dataUV, linesizeY, linesizeUV);
+        nv12Widget_->updateFrame(width, height, dataY, dataUV, lineSizeY, lineSizeUV);
     }
 #endif
 }

@@ -2,9 +2,9 @@
 
 #include <QLabel>
 
-class ImageLabel : public QLabel
-{
-    Q_OBJECT
+class ImageLabel : public QLabel {
+Q_OBJECT
+
 public:
     explicit ImageLabel(QWidget *parent = 0);
 
@@ -15,7 +15,9 @@ private:
     QImage image;
 
 public slots:
+
     void clear();
+
     void setImage(const QImage &image, bool scale = false);
 };
 

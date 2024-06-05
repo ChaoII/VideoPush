@@ -2,8 +2,7 @@
 #include "ffmpegthread.h"
 #include "ffmpeghelper.h"
 
-int FFmpegThreadHelper::getDecodeFlags(DecodeType decodeType)
-{
+int FFmpegThreadHelper::getDecodeFlags(DecodeType decodeType) {
     //默认速度优先的解码采用的SWS_FAST_BILINEAR参数(可能会丢失部分图片数据)
     int flags = SWS_FAST_BILINEAR;
     if (decodeType == DecodeType_Fast) {
@@ -13,29 +12,21 @@ int FFmpegThreadHelper::getDecodeFlags(DecodeType decodeType)
     } else if (decodeType == DecodeType_Even) {
         flags = SWS_BILINEAR;
     }
-
     return flags;
 }
 
-void FFmpegThreadHelper::checkHardware(const QString &formatName, QString &hardware)
-{
+void FFmpegThreadHelper::checkHardware(const QString &formatName, QString &hardware) {
     //有些格式不支持硬解码/或者该格式的部分文件
     static QStringList formats;
     if (formats.count() == 0) {
         formats << "rm" << "avi" << "webm";
     }
-
-    foreach (QString format, formats) {
+    for (auto &format: formats) {
         if (formatName.contains(format)) {
             hardware = "none";
             break;
         }
     }
-
-    //过低版本不支持硬解码
-#if (FFMPEG_VERSION_MAJOR < 3)
-    hardware = "none";
-#endif
 
     //安卓上默认提供的库不带硬解码(需要自行编译带硬解的库)
 #ifdef Q_OS_ANDROID
@@ -43,8 +34,7 @@ void FFmpegThreadHelper::checkHardware(const QString &formatName, QString &hardw
 #endif
 }
 
-void FFmpegThreadHelper::checkUseSync(FFmpegThread *thread, int videoIndex, int audioIndex, bool &useSync)
-{
+void FFmpegThreadHelper::checkUseSync(FFmpegThread *thread, int videoIndex, int audioIndex, bool &useSync) {
     //默认需要同步
     useSync = true;
 
@@ -80,8 +70,9 @@ void FFmpegThreadHelper::checkUseSync(FFmpegThread *thread, int videoIndex, int 
     thread->debug(0, "同步策略", QString("同步: %1").arg(useSync ? "启用" : "禁用"));
 }
 
-void FFmpegThreadHelper::checkSaveAudioType(MediaType mediaType, int audioIndex, const QString &audioCodecName, int bitrate, SaveAudioType &saveAudioType)
-{
+void
+FFmpegThreadHelper::checkSaveAudioType(MediaType mediaType, int audioIndex, const QString &audioCodecName, int bitrate,
+                                       SaveAudioType &saveAudioType) {
     //没有音频则不用录制音频
     if (audioIndex < 0) {
         saveAudioType = SaveAudioType_None;
@@ -109,8 +100,9 @@ void FFmpegThreadHelper::checkSaveAudioType(MediaType mediaType, int audioIndex,
     }
 }
 
-void FFmpegThreadHelper::checkVideoEncode(MediaType mediaType, const QString &mediaUrl, SaveVideoType saveType, const QString &formatName, bool isFile, bool &mp4ToAnnexB, bool &videoEncode)
-{
+void FFmpegThreadHelper::checkVideoEncode(MediaType mediaType, const QString &mediaUrl, SaveVideoType saveType,
+                                          const QString &formatName, bool isFile, bool &mp4ToAnnexB,
+                                          bool &videoEncode) {
     //测试发现文件在保存裸流的时候必须写入/否则无法播放
     if (isFile && saveType == SaveVideoType_Stream) {
         mp4ToAnnexB = true;
@@ -126,22 +118,21 @@ void FFmpegThreadHelper::checkVideoEncode(MediaType mediaType, const QString &me
     }
 }
 
-QImage FFmpegThreadHelper::getAttachedPic(AVFormatContext *formatCtx)
-{
+QImage FFmpegThreadHelper::getAttachedPic(AVFormatContext *formatCtx) {
     QImage image;
     int count = formatCtx->nb_streams;
     for (int i = 0; i < count; ++i) {
         if (formatCtx->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC) {
             AVPacket pkt = formatCtx->streams[i]->attached_pic;
-            image = QImage::fromData((quint8 *)pkt.data, pkt.size);
+            image = QImage::fromData((quint8 *) pkt.data, pkt.size);
             break;
         }
     }
     return image;
 }
 
-void FFmpegThreadHelper::initVideoCodec(AVCodecx **videoCodec, AVCodecID codecId, QString &videoCodecName, QString &hardware)
-{
+void FFmpegThreadHelper::initVideoCodec(AVCodecx **videoCodec, AVCodecID codecId, QString &videoCodecName,
+                                        QString &hardware) {
     //获取默认的解码器
     (*videoCodec) = avcodec_find_decoder(codecId);
     videoCodecName = (*videoCodec)->name;
@@ -166,8 +157,8 @@ void FFmpegThreadHelper::initVideoCodec(AVCodecx **videoCodec, AVCodecID codecId
     }
 }
 
-bool FFmpegThreadHelper::initHardware(FFmpegThread *thread, AVCodecx *videoCodec, AVCodecContext *videoCodecCtx, const QString &hardware)
-{
+bool FFmpegThreadHelper::initHardware(FFmpegThread *thread, AVCodecx *videoCodec, AVCodecContext *videoCodecCtx,
+                                      const QString &hardware) {
 #if (FFMPEG_VERSION_MAJOR > 2)
     //根据名称自动寻找硬解码
     enum AVHWDeviceType type;
@@ -195,7 +186,7 @@ bool FFmpegThreadHelper::initHardware(FFmpegThread *thread, AVCodecx *videoCodec
     int result = -1;
     //创建硬解码设备
     AVBufferRef *hw_device_ref;
-    result = av_hwdevice_ctx_create(&hw_device_ref, type, NULL, NULL, 0);
+    result = av_hwdevice_ctx_create(&hw_device_ref, type, nullptr, nullptr, 0);
     if (result < 0) {
         thread->debug(result, "创建硬解", "av_hwdevice_ctx_create");
         return false;
@@ -212,9 +203,11 @@ bool FFmpegThreadHelper::initHardware(FFmpegThread *thread, AVCodecx *videoCodec
 #endif
 }
 
-bool FFmpegThreadHelper::initVideoData(FFmpegThread *thread, AVFrame *yuvFrame, AVFrame *imageFrame, SwsContext **yuvSwsCtx, SwsContext **imageSwsCtx, quint8 **imageData,
-                                       AVPixelFormat srcFormat, AVPixelFormat dstFormat, int videoWidth, int videoHeight, const QString &hardware, int flags)
-{
+bool
+FFmpegThreadHelper::initVideoData(FFmpegThread *thread, AVFrame *yuvFrame, AVFrame *imageFrame, SwsContext **yuvSwsCtx,
+                                  SwsContext **imageSwsCtx, quint8 **imageData,
+                                  AVPixelFormat srcFormat, AVPixelFormat dstFormat, int videoWidth, int videoHeight,
+                                  const QString &hardware, int flags) {
     //设置属性以便该帧对象正常
     yuvFrame->format = AV_PIX_FMT_YUV420P;
     yuvFrame->width = videoWidth;
@@ -231,14 +224,16 @@ bool FFmpegThreadHelper::initVideoData(FFmpegThread *thread, AVFrame *yuvFrame, 
     }
 
     //视频图像转换(转yuv420)
-    (*yuvSwsCtx) = sws_getContext(videoWidth, videoHeight, srcFormat, videoWidth, videoHeight, AV_PIX_FMT_YUV420P, flags, NULL, NULL, NULL);
+    (*yuvSwsCtx) = sws_getContext(videoWidth, videoHeight, srcFormat, videoWidth, videoHeight, AV_PIX_FMT_YUV420P,
+                                  flags, nullptr, nullptr, nullptr);
     if (!yuvSwsCtx) {
         thread->debug(result, "视频转换", "sws_getContext");
         return false;
     }
 
     //视频图像转换(转rgb)
-    (*imageSwsCtx) = sws_getContext(videoWidth, videoHeight, srcFormat, videoWidth, videoHeight, AV_PIX_FMT_RGB24, flags, NULL, NULL, NULL);
+    (*imageSwsCtx) = sws_getContext(videoWidth, videoHeight, srcFormat, videoWidth, videoHeight, AV_PIX_FMT_RGB24,
+                                    flags, nullptr, nullptr, nullptr);
     if (!imageSwsCtx) {
         thread->debug(result, "视频转换", "sws_getContext");
         return false;
@@ -247,8 +242,9 @@ bool FFmpegThreadHelper::initVideoData(FFmpegThread *thread, AVFrame *yuvFrame, 
     //分配视频帧数据(转rgb)
     align = 4;
     int imageSize = av_image_get_buffer_size(AV_PIX_FMT_RGB24, videoWidth, videoHeight, align);
-    (*imageData) = (quint8 *)av_malloc(imageSize * sizeof(quint8));
-    result = av_image_fill_arrays(imageFrame->data, imageFrame->linesize, (*imageData), AV_PIX_FMT_RGB24, videoWidth, videoHeight, align);
+    (*imageData) = (quint8 *) av_malloc(imageSize * sizeof(quint8));
+    result = av_image_fill_arrays(imageFrame->data, imageFrame->linesize, (*imageData), AV_PIX_FMT_RGB24, videoWidth,
+                                  videoHeight, align);
     if (result < 0) {
         thread->debug(result, "视频转换", "av_image_fill_arrays");
         return false;
@@ -261,9 +257,10 @@ bool FFmpegThreadHelper::initVideoData(FFmpegThread *thread, AVFrame *yuvFrame, 
     return true;
 }
 
-bool FFmpegThreadHelper::initAudioData(FFmpegThread *thread, AVCodecContext *audioCodecCtx, AVFrame *pcmFrame, SwrContext **pcmSwrCtx,
-                                       AVSampleFormat &pcmSampleFormat, int &pcmSampleRate, int &pcmChannels, const QString &audioCodecName)
-{
+bool FFmpegThreadHelper::initAudioData(FFmpegThread *thread, AVCodecContext *audioCodecCtx, AVFrame *pcmFrame,
+                                       SwrContext **pcmSwrCtx,
+                                       AVSampleFormat &pcmSampleFormat, int &pcmSampleRate, int &pcmChannels,
+                                       const QString &audioCodecName) {
     AVSampleFormat sampleFormat = audioCodecCtx->sample_fmt;
     int sampleRate = audioCodecCtx->sample_rate;
     int channels = FFmpegHelper::getChannel(audioCodecCtx);
@@ -300,7 +297,8 @@ bool FFmpegThreadHelper::initAudioData(FFmpegThread *thread, AVCodecContext *aud
         }
 
         //音频采样转换
-        result = FFmpegHelper::initSwrContext(pcmSwrCtx, pcmChannels, pcmSampleFormat, pcmSampleRate, channels, sampleFormat, sampleRate);
+        result = FFmpegHelper::initSwrContext(pcmSwrCtx, pcmChannels, pcmSampleFormat, pcmSampleRate, channels,
+                                              sampleFormat, sampleRate);
         if (result < 0) {
             thread->debug(result, "音频转换", "initSwrContext");
             return false;
@@ -315,8 +313,8 @@ bool FFmpegThreadHelper::initAudioData(FFmpegThread *thread, AVCodecContext *aud
     return true;
 }
 
-void FFmpegThreadHelper::checkKeyPacketCount(FFmpegThread *thread, AVPacket *packet, qint64 &keyPacketIndex, qint64 &keyPacketCount)
-{
+void FFmpegThreadHelper::checkKeyPacketCount(FFmpegThread *thread, AVPacket *packet, qint64 &keyPacketIndex,
+                                             qint64 &keyPacketCount) {
     keyPacketIndex++;
     keyPacketCount++;
     if (FFmpegHelper::checkPacketKey(packet)) {
@@ -325,12 +323,13 @@ void FFmpegThreadHelper::checkKeyPacketCount(FFmpegThread *thread, AVPacket *pac
     }
 }
 
-void FFmpegThreadHelper::checkRealPacketSize(FFmpegThread *thread, AVPacket *packet, int maxCount, qint64 &realPacketSize, qint64 &realPacketCount)
-{
+void
+FFmpegThreadHelper::checkRealPacketSize(FFmpegThread *thread, AVPacket *packet, int maxCount, qint64 &realPacketSize,
+                                        qint64 &realPacketCount) {
     realPacketCount++;
     realPacketSize += packet->size;
     if (realPacketCount == maxCount) {
-        qreal kbps = (qreal)realPacketSize / 100;
+        qreal kbps = (qreal) realPacketSize / 100;
         //thread->debug(0, "实时码率", QString("大小: %1 kbps").arg(QString::number(kbps, 'f', 0)));
         QMetaObject::invokeMethod(thread, "receiveKbps", Q_ARG(qreal, kbps), Q_ARG(int, maxCount));
         realPacketSize = 0;
@@ -339,8 +338,8 @@ void FFmpegThreadHelper::checkRealPacketSize(FFmpegThread *thread, AVPacket *pac
 }
 
 AVPixelFormat FFmpegThreadHelper::hw_pix_fmt = AV_PIX_FMT_NONE;
-AVPixelFormat FFmpegThreadHelper::get_hw_format(AVCodecContext *ctx, const AVPixelFormat *pix_fmts)
-{
+
+AVPixelFormat FFmpegThreadHelper::get_hw_format(AVCodecContext *ctx, const AVPixelFormat *pix_fmts) {
     const enum AVPixelFormat *p;
     for (p = pix_fmts; *p != -1; p++) {
         if (*p == hw_pix_fmt) {
@@ -351,8 +350,7 @@ AVPixelFormat FFmpegThreadHelper::get_hw_format(AVCodecContext *ctx, const AVPix
     return AV_PIX_FMT_NONE;
 }
 
-AVPixelFormat FFmpegThreadHelper::find_fmt_by_hw_type(const AVHWDeviceType &type, const AVCodec *codec)
-{
+AVPixelFormat FFmpegThreadHelper::find_fmt_by_hw_type(const AVHWDeviceType &type, const AVCodec *codec) {
     enum AVPixelFormat fmt = AV_PIX_FMT_NONE;
 #if (FFMPEG_VERSION_MAJOR < 4)
     switch (type) {
@@ -392,8 +390,8 @@ AVPixelFormat FFmpegThreadHelper::find_fmt_by_hw_type(const AVHWDeviceType &type
     return fmt;
 }
 
-int FFmpegThreadHelper::decode(FFmpegThread *thread, AVCodecContext *avctx, AVPacket *packet, AVFrame *frameSrc, AVFrame *frameDst)
-{
+int FFmpegThreadHelper::decode(FFmpegThread *thread, AVCodecContext *avctx, AVPacket *packet, AVFrame *frameSrc,
+                               AVFrame *frameDst) {
     int result = -1;
 #ifdef videoffmpeg
     QString flag = "硬解出错";
@@ -427,15 +425,15 @@ int FFmpegThreadHelper::decode(FFmpegThread *thread, AVCodecContext *avctx, AVPa
 #endif
     return result;
 
-end:
+    end:
     //调用线程处理解码后的数据
     thread->decodeVideo2(packet);
 #endif
     return result;
 }
 
-int FFmpegThreadHelper::decode(FFmpegThread *thread, AVCodecContext *avctx, AVPacket *packet, AVFrame *frame, bool video)
-{
+int
+FFmpegThreadHelper::decode(FFmpegThread *thread, AVCodecContext *avctx, AVPacket *packet, AVFrame *frame, bool video) {
     int result = -1;
 #ifdef videoffmpeg
     QString flag = video ? "视频解码" : "音频解码";
@@ -478,7 +476,7 @@ int FFmpegThreadHelper::decode(FFmpegThread *thread, AVCodecContext *avctx, AVPa
 #endif
     return result;
 
-end:
+    end:
     //调用线程处理解码后的数据
     if (video) {
         thread->decodeVideo2(packet);
@@ -489,10 +487,9 @@ end:
     return result;
 }
 
-int FFmpegThreadHelper::openAndReadCallBack(void *ctx)
-{
+int FFmpegThreadHelper::openAndReadCallBack(void *ctx) {
 #ifdef videoffmpeg
-    FFmpegThread *thread = (FFmpegThread *)ctx;
+    auto thread = (FFmpegThread *) ctx;
     //先判断是否尝试停止线程(有时候不存在的地址反复打开关闭会卡主导致崩溃/多了这个判断可以立即停止)
     if (thread->getTryStop()) {
         if (thread->getTryRead()) {

@@ -2,12 +2,14 @@
 
 #include <QThread>
 #include <QMutex>
+
 class FFmpegThread;
+
 struct AVPacket;
 
-class FFmpegSync : public QThread
-{
-    Q_OBJECT
+class FFmpegSync : public QThread {
+Q_OBJECT
+
 public:
     enum StreamType {
         StreamType_Audio = 0,
@@ -15,10 +17,11 @@ public:
     };
 
     explicit FFmpegSync(StreamType streamType, QObject *parent);
-    ~FFmpegSync();
+
+    ~FFmpegSync() override;
 
 protected:
-    void run();
+    void run() override;
 
 private:
     //线程停止标志位
@@ -47,21 +50,27 @@ private:
 public:
     //停止线程
     void stop();
+
     //清除数据
     void clear();
+
     //复位时钟
     void reset();
+
     //添加数据包
     void append(AVPacket *packet);
 
     //获取队列中包的数量
     int getPacketCount();
+
     //计算pts时间
     bool checkPtsTime();
+
     //校验显示时间
     void checkShowTime();
 
 signals:
+
     //文件播放进度
     void receivePosition(qint64 position);
 };

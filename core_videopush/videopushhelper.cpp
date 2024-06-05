@@ -164,13 +164,13 @@ void VideoPushHelper::addFile(QTableWidget *tableWidget, const QString &file, Fi
 
     //插入文件大小
     qint64 fileSize = QFile(file).size();
-    QTableWidgetItem *itemSize = new QTableWidgetItem;
+    auto itemSize = new QTableWidgetItem;
     itemSize->setText(getSize(fileSize));
     itemSize->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     tableWidget->setItem(row, 1, itemSize);
 
     //插入访问数
-    QTableWidgetItem *itemCount = new QTableWidgetItem;
+    auto itemCount = new QTableWidgetItem;
     itemCount->setText("0");
     itemCount->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     tableWidget->setItem(row, 2, itemCount);
@@ -212,7 +212,7 @@ void VideoPushHelper::readFile(QTableWidget *tableWidget, const QString &fileNam
             QStringList list = content.split(",");
             if (list.count() >= 2) {
                 //过滤下不存在的文件
-                const QString& name = list.at(1);
+                const QString &name = list.at(1);
                 if (QFile(name).exists()) {
                     addFile(tableWidget, name.trimmed(), pushServer, list.at(0).trimmed());
                 }
@@ -428,7 +428,7 @@ VideoPushHelper::addUrl(QTableWidget *tableWidget, const QString &url, NetPushSe
     }
 
     //插入拉流地址
-    QTableWidgetItem *itemUrl = new QTableWidgetItem;
+    auto itemUrl = new QTableWidgetItem;
     itemUrl->setText(url2);
     itemUrl->setData(Qt::UserRole, url);
     tableWidget->setItem(row, 5, itemUrl);
@@ -533,7 +533,7 @@ void VideoPushHelper::setStatus(QTableWidgetItem *item, int status) {
 
 void VideoPushHelper::setStatus(QTableWidget *tableWidget, int row, int state, bool start) {
     //可能是按钮
-    QPushButton *btn = (QPushButton *) tableWidget->cellWidget(row, 2);
+    auto btn = (QPushButton *) tableWidget->cellWidget(row, 2);
     if (btn) {
         if (state == 0) {
             btn->setText("停止");

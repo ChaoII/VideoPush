@@ -13,7 +13,6 @@ private:
     QFont iconFont;
     //窗体参数
     BannerPara bannerPara;
-
     //是否录制中
     bool isRecord;
     //录制文件名/用于区分是保存文件还是推流

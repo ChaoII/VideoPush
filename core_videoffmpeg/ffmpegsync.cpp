@@ -2,24 +2,20 @@
 #include "ffmpeghelper.h"
 #include "ffmpegthread.h"
 
-FFmpegSync::FFmpegSync(StreamType streamType, QObject *parent) : QThread(parent)
-{
+FFmpegSync::FFmpegSync(StreamType streamType, QObject *parent) : QThread(parent) {
     this->stopped = false;
     this->streamType = streamType;
-    this->thread = (FFmpegThread *)parent;
+    this->thread = (FFmpegThread *) parent;
 }
 
-FFmpegSync::~FFmpegSync()
-{
+FFmpegSync::~FFmpegSync() {
 
 }
 
-void FFmpegSync::run()
-{
+void FFmpegSync::run() {
     if (!thread) {
         return;
     }
-
     this->reset();
     while (!stopped) {
         //暂停状态或者切换进度中或者队列中没有帧则不处理
@@ -29,9 +25,9 @@ void FFmpegSync::run()
             mutex.unlock();
 
             //h264的裸流文件同步有问题因为获取不到pts和dts(暂时用最蠢的延时办法解决)
-            if (thread->formatName_== "h264" || thread->formatName_ == "hevc") {
+            if (thread->formatName_ == "h264" || thread->formatName_ == "hevc") {
                 int sleepTime = (1000 / thread->frameRate_) - 5;
-                sleepTime = (double)sleepTime / thread->speed;
+                sleepTime = (double) sleepTime / thread->speed;
                 msleep(sleepTime);
             } else {
                 //计算当前帧显示时间(外部时钟同步)
@@ -70,27 +66,24 @@ void FFmpegSync::run()
     stopped = false;
 }
 
-void FFmpegSync::stop()
-{
+void FFmpegSync::stop() {
     if (this->isRunning()) {
         stopped = true;
         this->wait();
     }
 }
 
-void FFmpegSync::clear()
-{
+void FFmpegSync::clear() {
     mutex.lock();
     //释放还没有来得及处理的剩余的帧
-    foreach (AVPacket *packet, packets) {
+    for (auto &packet: packets) {
         FFmpegHelper::freePacket(packet);
     }
     packets.clear();
     mutex.unlock();
 }
 
-void FFmpegSync::reset()
-{
+void FFmpegSync::reset() {
     //复位音频外部时钟
     showTime = 0;
     bufferTime = 0;
@@ -98,20 +91,17 @@ void FFmpegSync::reset()
     startTime = av_gettime();
 }
 
-void FFmpegSync::append(AVPacket *packet)
-{
+void FFmpegSync::append(AVPacket *packet) {
     mutex.lock();
     packets << packet;
     mutex.unlock();
 }
 
-int FFmpegSync::getPacketCount()
-{
+int FFmpegSync::getPacketCount() {
     return this->packets.count();
 }
 
-bool FFmpegSync::checkPtsTime()
-{
+bool FFmpegSync::checkPtsTime() {
     //下面这几个时间值是参考的别人的
     bool ok = false;
     if (ptsTime > 0) {
@@ -132,8 +122,7 @@ bool FFmpegSync::checkPtsTime()
     return ok;
 }
 
-void FFmpegSync::checkShowTime()
-{
+void FFmpegSync::checkShowTime() {
     //必须是文件(本地文件或网络文件)才有播放进度
     if (!thread->getIsFile()) {
         return;

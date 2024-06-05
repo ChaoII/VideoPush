@@ -1,8 +1,7 @@
 ﻿#include "yuvopenglwidget.h"
 #include "openglinclude.h"
 
-YuvWidget::YuvWidget(QWidget *parent) : QOpenGLWidget(parent)
-{
+YuvWidget::YuvWidget(QWidget *parent) : QOpenGLWidget(parent) {
     //GLSL3.0版本后废弃了attribute/varying对应用in/out作为前置关键字
     QStringList list;
     list << "attribute vec4 vertexIn;";
@@ -48,48 +47,43 @@ YuvWidget::YuvWidget(QWidget *parent) : QOpenGLWidget(parent)
     connect(&timer, SIGNAL(timeout()), this, SLOT(read()));
 }
 
-YuvWidget::~YuvWidget()
-{
+YuvWidget::~YuvWidget() {
     makeCurrent();
     doneCurrent();
 }
 
-void YuvWidget::setYuyv(bool yuyv)
-{
+void YuvWidget::setYuyv(bool yuyv) {
     this->yuyv = yuyv;
 }
 
-void YuvWidget::clear()
-{
+void YuvWidget::clear() {
     this->initData();
     this->update();
 }
 
-void YuvWidget::setFrameSize(int width, int height)
-{
+void YuvWidget::setFrameSize(int width, int height) {
     this->width = width;
     this->height = height;
 }
 
-void YuvWidget::updateTextures(quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY, quint32 linesizeU, quint32 linesizeV)
-{
+void YuvWidget::updateTextures(quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY, quint32 linesizeU,
+                               quint32 linesizeV) {
     this->dataY = dataY;
     this->dataU = dataU;
     this->dataV = dataV;
-    this->linesizeY = linesizeY;
-    this->linesizeU = linesizeU;
-    this->linesizeV = linesizeV;
+    this->lineSizeY = linesizeY;
+    this->lineSizeU = linesizeU;
+    this->lineSizeV = linesizeV;
     this->update();
 }
 
-void YuvWidget::updateFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY, quint32 linesizeU, quint32 linesizeV)
-{
+void YuvWidget::updateFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY,
+                            quint32 linesizeU, quint32 linesizeV) {
     this->setFrameSize(width, height);
     this->updateTextures(dataY, dataU, dataV, linesizeY, linesizeU, linesizeV);
 }
 
-void YuvWidget::initializeGL()
-{
+void YuvWidget::initializeGL() {
     initializeOpenGLFunctions();
     glDisable(GL_DEPTH_TEST);
 
@@ -111,8 +105,7 @@ void YuvWidget::initializeGL()
     this->initColor();
 }
 
-void YuvWidget::paintGL()
-{
+void YuvWidget::paintGL() {
     if (!dataY || width == 0 || height == 0) {
         this->initColor();
         return;
@@ -121,34 +114,34 @@ void YuvWidget::paintGL()
     //2023-10-16 将 GL_RED 全部换成了 GL_LUMINANCE 以便支持旧版本的opengl
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureY);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, linesizeY);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, lineSizeY);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, dataY);
     glUniform1i(textureUniformY, 0);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textureU);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, linesizeU);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width >> 1, yuyv ? height : height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, dataU);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, lineSizeU);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width >> 1, yuyv ? height : height >> 1, 0, GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE, dataU);
     glUniform1i(textureUniformU, 1);
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, textureV);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, linesizeV);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width >> 1, yuyv ? height : height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, dataV);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, lineSizeV);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width >> 1, yuyv ? height : height >> 1, 0, GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE, dataV);
     glUniform1i(textureUniformV, 2);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void YuvWidget::initData()
-{
+void YuvWidget::initData() {
     width = height = 0;
-    dataY = dataU = dataV = 0;
-    linesizeY = linesizeU = linesizeV = 0;
+    dataY = dataU = dataV = nullptr;
+    lineSizeY = lineSizeU = lineSizeV = 0;
 }
 
-void YuvWidget::initColor()
-{
+void YuvWidget::initColor() {
     //取画板背景颜色
     QColor color = palette().window().color();
     //设置背景清理色
@@ -157,8 +150,7 @@ void YuvWidget::initColor()
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void YuvWidget::initShader()
-{
+void YuvWidget::initShader() {
     //加载顶点和片元脚本
     program.addShaderFromSourceCode(QOpenGLShader::Vertex, shaderVert);
     program.addShaderFromSourceCode(QOpenGLShader::Fragment, shaderFrag);
@@ -177,8 +169,7 @@ void YuvWidget::initShader()
     textureUniformV = program.uniformLocation("textureV");
 }
 
-void YuvWidget::initTextures()
-{
+void YuvWidget::initTextures() {
     //创建纹理
     glGenTextures(1, &textureY);
     glBindTexture(GL_TEXTURE_2D, textureY);
@@ -193,8 +184,7 @@ void YuvWidget::initTextures()
     this->initParamete();
 }
 
-void YuvWidget::initParamete()
-{
+void YuvWidget::initParamete() {
     //具体啥意思 https://blog.csdn.net/d04421024/article/details/5089641
 
     //纹理过滤
@@ -215,26 +205,23 @@ void YuvWidget::initParamete()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 }
 
-void YuvWidget::deleteTextures()
-{
+void YuvWidget::deleteTextures() {
     glDeleteTextures(1, &textureY);
     glDeleteTextures(1, &textureU);
     glDeleteTextures(1, &textureV);
 }
 
-void YuvWidget::read()
-{
+void YuvWidget::read() {
     qint64 len = (width * height * 3) >> 1;
-    if (file.read((char *)dataY, len)) {
+    if (file.read((char *) dataY, len)) {
         this->update();
     } else {
         timer.stop();
-        emit playFinsh();
+        emit playFinish();
     }
 }
 
-void YuvWidget::play(const QString &fileName, int frameRate)
-{
+void YuvWidget::play(const QString &fileName, int frameRate) {
     //停止定时器并关闭文件
     if (timer.isActive()) {
         timer.stop();
@@ -257,8 +244,7 @@ void YuvWidget::play(const QString &fileName, int frameRate)
     timer.start(1000 / frameRate);
 }
 
-void YuvWidget::stop()
-{
+void YuvWidget::stop() {
     //停止定时器并关闭文件
     if (timer.isActive()) {
         timer.stop();
@@ -268,5 +254,5 @@ void YuvWidget::stop()
     }
 
     this->clear();
-    emit playFinsh();
+    emit playFinish();
 }

@@ -2,8 +2,8 @@
 
 bool AbstractSaveThread::debugInfo = true;
 bool AbstractSaveThread::directSave = true;
-AbstractSaveThread::AbstractSaveThread(QObject *parent) : QThread(parent)
-{
+
+AbstractSaveThread::AbstractSaveThread(QObject *parent) : QThread(parent) {
     stopped = false;
     isOk = false;
     isPause = false;
@@ -23,13 +23,11 @@ AbstractSaveThread::AbstractSaveThread(QObject *parent) : QThread(parent)
     profile = 1;
 }
 
-AbstractSaveThread::~AbstractSaveThread()
-{
+AbstractSaveThread::~AbstractSaveThread() {
     this->stop();
 }
 
-void AbstractSaveThread::checkOpen()
-{
+void AbstractSaveThread::checkOpen() {
     //特意每次做个小延时每次都去判断标志位等可以大大加快关闭速度
     int count = 0;
     int maxCount = 3000 / 100;
@@ -43,8 +41,7 @@ void AbstractSaveThread::checkOpen()
     }
 }
 
-void AbstractSaveThread::run()
-{
+void AbstractSaveThread::run() {
     while (!stopped) {
         if (!isOk) {
             this->close();
@@ -63,23 +60,19 @@ void AbstractSaveThread::run()
     errorCount = 0;
 }
 
-bool AbstractSaveThread::getIsOk()
-{
+bool AbstractSaveThread::getIsOk() {
     return this->isOk;
 }
 
-bool AbstractSaveThread::getIsPause()
-{
+bool AbstractSaveThread::getIsPause() {
     return this->isPause;
 }
 
-QString AbstractSaveThread::getFileName()
-{
+QString AbstractSaveThread::getFileName() {
     return this->fileName;
 }
 
-void AbstractSaveThread::deleteFile(const QString &fileName)
-{
+void AbstractSaveThread::deleteFile(const QString &fileName) {
     //如果文件大小太小则删除(mp4文件至少要求48字节)
     QFile file(fileName);
     if (file.exists() && file.size() <= 48) {
@@ -88,28 +81,23 @@ void AbstractSaveThread::deleteFile(const QString &fileName)
     }
 }
 
-QString AbstractSaveThread::getFlag()
-{
+QString AbstractSaveThread::getFlag() {
     return this->flag;
 }
 
-void AbstractSaveThread::setFlag(const QString &flag)
-{
+void AbstractSaveThread::setFlag(const QString &flag) {
     this->flag = flag;
 }
 
-SaveMode AbstractSaveThread::getSaveMode()
-{
+SaveMode AbstractSaveThread::getSaveMode() {
     return this->saveMode;
 }
 
-void AbstractSaveThread::setSaveMode(SaveMode saveMode)
-{
+void AbstractSaveThread::setSaveMode(SaveMode saveMode) {
     this->saveMode = saveMode;
 }
 
-void AbstractSaveThread::debug(const QString &head, const QString &msg)
-{
+void AbstractSaveThread::debug(const QString &head, const QString &msg) {
     if (!debugInfo) {
         return;
     }
@@ -128,23 +116,19 @@ void AbstractSaveThread::debug(const QString &head, const QString &msg)
     }
 }
 
-bool AbstractSaveThread::init()
-{
+bool AbstractSaveThread::init() {
     return true;
 }
 
-void AbstractSaveThread::save()
-{
+void AbstractSaveThread::save() {
 
 }
 
-void AbstractSaveThread::close()
-{
+void AbstractSaveThread::close() {
 
 }
 
-void AbstractSaveThread::open(const QString &fileName)
-{
+void AbstractSaveThread::open(const QString &fileName) {
     //已经打开不用继续防止重复打开
     if (isOk) {
         return;
@@ -179,7 +163,9 @@ void AbstractSaveThread::open(const QString &fileName)
     QString text = (saveMode == SaveMode_File ? "录制" : "推流");
     debug(QString("开始%1").arg(text), "");
     if (videoWidth > 0) {
-        debug("视频编码", QString("宽度: %1 高度: %2 帧率: %3 角度: %4").arg(videoWidth).arg(videoHeight).arg(frameRate).arg(rotate));
+        debug("视频编码",
+              QString("宽度: %1 高度: %2 帧率: %3 角度: %4").arg(videoWidth).arg(videoHeight).arg(frameRate).arg(
+                      rotate));
     }
     if (sampleRate > 0) {
         debug("音频编码", QString("采样: %1 通道: %2 品质: %3").arg(sampleRate).arg(channelCount).arg(profile));
@@ -198,8 +184,7 @@ void AbstractSaveThread::open(const QString &fileName)
     emit receiveSaveStart();
 }
 
-void AbstractSaveThread::pause()
-{
+void AbstractSaveThread::pause() {
     if (!isOk) {
         return;
     }
@@ -209,8 +194,7 @@ void AbstractSaveThread::pause()
     debug(isPause ? QString("暂停%1").arg(text) : QString("继续%1").arg(text), "");
 }
 
-void AbstractSaveThread::stop()
-{
+void AbstractSaveThread::stop() {
     //处于运行状态才可以停止
     if (this->isRunning()) {
         stopped = true;

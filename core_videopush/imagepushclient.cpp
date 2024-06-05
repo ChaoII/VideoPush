@@ -1,33 +1,29 @@
 ﻿#include "imagepushclient.h"
 #include <QByteArray>
 
-ImagePushClient::ImagePushClient(intptr socketDescriptor, QObject *parent) : QThread(parent)
-{
+ImagePushClient::ImagePushClient(intptr socketDescriptor, QObject *parent) : QThread(parent) {
     stopped = false;
     flag = "test";
-
     //实例化通信对象
     tcpSocket = new QTcpSocket(this);
     //设置描述符为传过来的则相当于就是服务端接收到的连接
     tcpSocket->setSocketDescriptor(socketDescriptor);
     //读取数据
-    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readData()));
+    connect(tcpSocket, &QTcpSocket::readyRead, this, &ImagePushClient::readData);
     //断开连接
-    connect(tcpSocket, SIGNAL(disconnected()), this, SIGNAL(finish()));
+    connect(tcpSocket, &QTcpSocket::disconnected, this, &ImagePushClient::finish);
     //发送数据
-    connect(this, SIGNAL(readyWrite(QByteArray)), this, SLOT(writeData(QByteArray)));
+    connect(this, &ImagePushClient::readyWrite, this, &ImagePushClient::writeData);
 }
 
-ImagePushClient::~ImagePushClient()
-{
+ImagePushClient::~ImagePushClient() {
     if (this->isRunning()) {
         this->disconnect();
         this->stop();
     }
 }
 
-void ImagePushClient::run()
-{
+void ImagePushClient::run() {
     while (!stopped) {
         if (images.count() > 0) {
             mutex.lock();
@@ -54,8 +50,7 @@ void ImagePushClient::run()
     stopped = false;
 }
 
-void ImagePushClient::readData()
-{
+void ImagePushClient::readData() {
     QByteArray buffer = tcpSocket->readAll();
     emit receiveData(buffer);
     if (buffer.contains("favicon.ico")) {
@@ -73,23 +68,19 @@ void ImagePushClient::readData()
     emit sendData(data);
 }
 
-void ImagePushClient::writeData(const QByteArray &data)
-{
+void ImagePushClient::writeData(const QByteArray &data) {
     tcpSocket->write(data);
 }
 
-QString ImagePushClient::getAddress()
-{
+QString ImagePushClient::getAddress() {
     return tcpSocket->peerAddress().toString();
 }
 
-void ImagePushClient::setFlag(const QString &flag)
-{
+void ImagePushClient::setFlag(const QString &flag) {
     this->flag = flag;
 }
 
-void ImagePushClient::append(const QImage &image)
-{
+void ImagePushClient::append(const QImage &image) {
     if (images.count() < 100) {
         mutex.lock();
         images << image;
@@ -97,8 +88,7 @@ void ImagePushClient::append(const QImage &image)
     }
 }
 
-void ImagePushClient::stop()
-{
+void ImagePushClient::stop() {
     this->images.clear();
     this->stopped = true;
     this->wait();

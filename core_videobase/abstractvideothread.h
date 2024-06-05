@@ -15,7 +15,7 @@ public:
     //打印线程消息类别(0-不打印 1-完整地址 2-IP地址)
     static int debugInfo;
 
-    explicit AbstractVideoThread(QObject *parent = 0);
+    explicit AbstractVideoThread(QObject *parent = nullptr);
 
     ~AbstractVideoThread() override;
 
@@ -287,7 +287,7 @@ public slots:
     virtual void next();
 
     //抓拍截图
-    virtual void snap(const QString &snapName = QString());
+    virtual void snap(const QString &snapName);
 
     //截图完成
     virtual void snapFinish(const QImage &image);
@@ -345,11 +345,11 @@ signals:
     void receiveFrame(int width, int height, quint8 *dataRGB, int type);
 
     //收到一帧yuv视频数据
-    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY,
-                      quint32 linesizeU, quint32 linesizeV);
+    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 lineSizeY,
+                      quint32 lineSizeU, quint32 lineSizeV);
 
     //收到一帧nv12视频数据
-    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV);
+    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 lineSizeY, quint32 lineSizeUV);
 
     //音量大小
     void receiveVolume(int volume);

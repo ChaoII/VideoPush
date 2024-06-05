@@ -2,8 +2,11 @@
 
 //把这几个头文件全部包含下懒得每次增加一个新类又来引入对应头文件
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+
 #include <QtWidgets>
+
 #endif
 
 #ifdef Q_CC_MSVC
@@ -32,13 +35,13 @@
 #define STRDATETIMEMS qPrintable(QDateTime::currentDateTime().toString("yyyy-MM-dd-HH-mm-ss-zzz"))
 #endif
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 #define Format_RGB QImage::Format_RGBA8888
 #else
 #define Format_RGB QImage::Format_RGB32
 #endif
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 #define QEventx QEnterEvent
 #else
 #define QEventx QEvent

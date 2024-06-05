@@ -26,9 +26,11 @@
 #endif
 
 #ifdef openglx
+
 #include "rgbopenglwidget.h"
 #include "yuvopenglwidget.h"
 #include "nv12openglwidget.h"
+
 #else
 #include "rgbwidget.h"
 #include "yuvwidget.h"
@@ -41,13 +43,12 @@
 //#define VersionString "#version 330 compatibility \n"
 
 //opengles的float/int等要手动指定精度
-inline void initFragment(QStringList &list)
-{
+inline void initFragment(QStringList &list) {
     bool useOpenGLES = false;
-#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     useOpenGLES = QCoreApplication::testAttribute(Qt::AA_UseOpenGLES);
 #endif
-#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
     useOpenGLES = false;
 #endif
 #ifdef Q_OS_LINUX

@@ -2,15 +2,17 @@
 
 #include "ffmpeginclude.h"
 #include "ffmpegstruct.h"
+
 class AbstractVideoThread;
 
-class FFmpegFilter
-{
+class FFmpegFilter {
 public:
     //获取滤镜字符串
     static QString getFilter(const FilterData &filterData);
+
     //初始化滤镜
     static int initFilter(AbstractVideoThread *thread, AVStream *stream, AVCodecContext *avctx, FilterData &filterData);
+
     //释放滤镜数据
     static void freeFilter(FilterData &filterData);
 };

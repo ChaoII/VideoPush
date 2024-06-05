@@ -6,8 +6,7 @@
 //播放示例: ffplay -i f:/mp4/push/1.mp4 -vf eq=brightness=0.5:contrast=100.0:saturation=3.0
 //转换示例: ffmpeg -y -i f:/mp4/push/1.mp4 -vf drawtext=text='%{pts\:hms}':fontsize=30:fontcolor=#ff0000:x=10:y=10 f:/mp4/out.mp4
 
-QString FilterHelper::getFilter()
-{
+QString FilterHelper::getFilter() {
     //图片模糊: boxblur=2:2
     //图片黑白: lutyuv=u=128:v=128
     //格式转换: format=pix_fmts=yuvj422p
@@ -30,8 +29,7 @@ QString FilterHelper::getFilter()
     return filter;
 }
 
-QString FilterHelper::getFilter(int rotate)
-{
+QString FilterHelper::getFilter(int rotate) {
     //0=逆时针旋转90度并垂直翻转
     //1=顺时针旋转90度
     //2=逆时针旋转90度
@@ -54,8 +52,7 @@ QString FilterHelper::getFilter(int rotate)
     return filter;
 }
 
-QString FilterHelper::getFilter(const OsdInfo &osd, bool noimage)
-{
+QString FilterHelper::getFilter(const OsdInfo &osd, bool noimage) {
     QString filter;
     if (!osd.visible) {
         return filter;
@@ -143,8 +140,7 @@ QString FilterHelper::getFilter(const OsdInfo &osd, bool noimage)
     return filter;
 }
 
-QString FilterHelper::getFilter(const GraphInfo &graph, bool hardware)
-{
+QString FilterHelper::getFilter(const GraphInfo &graph, bool hardware) {
     //drawbox=x=10:y=10:w=100:h=100:c=#ffffff@1:t=2
     QString filter;
     //有个现象就是硬解码下的图形滤镜会导致原图颜色不对
@@ -184,8 +180,7 @@ QString FilterHelper::getFilter(const GraphInfo &graph, bool hardware)
     return filter;
 }
 
-QString FilterHelper::getFilters(const QStringList &listFilter)
-{
+QString FilterHelper::getFilters(const QStringList &listFilter) {
     //挨个取出图片滤镜对应的图片和坐标
     int count = listFilter.count();
     QStringList listImage, listPosition, listTemp;
@@ -250,26 +245,26 @@ QString FilterHelper::getFilters(const QStringList &listFilter)
     return filterAll;
 }
 
-QStringList FilterHelper::getFilters(const QList<OsdInfo> &listOsd, const QList<GraphInfo> &listGraph, bool noimage, bool hardware)
-{
+QStringList FilterHelper::getFilters(const QList<OsdInfo> &listOsd, const QList<GraphInfo> &listGraph, bool noimage,
+                                     bool hardware) {
     //滤镜内容字符串集合
     QStringList listFilter;
 
     //加入标签信息
-    foreach (OsdInfo osd, listOsd) {
-        QString filter = FilterHelper::getFilter(osd, noimage);
-        if (!filter.isEmpty()) {
-            listFilter << filter;
+            foreach (OsdInfo osd, listOsd) {
+            QString filter = FilterHelper::getFilter(osd, noimage);
+            if (!filter.isEmpty()) {
+                listFilter << filter;
+            }
         }
-    }
 
     //加入图形信息
-    foreach (GraphInfo graph, listGraph) {
-        QString filter = FilterHelper::getFilter(graph, hardware);
-        if (!filter.isEmpty()) {
-            listFilter << filter;
+            foreach (GraphInfo graph, listGraph) {
+            QString filter = FilterHelper::getFilter(graph, hardware);
+            if (!filter.isEmpty()) {
+                listFilter << filter;
+            }
         }
-    }
 
     //加入其他滤镜
     QString filter = FilterHelper::getFilter();

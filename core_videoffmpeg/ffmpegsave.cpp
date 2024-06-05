@@ -4,8 +4,7 @@
 #include "core_videobase/widgethelper.h"
 #include "core_videohelper/urlhelper.h"
 
-FFmpegSave::FFmpegSave(QObject *parent) : AbstractSaveThread(parent)
-{
+FFmpegSave::FFmpegSave(QObject *parent) : AbstractSaveThread(parent) {
     this->reset();
 
     mp4ToAnnexB = false;
@@ -24,25 +23,24 @@ FFmpegSave::FFmpegSave(QObject *parent) : AbstractSaveThread(parent)
 
     connectTimeout = 1000;
 
-    formatCtx = NULL;
-    bsfCtx = NULL;
+    formatCtx = nullptr;
+    bsfCtx = nullptr;
 
-    videoStreamIn = NULL;
-    audioStreamIn = NULL;
-    videoCodecCtx = NULL;
-    audioCodecCtx = NULL;
+    videoStreamIn = nullptr;
+    audioStreamIn = nullptr;
+    videoCodecCtx = nullptr;
+    audioCodecCtx = nullptr;
 
-    videoFrame = NULL;
-    audioFrame = NULL;
-    videoSwsCtx = NULL;
-    audioSwrCtx = NULL;
+    videoFrame = nullptr;
+    audioFrame = nullptr;
+    videoSwsCtx = nullptr;
+    audioSwrCtx = nullptr;
 
-    videoPacket = NULL;
-    audioPacket = NULL;
+    videoPacket = nullptr;
+    audioPacket = nullptr;
 }
 
-void FFmpegSave::getMediaInfo()
-{
+void FFmpegSave::getMediaInfo() {
     //获取输入视频流的信息
     if (videoStreamIn) {
         videoIndexIn = videoStreamIn->index;
@@ -73,8 +71,7 @@ void FFmpegSave::getMediaInfo()
     }
 }
 
-void FFmpegSave::checkEncode()
-{
+void FFmpegSave::checkEncode() {
     //如果是保存264裸流则不需要音频
     if (saveVideoType == SaveVideoType_Stream) {
         needAudio = false;
@@ -85,7 +82,8 @@ void FFmpegSave::checkEncode()
     //this->needAudio = false;
 
     //自动调整是否需要重新编码视音频
-    FFmpegSaveHelper::checkEncode(this, videoCodecName, audioCodecName, videoEncode, audioEncode, encodeAudio, needAudio);
+    FFmpegSaveHelper::checkEncode(this, videoCodecName, audioCodecName, videoEncode, audioEncode, encodeAudio,
+                                  needAudio);
     //校验文件名/比如设置了强转265则将文件名拓展名改成265
     FFmpegSaveHelper::checkFileName(saveVideoType, encodeVideo, videoCodecName, fileName);
 
@@ -117,13 +115,14 @@ void FFmpegSave::checkEncode()
     }
 
     //打印编码信息
-    QString msg1 = QString("%1/%2/%3").arg(needVideo ? "启用" : "禁用").arg(videoEncode ? "编码" : "原始").arg(videoCodecName);
-    QString msg2 = QString("%1/%2/%3").arg(needAudio ? "启用" : "禁用").arg(audioEncode ? "编码" : "原始").arg(audioCodecName);
+    QString msg1 = QString("%1/%2/%3").arg(needVideo ? "启用" : "禁用").arg(videoEncode ? "编码" : "原始").arg(
+            videoCodecName);
+    QString msg2 = QString("%1/%2/%3").arg(needAudio ? "启用" : "禁用").arg(audioEncode ? "编码" : "原始").arg(
+            audioCodecName);
     debug(0, "编码信息", QString("视频: %1 音频: %2").arg(msg1).arg(msg2));
 }
 
-bool FFmpegSave::initVideoCtx()
-{
+bool FFmpegSave::initVideoCtx() {
     //没启用视频编码或者不需要视频则不继续
     if (!videoEncode || !needVideo) {
         return true;
@@ -156,19 +155,20 @@ bool FFmpegSave::initVideoCtx()
     }
 
     //打开视频编码器
-    int result = avcodec_open2(videoCodecCtx, videoCodec, NULL);
+    int result = avcodec_open2(videoCodecCtx, videoCodec, nullptr);
     if (result < 0) {
         debug(result, "视频编码", "avcodec_open2");
         return false;
     }
 
     //创建编码用临时包
-    videoPacket = FFmpegHelper::creatPacket(NULL);
+    videoPacket = FFmpegHelper::creatPacket(nullptr);
     //设置了视频缩放则转换
     bool convert = (encodeVideoScale != "1");
     if (convert) {
         videoFrame = av_frame_alloc();
-        bool ok = FFmpegSaveHelper::initVideoConvert(this, videoFrame, &videoSwsCtx, videoWidth, videoHeight, width, height);
+        bool ok = FFmpegSaveHelper::initVideoConvert(this, videoFrame, &videoSwsCtx, videoWidth, videoHeight, width,
+                                                     height);
         if (!ok) {
             return false;
         }
@@ -184,8 +184,7 @@ bool FFmpegSave::initVideoCtx()
 }
 
 //https://blog.csdn.net/irainsa/article/details/129289254
-bool FFmpegSave::initAudioCtx()
-{
+bool FFmpegSave::initAudioCtx() {
     //没启用音频编码或者不需要音频则不继续
     if (!audioEncode || !needAudio) {
         return true;
@@ -224,18 +223,19 @@ bool FFmpegSave::initAudioCtx()
     }
 
     //打开音频编码器
-    int result = avcodec_open2(audioCodecCtx, audioCodec, NULL);
+    int result = avcodec_open2(audioCodecCtx, audioCodec, nullptr);
     if (result < 0) {
         debug(result, "音频编码", "avcodec_open2");
         return false;
     }
 
     //创建编码用临时包
-    audioPacket = FFmpegHelper::creatPacket(NULL);
+    audioPacket = FFmpegHelper::creatPacket(nullptr);
     //强制转换音频数据/重采样
     if (convert) {
         audioFrame = av_frame_alloc();
-        bool ok = FFmpegSaveHelper::initAudioConvert(this, audioFrame, &audioSwrCtx, audioCodecCtx, sampleFormat, sampleRate, channelCount);
+        bool ok = FFmpegSaveHelper::initAudioConvert(this, audioFrame, &audioSwrCtx, audioCodecCtx, sampleFormat,
+                                                     sampleRate, channelCount);
         if (!ok) {
             return false;
         }
@@ -250,10 +250,9 @@ bool FFmpegSave::initAudioCtx()
     return true;
 }
 
-bool FFmpegSave::initStream()
-{
+bool FFmpegSave::initStream() {
     //如果存在秘钥则启用加密
-    AVDictionary *options = NULL;
+    AVDictionary *options = nullptr;
     FFmpegHelper::initEncryption(&options, this->property("cryptoKey").toByteArray());
 
     QString flag;
@@ -268,7 +267,7 @@ bool FFmpegSave::initStream()
     //开辟一个格式上下文用来处理视频流输出(末尾url不填则rtsp推流失败)
     QByteArray fileData = fileName.toUtf8();
     const char *url = fileData.data();
-    int result = avformat_alloc_output_context2(&formatCtx, NULL, format, url);
+    int result = avformat_alloc_output_context2(&formatCtx, nullptr, format, url);
     if (result < 0) {
         debug(result, "创建格式", "");
         return false;
@@ -292,7 +291,7 @@ bool FFmpegSave::initStream()
         formatCtx->interrupt_callback.opaque = this;
 
         tryOpen = true;
-        result = avio_open2(&formatCtx->pb, url, AVIO_FLAG_WRITE, &formatCtx->interrupt_callback, NULL);
+        result = avio_open2(&formatCtx->pb, url, AVIO_FLAG_WRITE, &formatCtx->interrupt_callback, nullptr);
         tryOpen = false;
         if (result < 0) {
             debug(result, "打开输出", "");
@@ -311,18 +310,17 @@ bool FFmpegSave::initStream()
     debug(0, "打开输出", QString("格式: %1").arg(format));
     return true;
 
-end:
+    end:
     //关闭释放并清理文件
     this->close();
     this->deleteFile(fileName);
     return false;
 }
 
-bool FFmpegSave::initVideoStream()
-{
+bool FFmpegSave::initVideoStream() {
     if (needVideo) {
         videoIndexOut = 0;
-        AVStream *stream = avformat_new_stream(formatCtx, NULL);
+        AVStream *stream = avformat_new_stream(formatCtx, nullptr);
         if (!stream) {
             return false;
         }
@@ -350,11 +348,10 @@ bool FFmpegSave::initVideoStream()
     return true;
 }
 
-bool FFmpegSave::initAudioStream()
-{
+bool FFmpegSave::initAudioStream() {
     if (needAudio) {
         audioIndexOut = (videoIndexOut == 0 ? 1 : 0);
-        AVStream *stream = avformat_new_stream(formatCtx, NULL);
+        AVStream *stream = avformat_new_stream(formatCtx, nullptr);
         if (!stream) {
             return false;
         }
@@ -376,8 +373,7 @@ bool FFmpegSave::initAudioStream()
     return true;
 }
 
-bool FFmpegSave::init()
-{
+bool FFmpegSave::init() {
     //必须存在输入视音频流对象其中一个
     if (fileName.isEmpty() || (!videoStreamIn && !audioStreamIn)) {
         return false;
@@ -434,12 +430,12 @@ bool FFmpegSave::init()
         return false;
     }
 
-    debug(0, "索引信息", QString("视频: %1/%2 音频: %3/%4").arg(videoIndexIn).arg(videoIndexOut).arg(audioIndexIn).arg(audioIndexOut));
+    debug(0, "索引信息",
+          QString("视频: %1/%2 音频: %3/%4").arg(videoIndexIn).arg(videoIndexOut).arg(audioIndexIn).arg(audioIndexOut));
     return true;
 }
 
-void FFmpegSave::save()
-{
+void FFmpegSave::save() {
     //从队列中取出数据处理
     //qDebug() << TIMEMS << packets.count() << frames.count();
 
@@ -466,8 +462,7 @@ void FFmpegSave::save()
     }
 }
 
-void FFmpegSave::close()
-{
+void FFmpegSave::close() {
     //写入文件结束符/写入过开始符才能执行/否则会崩溃
     if (formatCtx && writeHeader) {
         av_write_trailer(formatCtx);
@@ -476,22 +471,22 @@ void FFmpegSave::close()
     //释放视频临时数据包
     if (videoPacket) {
         FFmpegHelper::freePacket(videoPacket);
-        videoPacket = NULL;
+        videoPacket = nullptr;
     }
 
     //释放音频临时数据包
     if (audioPacket) {
         FFmpegHelper::freePacket(audioPacket);
-        audioPacket = NULL;
+        audioPacket = nullptr;
     }
 
     //释放队列中的数据包
-    foreach (AVPacket *packet, packets) {
+    for (auto &packet: packets) {
         FFmpegHelper::freePacket(packet);
     }
 
     //释放队列中的数据帧
-    foreach (AVFrame *frame, frames) {
+    for (auto &frame: frames) {
         FFmpegHelper::freeFrame(frame);
     }
 
@@ -500,35 +495,35 @@ void FFmpegSave::close()
         //avio_close(formatCtx->pb);
         //avformat_free_context(formatCtx);
         avformat_close_input(&formatCtx);
-        formatCtx = NULL;
+        formatCtx = nullptr;
     }
 
     //关闭视频编码器上下文并释放对象
     if (videoCodecCtx) {
         avcodec_free_context(&videoCodecCtx);
-        videoCodecCtx = NULL;
+        videoCodecCtx = nullptr;
     }
 
     //关闭视频编码器上下文并释放对象
     if (audioCodecCtx) {
         avcodec_free_context(&audioCodecCtx);
-        audioCodecCtx = NULL;
+        audioCodecCtx = nullptr;
     }
 
     //释放转换用的视频相关
     if (videoFrame) {
         FFmpegHelper::freeFrame(videoFrame);
         sws_freeContext(videoSwsCtx);
-        videoFrame = NULL;
-        videoSwsCtx = NULL;
+        videoFrame = nullptr;
+        videoSwsCtx = nullptr;
     }
 
     //释放转换用的音频相关
     if (audioFrame) {
         FFmpegHelper::freeFrame(audioFrame);
         swr_free(&audioSwrCtx);
-        audioFrame = NULL;
-        audioSwrCtx = NULL;
+        audioFrame = nullptr;
+        audioSwrCtx = nullptr;
     }
 
     FFmpegSaveHelper::freeBsfCtx(&bsfCtx);
@@ -539,8 +534,7 @@ void FFmpegSave::close()
     this->reset();
 }
 
-void FFmpegSave::reset()
-{
+void FFmpegSave::reset() {
     keyFrame = false;
     writeHeader = false;
     tryOpen = false;
@@ -557,61 +551,51 @@ void FFmpegSave::reset()
     audioIndexOut = -1;
 }
 
-int FFmpegSave::getVideoIndexIn()
-{
+int FFmpegSave::getVideoIndexIn() {
     return this->videoIndexIn;
 }
 
-int FFmpegSave::getAudioIndexIn()
-{
+int FFmpegSave::getAudioIndexIn() {
     return this->audioIndexIn;
 }
 
-int FFmpegSave::getVideoIndexOut()
-{
+int FFmpegSave::getVideoIndexOut() {
     return this->videoIndexOut;
 }
 
-int FFmpegSave::getAudioIndexOut()
-{
+int FFmpegSave::getAudioIndexOut() {
     return this->audioIndexOut;
 }
 
-AVStream *FFmpegSave::getVideoStream()
-{
+AVStream *FFmpegSave::getVideoStream() {
     if (videoIndexOut >= 0) {
         return formatCtx->streams[videoIndexOut];
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
-AVStream *FFmpegSave::getAudioStream()
-{
+AVStream *FFmpegSave::getAudioStream() {
     if (audioIndexOut >= 0) {
         return formatCtx->streams[audioIndexOut];
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
-bool FFmpegSave::getTryOpen()
-{
+bool FFmpegSave::getTryOpen() {
     return this->tryOpen;
 }
 
-qint64 FFmpegSave::getStartTime()
-{
+qint64 FFmpegSave::getStartTime() {
     return this->startTime;
 }
 
-int FFmpegSave::getConnectTimeout()
-{
+int FFmpegSave::getConnectTimeout() {
     return this->connectTimeout;
 }
 
-void FFmpegSave::debug(int result, const QString &head, const QString &msg)
-{
+void FFmpegSave::debug(int result, const QString &head, const QString &msg) {
     if (result < 0) {
         QString text = (msg.isEmpty() ? "" : (" " + msg));
         AbstractSaveThread::debug(head, QString("错误: %1%2").arg(FFmpegHelper::getError(result)).arg(text));
@@ -620,29 +604,26 @@ void FFmpegSave::debug(int result, const QString &head, const QString &msg)
     }
 }
 
-bool FFmpegSave::getVideoEncode()
-{
+bool FFmpegSave::getVideoEncode() {
     return this->videoEncode;
 }
 
-bool FFmpegSave::getAudioEncode()
-{
+bool FFmpegSave::getAudioEncode() {
     return this->audioEncode;
 }
 
-bool FFmpegSave::getOnlySaveAudio()
-{
+bool FFmpegSave::getOnlySaveAudio() {
     return (needAudio && !needVideo);
 }
 
-void FFmpegSave::setSendPacket(bool sendPacket, bool onlySendPacket)
-{
+void FFmpegSave::setSendPacket(bool sendPacket, bool onlySendPacket) {
     this->sendPacket = sendPacket;
     this->onlySendPacket = onlySendPacket;
 }
 
-void FFmpegSave::setEncodePara(bool mp4ToAnnexB, bool audioEncode, bool videoEncode, double encodeSpeed, EncodeAudio encodeAudio, EncodeVideo encodeVideo, int encodeVideoFps, float encodeVideoRatio, const QString &encodeVideoScale)
-{
+void FFmpegSave::setEncodePara(bool mp4ToAnnexB, bool audioEncode, bool videoEncode, double encodeSpeed,
+                               EncodeAudio encodeAudio, EncodeVideo encodeVideo, int encodeVideoFps,
+                               float encodeVideoRatio, const QString &encodeVideoScale) {
     this->mp4ToAnnexB = mp4ToAnnexB;
     this->audioEncode = audioEncode;
     this->videoEncode = videoEncode;
@@ -669,16 +650,15 @@ void FFmpegSave::setEncodePara(bool mp4ToAnnexB, bool audioEncode, bool videoEnc
     }
 }
 
-void FFmpegSave::setSavePara(int mediaType, const SaveVideoType &saveVideoType, AVStream *videoStreamIn, AVStream *audioStreamIn)
-{
+void FFmpegSave::setSavePara(int mediaType, const SaveVideoType &saveVideoType, AVStream *videoStreamIn,
+                             AVStream *audioStreamIn) {
     this->mediaType = mediaType;
     this->saveVideoType = saveVideoType;
     this->videoStreamIn = videoStreamIn;
     this->audioStreamIn = audioStreamIn;
 }
 
-void FFmpegSave::writePacket2(AVPacket *packet)
-{
+void FFmpegSave::writePacket2(AVPacket *packet) {
     //非音视频流不用处理
     int index = packet->stream_index;
     if (index != videoIndexOut && index != audioIndexOut) {
@@ -702,7 +682,7 @@ void FFmpegSave::writePacket2(AVPacket *packet)
     if (saveVideoType == SaveVideoType_Stream) {
         //只需要写入视频数据
         if (index == videoIndexOut) {
-            file.write((char *)packet->data, packet->size);
+            file.write((char *) packet->data, packet->size);
         }
     } else if (saveVideoType == SaveVideoType_Mp4) {
         //取出输入输出流的时间基
@@ -752,15 +732,13 @@ void FFmpegSave::writePacket2(AVPacket *packet)
     }
 }
 
-void FFmpegSave::writePacket2(AVPacket *packet, bool video)
-{
+void FFmpegSave::writePacket2(AVPacket *packet, bool video) {
     //编码后的数据包需要手动设置对应流索引
     packet->stream_index = (video ? videoIndexOut : audioIndexOut);
     this->writePacket2(packet);
 }
 
-bool FFmpegSave::checkIndex(int index)
-{
+bool FFmpegSave::checkIndex(int index) {
     //对应流没启用或者索引非法则不继续
     if (index == videoIndexIn) {
         if (!needVideo) {
@@ -777,8 +755,7 @@ bool FFmpegSave::checkIndex(int index)
     return true;
 }
 
-void FFmpegSave::writePacket(AVPacket *packet, int index)
-{
+void FFmpegSave::writePacket(AVPacket *packet, int index) {
     //没打开不处理
     if (!isOk) {
         return;
@@ -815,8 +792,7 @@ void FFmpegSave::writePacket(AVPacket *packet, int index)
     mutex.unlock();
 }
 
-void FFmpegSave::writeFrame(AVFrame *frame, int index)
-{
+void FFmpegSave::writeFrame(AVFrame *frame, int index) {
     //没打开或者暂停阶段不处理
     if (!isOk || isPause) {
         return;
@@ -841,7 +817,8 @@ void FFmpegSave::writeFrame(AVFrame *frame, int index)
     if (frame->width > 0) {
         //启用了转换则用先执行转换
         if (videoSwsCtx) {
-            int result = sws_scale(videoSwsCtx, (const quint8 **)frame->data, frame->linesize, 0, videoHeight, videoFrame->data, videoFrame->linesize);
+            int result = sws_scale(videoSwsCtx, (const quint8 **) frame->data, frame->linesize, 0, videoHeight,
+                                   videoFrame->data, videoFrame->linesize);
             if (result >= 0) {
                 frames << av_frame_clone(videoFrame);
             }
@@ -852,8 +829,9 @@ void FFmpegSave::writeFrame(AVFrame *frame, int index)
         //启用了转换则用先执行转换
         if (audioSwrCtx) {
             int len = frame->nb_samples;
-            //int size = av_samples_get_buffer_size(NULL, audioFrame->channels, audioFrame->nb_samples, audioCodecCtx->sample_fmt, 1);
-            int result = swr_convert(audioSwrCtx, audioFrame->data, len, (const quint8 **)frame->data, frame->nb_samples);
+            //int size = av_samples_get_buffer_size(nullptr, audioFrame->channels, audioFrame->nb_samples, audioCodecCtx->sample_fmt, 1);
+            int result = swr_convert(audioSwrCtx, audioFrame->data, len, (const quint8 **) frame->data,
+                                     frame->nb_samples);
             if (result >= 0) {
                 frames << av_frame_clone(audioFrame);
             }

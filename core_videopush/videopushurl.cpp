@@ -1,9 +1,8 @@
 ﻿#include "videopushurl.h"
 
-QStringList VideoPushUrl::getUrls(const QStringList &ips)
-{
+QStringList VideoPushUrl::getUrls(const QStringList &ips) {
     QStringList urls;
-    foreach (QString ip, ips) {
+    for (auto &ip: ips) {
         urls << QString("rtmp://%1/stream").arg(ip);
         urls << QString("rtmp://%1:10085/hls").arg(ip);
         urls << QString("rtsp://%1/stream").arg(ip);
@@ -15,20 +14,19 @@ QStringList VideoPushUrl::getUrls(const QStringList &ips)
     return urls;
 }
 
-bool VideoPushUrl::hostLive(const QString &hostName, int port, int timeout)
-{
+bool VideoPushUrl::hostLive(const QString &hostName, int port, int timeout) {
     //局部的事件循环,不卡主界面
     QEventLoop eventLoop;
 
     //设置超时
     QTimer timer;
-    QObject::connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
+    QObject::connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
     timer.setSingleShot(true);
     timer.start(timeout);
 
     //主动测试下连接
     QTcpSocket tcpSocket;
-    QObject::connect(&tcpSocket, SIGNAL(connected()), &eventLoop, SLOT(quit()));
+    QObject::connect(&tcpSocket, &QTcpSocket::connected, &eventLoop, &QEventLoop::quit);
     tcpSocket.connectToHost(hostName, port);
     eventLoop.exec();
 
@@ -41,8 +39,7 @@ QList<QString> VideoPushUrl::listPushType = QList<QString>();
 QList<QString> VideoPushUrl::listPullType = QList<QString>();
 QList<int> VideoPushUrl::listPullPort = QList<int>();
 
-void VideoPushUrl::initServerInfo()
-{
+void VideoPushUrl::initServerInfo() {
     listPushType.clear();
     listPullType.clear();
     listPullPort.clear();
@@ -80,8 +77,7 @@ void VideoPushUrl::initServerInfo()
     listPullPort << 554 << 1935 << 9088 << 8088 << 6088 << 8192;
 }
 
-void VideoPushUrl::initServerInfo(const QString &fileName)
-{
+void VideoPushUrl::initServerInfo(const QString &fileName) {
     listPushType.clear();
     listPullType.clear();
     listPullPort.clear();
@@ -106,10 +102,9 @@ void VideoPushUrl::initServerInfo(const QString &fileName)
     }
 }
 
-QStringList VideoPushUrl::getPushType()
-{
+QStringList VideoPushUrl::getPushType() {
     QStringList types;
-    foreach (QString type, listPushType) {
+    for (auto &type: listPushType) {
         if (!types.contains(type)) {
             types << type;
         }
@@ -117,12 +112,11 @@ QStringList VideoPushUrl::getPushType()
     return types;
 }
 
-QString VideoPushUrl::getPushPath(const QString &pushUrl)
-{
+QString VideoPushUrl::getPushPath(const QString &pushUrl) {
     //("rtsp:", "", "127.0.0.1:5541") ("rtsp:", "", "127.0.0.1:5541", "live") ("rtsp:", "", "127.0.0.1:5541", "live/test")
     QString path = "/";
     QStringList list = pushUrl.split("/");
-    int count = list.count();
+    int count = list.size();
     //从第三位开始后面所有的都是资源目录
     for (int i = 3; i < count; ++i) {
         path = path + list.at(i) + "/";
@@ -132,10 +126,9 @@ QString VideoPushUrl::getPushPath(const QString &pushUrl)
     return path.mid(0, path.length() - 1);
 }
 
-int VideoPushUrl::getPullPort(const QString &pushType, const QString &pullType)
-{
+int VideoPushUrl::getPullPort(const QString &pushType, const QString &pullType) {
     int port = 80;
-    int count = listPushType.count();
+    int count = listPushType.size();
     for (int i = 0; i < count; ++i) {
         if (listPushType.at(i) == pushType && listPullType.at(i) == pullType) {
             port = listPullPort.at(i);
@@ -145,8 +138,8 @@ int VideoPushUrl::getPullPort(const QString &pushType, const QString &pullType)
     return port;
 }
 
-QString VideoPushUrl::getPushUrl(const QString &pushType, const QString &pushMode, const QString &pushUrl, const QString &pushHost)
-{
+QString VideoPushUrl::getPushUrl(const QString &pushType, const QString &pushMode, const QString &pushUrl,
+                                 const QString &pushHost) {
     QString type = pushType;
     QString mode = pushMode;
     QString url = pushUrl;
@@ -171,8 +164,7 @@ QString VideoPushUrl::getPushUrl(const QString &pushType, const QString &pushMod
     return url;
 }
 
-bool VideoPushUrl::useLivePlayer(const QString &pushType, const QString &pullType)
-{
+bool VideoPushUrl::useLivePlayer(const QString &pushType, const QString &pullType) {
     bool liveplayer = true;
     if (pushType == "mediamtx") {
         liveplayer = false;
@@ -185,8 +177,7 @@ bool VideoPushUrl::useLivePlayer(const QString &pushType, const QString &pullTyp
     return liveplayer;
 }
 
-void VideoPushUrl::checkPullType(const QString &pushType, QString &pullType)
-{
+void VideoPushUrl::checkPullType(const QString &pushType, QString &pullType) {
     //有些流媒体服务器只支持部分拉流类型(速度 webrtc > ws-flv > flv > hls)
     if (pushType == "mediamtx") {
         if (pullType != "hls") {
@@ -215,8 +206,7 @@ void VideoPushUrl::checkPullType(const QString &pushType, QString &pullType)
     }
 }
 
-void VideoPushUrl::replaceUrl(const QString &dstUrl, const QString hostName, QString &srcUrl)
-{
+void VideoPushUrl::replaceUrl(const QString &dstUrl, const QString hostName, QString &srcUrl) {
     if (!dstUrl.isEmpty()) {
         srcUrl.replace(hostName, dstUrl);
     }
@@ -224,8 +214,9 @@ void VideoPushUrl::replaceUrl(const QString &dstUrl, const QString hostName, QSt
 
 //各种拉流协议分析 https://www.cnblogs.com/xi-jie/p/14031604.html
 //各种服务程序对比 https://qtchina.blog.csdn.net/article/details/132355847
-QString VideoPushUrl::getPullUrl(const QString &pushUrl, const QString &pushType, const QString &pullType, const QString &host, const QString &flag)
-{
+QString
+VideoPushUrl::getPullUrl(const QString &pushUrl, const QString &pushType, const QString &pullType, const QString &host,
+                         const QString &flag) {
     //找到对应服务器类型和拉流类型的端口
     int port = getPullPort(pushType, pullType);
     //资源目录(可以为空)
@@ -353,8 +344,8 @@ QString VideoPushUrl::getPullUrl(const QString &pushUrl, const QString &pushType
     return url;
 }
 
-void VideoPushUrl::getPullUrl(const QString &pushUrl, const QString &pushType, const QString &host, const QString &flag, QString &url1, QString &url2, QString &url3, QString &url4)
-{
+void VideoPushUrl::getPullUrl(const QString &pushUrl, const QString &pushType, const QString &host, const QString &flag,
+                              QString &url1, QString &url2, QString &url3, QString &url4) {
     QString pullType1 = "rtsp";
     QString pullType2 = "rtmp";
     QString pullType3 = "hls";
@@ -384,8 +375,8 @@ void VideoPushUrl::getPullUrl(const QString &pushUrl, const QString &pushType, c
 }
 
 int VideoPushUrl::maxCount = 25;
-void VideoPushUrl::getPercent(int count, int &row, int &percent)
-{
+
+void VideoPushUrl::getPercent(int count, int &row, int &percent) {
     if (count <= 1) {
         row = 1;
         percent = 100;
@@ -414,8 +405,8 @@ void VideoPushUrl::getPercent(int count, int &row, int &percent)
 }
 
 //浏览器打开webrtc调试 chrome://webrtc-internals
-void VideoPushUrl::preview(const QString &httpUrl, const QString &fileName, quint8 number, const QStringList &urls, bool liveplayer)
-{
+void VideoPushUrl::preview(const QString &httpUrl, const QString &fileName, quint8 number, const QStringList &urls,
+                           bool liveplayer) {
     int count = urls.count();
     int countAll = count * number;
     if (fileName.isEmpty() || number < 1 || count == 0) {
@@ -498,7 +489,7 @@ void VideoPushUrl::preview(const QString &httpUrl, const QString &fileName, quin
         }
         list << "</table>";
     } else {
-        foreach (QString iframe, iframes) {
+        for (auto &iframe: iframes) {
             list << ("  " + iframe);
         }
     }
@@ -511,20 +502,17 @@ void VideoPushUrl::preview(const QString &httpUrl, const QString &fileName, quin
     if (name.startsWith("./")) {
         name.replace("./", qApp->applicationDirPath() + "/");
     }
-
     QFile file(name);
     if (file.open(QFile::WriteOnly | QFile::Truncate)) {
         QString content = list.join("\n");
         file.write(content.toUtf8());
         file.close();
-
         //如果是在www目录中说明是网站需要直接打开网络地址
         int index = name.indexOf("www", 0, Qt::CaseInsensitive);
         QString url = QString("file:///%1").arg(name);
         if (index >= 0) {
             url = QString("%1%2").arg(httpUrl).arg(name.mid(index + 3, name.length()));
         }
-
         QDesktopServices::openUrl(QUrl(url, QUrl::TolerantMode));
     }
 }

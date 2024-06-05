@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "ffmpeginclude.h"
-#include "core_videobase/abstractsavethread.h"
+#include "abstractsavethread.h"
 
 //1. 网上的保存计算都是在理想状态下进行的(打开后从第一帧开始保存直到结束)
 //2. 中间如果切换了播放进度(不是连续的帧)
@@ -11,9 +11,9 @@
 //6. 指定只存储视频或者音频
 //7. 音视频流索引顺序是0/1和1/0
 //8. 不编码存储和重新编码存储
-class FFmpegSave : public AbstractSaveThread
-{
-    Q_OBJECT
+class FFmpegSave : public AbstractSaveThread {
+Q_OBJECT
+
 public:
     explicit FFmpegSave(QObject *parent = 0);
 
@@ -111,45 +111,58 @@ private:
 private:
     //获取媒体信息
     void getMediaInfo();
+
     //校验视音频是否需要编码
     void checkEncode();
 
     //初始化视频解码器
     bool initVideoCtx();
+
     //初始化音频解码器
     bool initAudioCtx();
 
     //初始化视音频流
     bool initStream();
+
     bool initVideoStream();
+
     bool initAudioStream();
 
 private slots:
+
     //初始化
     bool init();
+
     //保存数据
     void save();
+
     //关闭释放
     void close();
+
     //复位数据
     void reset();
 
 public:
     //获取输入视音频流索引
     int getVideoIndexIn();
+
     int getAudioIndexIn();
 
     //获取输出视音频流索引
     int getVideoIndexOut();
+
     int getAudioIndexOut();
 
     //获取输出视音频流对象
     AVStream *getVideoStream();
+
     AVStream *getAudioStream();
 
     //获取是否处于打开阶段/开始时间/打开超时时间
     bool getTryOpen();
+
     qint64 getStartTime();
+
     int getConnectTimeout();
 
     //打印信息
@@ -157,6 +170,7 @@ public:
 
     //获取是否音视频编码
     bool getVideoEncode();
+
     bool getAudioEncode();
 
     //是否纯音频
@@ -166,23 +180,30 @@ public:
     void setSendPacket(bool sendPacket, bool onlySendPacket);
 
     //设置编码相关参数
-    void setEncodePara(bool mp4ToAnnexB, bool audioEncode, bool videoEncode, double encodeSpeed, EncodeAudio encodeAudio, EncodeVideo encodeVideo, int encodeVideoFps, float encodeVideoRatio, const QString &encodeVideoScale);
+    void
+    setEncodePara(bool mp4ToAnnexB, bool audioEncode, bool videoEncode, double encodeSpeed, EncodeAudio encodeAudio,
+                  EncodeVideo encodeVideo, int encodeVideoFps, float encodeVideoRatio, const QString &encodeVideoScale);
 
     //设置保存相关参数
-    void setSavePara(int mediaType, const SaveVideoType &saveVideoType, AVStream *videoStreamIn, AVStream *audioStreamIn);
+    void
+    setSavePara(int mediaType, const SaveVideoType &saveVideoType, AVStream *videoStreamIn, AVStream *audioStreamIn);
 
     //写入数据包
     void writePacket2(AVPacket *packet);
+
     void writePacket2(AVPacket *packet, bool video);
 
     //校验索引
     bool checkIndex(int index);
+
     //写入视频包
     void writePacket(AVPacket *packet, int index);
+
     //写入视频帧
     void writeFrame(AVFrame *frame, int index);
 
 signals:
+
     //收到数据包(一般用于多路存储或推流)
     void receivePacket(AVPacket *packet);
 };

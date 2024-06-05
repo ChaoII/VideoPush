@@ -10,39 +10,33 @@ int NetPushClient::encodeVideo = 0;
 float NetPushClient::encodeVideoRatio = 1;
 QString NetPushClient::encodeVideoScale = "1";
 
-NetPushClient::NetPushClient(QObject *parent) : QObject(parent)
-{
-    ffmpegThread = NULL;
-    ffmpegSave = NULL;
+NetPushClient::NetPushClient(QObject *parent) : QObject(parent) {
+    ffmpegThread = nullptr;
+    ffmpegSave = nullptr;
 
     //定时器控制多久录制一个文件
     timerRecord = new QTimer(this);
     timerRecord->setInterval(1000);
-    connect(timerRecord, SIGNAL(timeout()), this, SLOT(checkRecord()));
+    connect(timerRecord, &QTimer::timeout, this, &NetPushClient::checkRecord);
 }
 
-NetPushClient::~NetPushClient()
-{
+NetPushClient::~NetPushClient() {
     this->stop();
 }
 
-QString NetPushClient::getMediaUrl()
-{
+QString NetPushClient::getMediaUrl() {
     return this->mediaUrl;
 }
 
-QString NetPushClient::getPushUrl()
-{
+QString NetPushClient::getPushUrl() {
     return this->pushUrl;
 }
 
-FFmpegThread *NetPushClient::getVideoThread()
-{
+FFmpegThread *NetPushClient::getVideoThread() {
     return this->ffmpegThread;
 }
 
-void NetPushClient::checkRecord()
-{
+void NetPushClient::checkRecord() {
     //保存策略说明
     //0: 不保存
     //1: 每30分钟保存一个文件/以本地时间计时
@@ -71,14 +65,14 @@ void NetPushClient::checkRecord()
     }
 }
 
-void NetPushClient::record()
-{
+void NetPushClient::record() {
     if (ffmpegSave) {
         //取出推流码
         QString flag = pushUrl.split("/").last();
         //文件名不能包含特殊字符/需要替换成固定字母
-        QString pattern("[\\\\/:|*?\"<>]|[cC][oO][mM][1-9]|[lL][pP][tT][1-9]|[cC][oO][nM]|[pP][rR][nN]|[aA][uU][xX]|[nN][uU][lL]");
-#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+        QString pattern(
+                "[\\\\/:|*?\"<>]|[cC][oO][mM][1-9]|[lL][pP][tT][1-9]|[cC][oO][nM]|[pP][rR][nN]|[aA][uU][xX]|[nN][uU][lL]");
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
         QRegularExpression rx(pattern);
 #else
         QRegExp rx(pattern);
@@ -102,8 +96,7 @@ void NetPushClient::record()
     }
 }
 
-void NetPushClient::receivePlayStart(int time)
-{
+void NetPushClient::receivePlayStart(int time) {
     //演示添加OSD后推流
 #ifdef betaversion
     int height = ffmpegThread->getVideoHeight();
@@ -124,16 +117,17 @@ void NetPushClient::receivePlayStart(int time)
 
         ffmpegSave = new FFmpegSave(this);
         //重新编码过的则取视频保存类的对象
-        AVStream *videoStreamIn = saveFile->getVideoEncode() ? saveFile->getVideoStream() : ffmpegThread->getVideoStream();
-        AVStream *audioStreamIn = saveFile->getAudioEncode() ? saveFile->getAudioStream() : ffmpegThread->getAudioStream();
+        AVStream *videoStreamIn = saveFile->getVideoEncode() ? saveFile->getVideoStream()
+                                                             : ffmpegThread->getVideoStream();
+        AVStream *audioStreamIn = saveFile->getAudioEncode() ? saveFile->getAudioStream()
+                                                             : ffmpegThread->getAudioStream();
         ffmpegSave->setSavePara(ffmpegThread->getMediaType(), SaveVideoType_Mp4, videoStreamIn, audioStreamIn);
         this->record();
         timerRecord->start();
     }
 }
 
-void NetPushClient::receivePacket(AVPacket *packet)
-{
+void NetPushClient::receivePacket(AVPacket *packet) {
     if (ffmpegSave && ffmpegSave->getIsOk()) {
         ffmpegSave->writePacket2(packet);
     }
@@ -141,8 +135,7 @@ void NetPushClient::receivePacket(AVPacket *packet)
     FFmpegHelper::freePacket(packet);
 }
 
-void NetPushClient::recorderStateChanged(const RecorderState &state, const QString &file)
-{
+void NetPushClient::recorderStateChanged(const RecorderState &state, const QString &file) {
     int width = 0;
     int height = 0;
     int videoStatus = 0;
@@ -174,33 +167,27 @@ void NetPushClient::recorderStateChanged(const RecorderState &state, const QStri
     emit pushStart(mediaUrl, width, height, videoStatus, audioStatus, start);
 }
 
-void NetPushClient::receiveSaveStart()
-{
+void NetPushClient::receiveSaveStart() {
     emit pushChanged(mediaUrl, 0);
 }
 
-void NetPushClient::receiveSaveFinsh()
-{
+void NetPushClient::receiveSaveFinish() {
     emit pushChanged(mediaUrl, 1);
 }
 
-void NetPushClient::receiveSaveError(int error)
-{
+void NetPushClient::receiveSaveError(int error) {
     emit pushChanged(mediaUrl, 2);
 }
 
-void NetPushClient::setMediaUrl(const QString &mediaUrl)
-{
+void NetPushClient::setMediaUrl(const QString &mediaUrl) {
     this->mediaUrl = mediaUrl;
 }
 
-void NetPushClient::setPushUrl(const QString &pushUrl)
-{
+void NetPushClient::setPushUrl(const QString &pushUrl) {
     this->pushUrl = pushUrl;
 }
 
-void NetPushClient::start()
-{
+void NetPushClient::start() {
     if (ffmpegThread || mediaUrl.isEmpty() || pushUrl.isEmpty()) {
         return;
     }
@@ -210,7 +197,8 @@ void NetPushClient::start()
     //关联播放开始信号用来启动推流
     connect(ffmpegThread, SIGNAL(receivePlayStart(int)), this, SLOT(receivePlayStart(int)));
     //关联录制信号变化用来判断是否推流成功
-    connect(ffmpegThread, SIGNAL(recorderStateChanged(RecorderState, QString)), this, SLOT(recorderStateChanged(RecorderState, QString)));
+    connect(ffmpegThread, SIGNAL(recorderStateChanged(RecorderState, QString)), this,
+            SLOT(recorderStateChanged(RecorderState, QString)));
     //设置播放地址
     ffmpegThread->setMediaUrl(mediaUrl);
     //设置解码内核
@@ -247,16 +235,16 @@ void NetPushClient::start()
     FFmpegSave *saveFile = ffmpegThread->getSaveFile();
     saveFile->setProperty("checkB", checkB);
     saveFile->setSendPacket(recordType > 0, false);
-    connect(saveFile, SIGNAL(receivePacket(AVPacket *)), this, SLOT(receivePacket(AVPacket *)));
-    connect(saveFile, SIGNAL(receiveSaveStart()), this, SLOT(receiveSaveStart()));
-    connect(saveFile, SIGNAL(receiveSaveFinsh()), this, SLOT(receiveSaveFinsh()));
-    connect(saveFile, SIGNAL(receiveSaveError(int)), this, SLOT(receiveSaveError(int)));
+    connect(saveFile, &FFmpegSave::receivePacket, this, &NetPushClient::receivePacket);
+    connect(saveFile, &FFmpegSave::receiveSaveStart, this, &NetPushClient::receiveSaveStart);
+    connect(saveFile, &FFmpegSave::receiveSaveFinish, this, &NetPushClient::receiveSaveFinish);
+    connect(saveFile, &FFmpegSave::receiveSaveError, this, &NetPushClient::receiveSaveError);
 
     //如果是本地设备或者桌面录屏要取出其他参数
     VideoHelper::initVideoPara(ffmpegThread, mediaUrl, encodeVideoScale);
 
     //设置视频编码格式/视频压缩比率/视频缩放比例
-    ffmpegThread->setEncodeVideo((EncodeVideo)encodeVideo);
+    ffmpegThread->setEncodeVideo((EncodeVideo) encodeVideo);
     ffmpegThread->setEncodeVideoRatio(encodeVideoRatio);
     ffmpegThread->setEncodeVideoScale(encodeVideoScale);
 
@@ -264,14 +252,13 @@ void NetPushClient::start()
     ffmpegThread->play();
 }
 
-void NetPushClient::stop()
-{
+void NetPushClient::stop() {
     //停止推流和采集并彻底释放对象
     if (ffmpegThread) {
         ffmpegThread->recordStop();
         ffmpegThread->stop();
         ffmpegThread->deleteLater();
-        ffmpegThread = NULL;
+        ffmpegThread = nullptr;
     }
 
     //停止录制
@@ -279,6 +266,6 @@ void NetPushClient::stop()
         timerRecord->stop();
         ffmpegSave->stop();
         ffmpegSave->deleteLater();
-        ffmpegSave = NULL;
+        ffmpegSave = nullptr;
     }
 }

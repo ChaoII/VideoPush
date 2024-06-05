@@ -1,8 +1,7 @@
 ﻿#include "nv12openglwidget.h"
 #include "openglinclude.h"
 
-Nv12Widget::Nv12Widget(QWidget *parent) : QOpenGLWidget(parent)
-{
+Nv12Widget::Nv12Widget(QWidget *parent) : QOpenGLWidget(parent) {
     QStringList list;
     list << "attribute vec4 vertexIn;";
     list << "attribute vec4 textureIn;";
@@ -39,47 +38,43 @@ Nv12Widget::Nv12Widget(QWidget *parent) : QOpenGLWidget(parent)
     connect(&timer, SIGNAL(timeout()), this, SLOT(read()));
 }
 
-Nv12Widget::~Nv12Widget()
-{
+Nv12Widget::~Nv12Widget() {
     makeCurrent();
     vbo.destroy();
     doneCurrent();
 }
 
-void Nv12Widget::clear()
-{
+void Nv12Widget::clear() {
     this->initData();
     this->update();
 }
 
-void Nv12Widget::setFrameSize(int width, int height)
-{
+void Nv12Widget::setFrameSize(int width, int height) {
     this->width = width;
     this->height = height;
 }
 
-void Nv12Widget::updateTextures(quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV)
-{
+void Nv12Widget::updateTextures(quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV) {
     this->dataY = dataY;
     this->dataUV = dataUV;
-    this->linesizeY = linesizeY;
-    this->linesizeUV = linesizeUV;
+    this->lineSizeY = linesizeY;
+    this->lineSizeUV = linesizeUV;
     this->update();
 }
 
-void Nv12Widget::updateFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV)
-{
+void
+Nv12Widget::updateFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV) {
     this->setFrameSize(width, height);
     this->updateTextures(dataY, dataUV, linesizeY, linesizeUV);
 }
 
-void Nv12Widget::initializeGL()
-{
+void Nv12Widget::initializeGL() {
     initializeOpenGLFunctions();
     glDisable(GL_DEPTH_TEST);
 
     //录制顶点坐标和纹理坐标
-    static const GLfloat points[] = {-1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+    static const GLfloat points[] = {-1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+                                     1.0f, 0.0f, 1.0f};
 
     //顶点缓冲对象初始化
     vbo.create();
@@ -94,8 +89,7 @@ void Nv12Widget::initializeGL()
     this->initColor();
 }
 
-void Nv12Widget::paintGL()
-{
+void Nv12Widget::paintGL() {
     if (!dataY || !dataUV || width == 0 || height == 0) {
         this->initColor();
         return;
@@ -110,14 +104,14 @@ void Nv12Widget::paintGL()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textureY);
     //字节对齐,网上很多代码都是少了这一步,导致有时候花屏
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, linesizeY);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, lineSizeY);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, dataY);
     this->initParamete();
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureUV);
     //字节对齐,网上很多代码都是少了这一步,导致有时候花屏
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, linesizeUV >> 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, lineSizeUV >> 1);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, width >> 1, height >> 1, 0, GL_RG, GL_UNSIGNED_BYTE, dataUV);
     this->initParamete();
 
@@ -129,15 +123,13 @@ void Nv12Widget::paintGL()
     program.release();
 }
 
-void Nv12Widget::initData()
-{
+void Nv12Widget::initData() {
     width = height = 0;
-    dataY = dataUV = 0;
-    linesizeY = linesizeUV = 0;
+    dataY = dataUV = nullptr;
+    lineSizeY = lineSizeUV = 0;
 }
 
-void Nv12Widget::initColor()
-{
+void Nv12Widget::initColor() {
     //取画板背景颜色
     QColor color = palette().window().color();
     //设置背景清理色
@@ -146,52 +138,46 @@ void Nv12Widget::initColor()
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Nv12Widget::initShader()
-{
+void Nv12Widget::initShader() {
     program.addShaderFromSourceCode(QOpenGLShader::Vertex, shaderVert);
     program.addShaderFromSourceCode(QOpenGLShader::Fragment, shaderFrag);
     program.link();
     program.bind();
 }
 
-void Nv12Widget::initTextures()
-{
+void Nv12Widget::initTextures() {
     glGenTextures(1, &textureY);
     glGenTextures(1, &textureUV);
 }
 
-void Nv12Widget::initParamete()
-{
+void Nv12Widget::initParamete() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-void Nv12Widget::deleteTextures()
-{
+void Nv12Widget::deleteTextures() {
     glDeleteTextures(1, &textureY);
     glDeleteTextures(1, &textureUV);
 }
 
-void Nv12Widget::read()
-{
+void Nv12Widget::read() {
     qint64 len = (width * height * 3) >> 1;
-    if (file.read((char *)dataY, len)) {
+    if (file.read((char *) dataY, len)) {
         this->update();
     } else {
         timer.stop();
-        emit playFinsh();
+        emit playFinish();
     }
 }
 
-void Nv12Widget::play(const QString &fileName, int frameRate)
-{
+void Nv12Widget::play(const QString &fileName, int frameRate) {
     //停止定时器并关闭文件
     if (timer.isActive()) {
         timer.stop();
     }
-    if (file.isOpen()){
+    if (file.isOpen()) {
         file.close();
     }
 
@@ -208,16 +194,15 @@ void Nv12Widget::play(const QString &fileName, int frameRate)
     timer.start(1000 / frameRate);
 }
 
-void Nv12Widget::stop()
-{
+void Nv12Widget::stop() {
     //停止定时器并关闭文件
     if (timer.isActive()) {
         timer.stop();
     }
-    if (file.isOpen()){
+    if (file.isOpen()) {
         file.close();
     }
 
     this->clear();
-    emit playFinsh();
+    emit playFinish();
 }
