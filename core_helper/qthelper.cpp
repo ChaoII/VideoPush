@@ -1,6 +1,6 @@
 ﻿#include "qthelper.h"
-#include "qnetworkinterface.h"
-#include "qnetworkproxy.h"
+#include <QNetworkInterface>
+#include <QNetworkProxy>
 
 #define TIMEMS qPrintable(QTime::currentTime().toString("HH:mm:ss zzz"))
 

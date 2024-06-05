@@ -17,18 +17,22 @@
  */
 
 #include <QtGui>
-#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+
 #include <QtWidgets>
+
 #endif
 
 #ifdef quc
 class Q_DECL_EXPORT IconHelper : public QObject
 #else
+
 class IconHelper : public QObject
 #endif
 
 {
-    Q_OBJECT
+Q_OBJECT
 
 private:
     //阿里巴巴图形字体类
@@ -57,7 +61,6 @@ public:
 
         quint32 borderWidth;        //边框宽度
         QString borderColor;        //边框颜色
-
         QString normalBgColor;      //正常背景颜色
         QString normalTextColor;    //正常文字颜色
         QString hoverBgColor;       //悬停背景颜色
@@ -110,13 +113,17 @@ public:
 
     //初始化图形字体
     static void initFont();
+
     //设置引用图形字体文件索引
     static void setIconFontIndex(int index);
 
     //获取图形字体
     static QFont getIconFontAliBaBa();
+
     static QFont getIconFontAwesome();
+
     static QFont getIconFontAwesome6();
+
     static QFont getIconFontWeather();
 
     //根据值获取图形字体类
@@ -124,6 +131,7 @@ public:
 
     //设置图形字体到标签
     static void setIcon(QLabel *lab, int icon, quint32 size = 12);
+
     //设置图形字体到按钮
     static void setIcon(QAbstractButton *btn, int icon, quint32 size = 12);
 
@@ -132,6 +140,7 @@ public:
                           int icon, quint32 size = 12,
                           quint32 width = 15, quint32 height = 15,
                           int flags = Qt::AlignCenter);
+
     //获取指定图形字体,可以指定文字大小,图片宽高,文字对齐
     static QPixmap getPixmap(const QColor &color, int icon, quint32 size = 12,
                              quint32 width = 15, quint32 height = 15,
@@ -139,8 +148,11 @@ public:
 
     //指定导航面板样式,带图标和效果切换+悬停颜色+按下颜色+选中颜色
     static void setStyle(QWidget *widget, QList<QPushButton *> btns, QList<int> icons, const StyleColor &styleColor);
+
     static void setStyle(QWidget *widget, QList<QToolButton *> btns, QList<int> icons, const StyleColor &styleColor);
-    static void setStyle(QWidget *widget, QList<QAbstractButton *> btns, QList<int> icons, const StyleColor &styleColor);
+
+    static void
+    setStyle(QWidget *widget, QList<QAbstractButton *> btns, QList<int> icons, const StyleColor &styleColor);
 
     //默认构造函数,传入字体文件+字体名称
     explicit IconHelper(const QString &fontFile, const QString &fontName, QObject *parent = 0);
@@ -157,6 +169,7 @@ private:
     QList<QPixmap> pixChecked;      //选中图片队列
 
 private slots:
+
     //按钮选中状态切换处理
     void toggled(bool checked);
 
@@ -166,6 +179,7 @@ public:
 
     //设置图形字体到标签
     void setIcon1(QLabel *lab, int icon, quint32 size = 12);
+
     //设置图形字体到按钮
     void setIcon1(QAbstractButton *btn, int icon, quint32 size = 12);
 
@@ -174,6 +188,7 @@ public:
                     int icon, quint32 size = 12,
                     quint32 width = 15, quint32 height = 15,
                     int flags = Qt::AlignCenter);
+
     //获取指定图形字体,可以指定文字大小,图片宽高,文字对齐
     QPixmap getPixmap1(const QColor &color, int icon, quint32 size = 12,
                        quint32 width = 15, quint32 height = 15,
@@ -181,6 +196,8 @@ public:
 
     //指定导航面板样式,带图标和效果切换+悬停颜色+按下颜色+选中颜色
     void setStyle1(QWidget *widget, QList<QPushButton *> btns, QList<int> icons, const StyleColor &styleColor);
+
     void setStyle1(QWidget *widget, QList<QToolButton *> btns, QList<int> icons, const StyleColor &styleColor);
+
     void setStyle1(QWidget *widget, QList<QAbstractButton *> btns, QList<int> icons, const StyleColor &styleColor);
 };

@@ -2,20 +2,24 @@
 
 #include <QObject>
 
-class AppInit : public QObject
-{
-    Q_OBJECT
-public:
-    static AppInit *Instance();
-    explicit AppInit(QObject *parent = 0);
+class AppInit : public QObject {
+Q_OBJECT
 
-protected:
-    bool eventFilter(QObject *watched, QEvent *event);
+public:
+    static AppInit &Instance() {
+        static AppInit appInit;
+        return appInit;
+    }
 
 private:
-    static QScopedPointer<AppInit> self;
+    explicit AppInit(QObject *parent = nullptr);
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 
 public slots:
+
     void start();
 };
 

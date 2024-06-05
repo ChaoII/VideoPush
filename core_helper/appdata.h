@@ -2,8 +2,7 @@
 
 #include "head.h"
 
-class AppData
-{
+class AppData {
 public:
     static QString TitleFlag;       //标题标识
     static int RowHeight;           //行高
