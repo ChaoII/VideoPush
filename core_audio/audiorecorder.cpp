@@ -2,15 +2,14 @@
 #include "audiohelper.h"
 #include "qurl.h"
 
-AudioRecorder::AudioRecorder(QObject *parent) : QObject(parent)
-{
+AudioRecorder::AudioRecorder(QObject *parent) : QObject(parent) {
 #ifdef multimedia5
     isRecord = false;
     //实例化音频录制对象
     audioRecorder = new QAudioRecorder(this);
-    connect(audioRecorder, SIGNAL(durationChanged(qint64)), this, SIGNAL(receiveDuration(qint64)));
+    connect(audioRecorder, &QAudioRecorder::durationChanged, this, &AudioRecorder::receiveDuration);
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     //本类已经有同名信号需要换种方式
     connect(audioRecorder, &QMediaRecorder::recorderStateChanged, this, &AudioRecorder::updateRecorderState);
     mediaSession.setAudioInput(new QAudioInput(this));
@@ -19,27 +18,28 @@ AudioRecorder::AudioRecorder(QObject *parent) : QObject(parent)
 #else
     //实例化音频探测对象
     audioProbe = new QAudioProbe;
-    connect(audioProbe, SIGNAL(audioBufferProbed(QAudioBuffer)), this, SLOT(audioBufferProbed(QAudioBuffer)));
+    connect(audioProbe, &QAudioProbe::audioBufferProbed, this, &AudioRecorder::audioBufferProbed);
     audioProbe->setSource(audioRecorder);
-    connect(audioRecorder, SIGNAL(stateChanged(QMediaRecorder::State)), this, SLOT(updateRecorderState(QMediaRecorder::State)));
+    connect(audioRecorder, &QAudioProbe::audioBufferProbed, this, &AudioRecorder::updateRecorderState);
 #endif
 #endif
     emit recorderStateChanged(RecorderState_Stopped, "");
 }
 
 #ifdef multimedia5
-void AudioRecorder::audioBufferProbed(const QAudioBuffer &audioBuffer)
-{
+
+void AudioRecorder::audioBufferProbed(const QAudioBuffer &audioBuffer) {
     QAudioFormat format = audioBuffer.format();
     const char *data = audioBuffer.constData<char>();
-    int len = audioBuffer.byteCount();
+    int64_t len = audioBuffer.byteCount();
     qreal leftLevel, rightLevel;
     AudioHelper::getAudioLevel(format, data, len, leftLevel, rightLevel);
     emit receiveLevel(leftLevel, rightLevel);
     emit receiveData(format.sampleRate(), AudioHelper::getSampleSize(format), len);
 }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
+
 void AudioRecorder::updateRecorderState(QMediaRecorder::RecorderState state)
 #else
 void AudioRecorder::updateRecorderState(QMediaRecorder::State state)
@@ -58,12 +58,13 @@ void AudioRecorder::updateRecorderState(QMediaRecorder::State state)
             break;
     }
 }
+
 #endif
 
-void AudioRecorder::initPara(const QString &deviceName, int sampleRate, int bitRate, int channelCount, int quality, int encodingMode)
-{
+void AudioRecorder::initPara(const QString &deviceName, int sampleRate, int bitRate, int channelCount, int quality,
+                             int encodingMode) {
 #ifdef multimedia5
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     QMediaFormat format;
     format.setFileFormat(QMediaFormat::MP3);
     format.setAudioCodec(QMediaFormat::AudioCodec::MP3);
@@ -73,7 +74,8 @@ void AudioRecorder::initPara(const QString &deviceName, int sampleRate, int bitR
     audioRecorder->setAudioBitRate(bitRate);
     audioRecorder->setAudioChannelCount(channelCount);
     audioRecorder->setQuality(QMediaRecorder::Quality(quality));
-    audioRecorder->setEncodingMode(encodingMode == 0 ? QMediaRecorder::ConstantQualityEncoding : QMediaRecorder::ConstantBitRateEncoding);
+    audioRecorder->setEncodingMode(
+            encodingMode == 0 ? QMediaRecorder::ConstantQualityEncoding : QMediaRecorder::ConstantBitRateEncoding);
 
     //设置音频输入设备
     mediaSession.audioInput()->setDevice(AudioHelper::getAudioDevice(deviceName, true));
@@ -95,8 +97,7 @@ void AudioRecorder::initPara(const QString &deviceName, int sampleRate, int bitR
 #endif
 }
 
-void AudioRecorder::recordStart(const QString &fileName)
-{
+void AudioRecorder::recordStart(const QString &fileName) {
 #ifdef multimedia5
     //目录不存在则新建
     QString path = QFileInfo(fileName).path();
@@ -114,8 +115,7 @@ void AudioRecorder::recordStart(const QString &fileName)
 #endif
 }
 
-void AudioRecorder::recordPause()
-{
+void AudioRecorder::recordPause() {
 #ifdef multimedia5
     if (isRecord) {
         audioRecorder->pause();
@@ -123,8 +123,7 @@ void AudioRecorder::recordPause()
 #endif
 }
 
-void AudioRecorder::recordStop()
-{
+void AudioRecorder::recordStop() {
 #ifdef multimedia5
     if (isRecord) {
         isRecord = false;

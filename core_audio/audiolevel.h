@@ -2,9 +2,9 @@
 
 #include <QWidget>
 
-class AudioLevel : public QWidget
-{
-    Q_OBJECT
+class AudioLevel : public QWidget {
+Q_OBJECT
+
 public:
     explicit AudioLevel(QWidget *parent = 0);
 
@@ -25,7 +25,9 @@ private:
     QColor bgColorEnd;
 
 public slots:
+
     void setLevel(qreal level);
+
     void clear();
 };
 

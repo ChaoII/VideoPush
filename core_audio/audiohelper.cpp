@@ -4,17 +4,17 @@
 #include "qdebug.h"
 
 #ifdef multimedia
-void AudioHelper::getAudioDevice(QStringList &names, QStringList &ids, bool input)
-{
+
+void AudioHelper::getAudioDevice(QStringList &names, QStringList &ids, bool input) {
     names.clear();
     ids.clear();
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     QList<QAudioDevice> devices = input ? QMediaDevices::audioInputs() : QMediaDevices::audioOutputs();
-    foreach (QAudioDevice device, devices) {
-        names << device.description();
-        ids << device.id();
-    }
+            foreach (QAudioDevice device, devices) {
+            names << device.description();
+            ids << device.id();
+        }
 #else
     QList<QAudioDevice> devices = QAudioDeviceInfo::availableDevices(input ? QAudio::AudioInput : QAudio::AudioOutput);
     foreach (QAudioDevice device, devices) {
@@ -29,17 +29,16 @@ void AudioHelper::getAudioDevice(QStringList &names, QStringList &ids, bool inpu
     //qDebug() << names << ids;
 }
 
-QAudioDevice AudioHelper::getAudioDevice(const QString &name, bool input)
-{
+QAudioDevice AudioHelper::getAudioDevice(const QString &name, bool input) {
     QAudioDevice audioDevice;
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     QList<QAudioDevice> devices = input ? QMediaDevices::audioInputs() : QMediaDevices::audioOutputs();
-    foreach (QAudioDevice device, devices) {
-        if (device.description() == name) {
-            audioDevice = device;
-            break;
+            foreach (QAudioDevice device, devices) {
+            if (device.description() == name) {
+                audioDevice = device;
+                break;
+            }
         }
-    }
 #else
     QList<QAudioDevice> devices = QAudioDeviceInfo::availableDevices(input ? QAudio::AudioInput : QAudio::AudioOutput);
     foreach (QAudioDevice device, devices) {
@@ -52,12 +51,11 @@ QAudioDevice AudioHelper::getAudioDevice(const QString &name, bool input)
     return audioDevice;
 }
 
-void AudioHelper::initAudioFormat(QAudioFormat &format, int sampleRate, int channelCount, int sampleSize)
-{
+void AudioHelper::initAudioFormat(QAudioFormat &format, int sampleRate, int channelCount, int sampleSize) {
     //qDebug() << sampleRate << channelCount << sampleSize;
     format.setSampleRate(sampleRate);
     format.setChannelCount(channelCount);
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     if (sampleSize == 8) {
         format.setSampleFormat(QAudioFormat::UInt8);
     } else if (sampleSize == 16) {
@@ -73,10 +71,9 @@ void AudioHelper::initAudioFormat(QAudioFormat &format, int sampleRate, int chan
 #endif
 }
 
-int AudioHelper::getSampleSize(QAudioFormat format)
-{
+int AudioHelper::getSampleSize(QAudioFormat format) {
     int sampleSize = 16;
-#if (QT_VERSION >= QT_VERSION_CHECK(6,2,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
     QAudioFormat::SampleFormat sampleFormat = format.sampleFormat();
     if (sampleFormat == QAudioFormat::UInt8) {
         sampleSize = 8;
@@ -93,8 +90,7 @@ int AudioHelper::getSampleSize(QAudioFormat format)
     return sampleSize;
 }
 
-quint32 AudioHelper::getMaxAmplitude(QAudioFormat format)
-{
+quint32 AudioHelper::getMaxAmplitude(QAudioFormat format) {
     quint32 maxAmplitude = 0;
     int sampleSize = getSampleSize(format);
     if (sampleSize == 8) {
@@ -110,8 +106,8 @@ quint32 AudioHelper::getMaxAmplitude(QAudioFormat format)
     return maxAmplitude;
 }
 
-bool AudioHelper::getAudioLevel(QAudioFormat format, const char *data, qint64 len, qreal &leftLevel, qreal &rightLevel)
-{
+bool
+AudioHelper::getAudioLevel(QAudioFormat format, const char *data, qint64 len, qreal &leftLevel, qreal &rightLevel) {
     leftLevel = rightLevel = 0;
     quint32 maxAmplitude = getMaxAmplitude(format);
     if (!maxAmplitude) {
@@ -168,8 +164,7 @@ bool AudioHelper::getAudioLevel(QAudioFormat format, const char *data, qint64 le
     return true;
 }
 
-qreal AudioHelper::getAudioDecibel(const char *data, qint64 len)
-{
+qreal AudioHelper::getAudioDecibel(const char *data, qint64 len) {
     int decibel = 0;
     double sum = 0;
     int value = 0;
@@ -180,10 +175,11 @@ qreal AudioHelper::getAudioDecibel(const char *data, qint64 len)
 
     sum = sum / (len / 2);
     if (sum > 0) {
-        decibel = (int)(20.0 * log10(sum));
+        decibel = (int) (20.0 * log10(sum));
     }
 
     //qDebug() << TIMEMS << decibel;
     return decibel;
 }
+
 #endif

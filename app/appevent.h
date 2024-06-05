@@ -1,20 +1,21 @@
 ﻿#pragma once
 
-#include "qobject.h"
-#include "qscopedpointer.h"
+#include <QObject>
 
-class AppEvent : public QObject
-{
-    Q_OBJECT
+class AppEvent : public QObject {
+Q_OBJECT
 
 public:
-    static AppEvent *Instance();
-    explicit AppEvent(QObject *parent = 0);
+    static AppEvent &Instance() {
+        static AppEvent appEvent;
+        return appEvent;
+    }
 
 private:
-    static QScopedPointer<AppEvent> self;
+    explicit AppEvent(QObject *parent = nullptr);
 
 signals:
+
     void exitAll();
 };
 

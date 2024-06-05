@@ -2,16 +2,17 @@
 
 #include <QSlider>
 
-class Slider : public QSlider
-{
-    Q_OBJECT
+class Slider : public QSlider {
+Q_OBJECT
+
 public:
-    explicit Slider(QWidget *parent = 0);
+    explicit Slider(QWidget *parent = nullptr);
 
 protected:
-    void mousePressEvent(QMouseEvent *);
+    void mousePressEvent(QMouseEvent *) override;
 
 signals:
+
     void clicked();
 };
 

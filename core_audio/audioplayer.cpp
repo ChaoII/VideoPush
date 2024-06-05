@@ -4,37 +4,33 @@
 #include "qvariant.h"
 #include "qdebug.h"
 
-AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent)
-{
+AudioPlayer::AudioPlayer(QObject *parent) : QObject(parent) {
     volume = 100;
     muted = false;
     level = false;
     sampleSize = 16;
 
-    audioThread = NULL;
-    audioInput = NULL;
-    deviceInput = NULL;
-    audioOutput = NULL;
-    deviceOutput = NULL;
+    audioThread = nullptr;
+    audioInput = nullptr;
+    deviceInput = nullptr;
+    audioOutput = nullptr;
+    deviceOutput = nullptr;
 
     sonicSize = 9600;
-    sonicData = NULL;
-    sonicObj = NULL;
+    sonicData = nullptr;
+    sonicObj = nullptr;
 
     //注册数据类型
     qRegisterMetaType<const char *>("const char *");
 }
 
-AudioPlayer::~AudioPlayer()
-{
+AudioPlayer::~AudioPlayer() {
     this->closeAudioInput();
     this->closeAudioOutput();
     this->closeSonic();
-    //qDebug() << TIMEMS << this->objectName() << "~AudioPlayer";
 }
 
-void AudioPlayer::open()
-{
+void AudioPlayer::open() {
     //移到线程执行防止界面卡住导致声音卡住
     if (!audioThread) {
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
@@ -47,28 +43,24 @@ void AudioPlayer::open()
     }
 }
 
-void AudioPlayer::close()
-{
+void AudioPlayer::close() {
     if (audioThread) {
         audioThread->quit();
-        audioThread = NULL;
+        audioThread = nullptr;
     } else {
         this->deleteLater();
     }
 }
 
-QAudioInputx *AudioPlayer::getAudioInput()
-{
+QAudioInputx *AudioPlayer::getAudioInput() {
     return this->audioInput;
 }
 
-QAudioOutputx *AudioPlayer::getAudioOutput()
-{
+QAudioOutputx *AudioPlayer::getAudioOutput() {
     return this->audioOutput;
 }
 
-bool AudioPlayer::getIsOk() const
-{
+bool AudioPlayer::getIsOk() const {
     bool isOk = false;
 #ifdef multimedia
     if (audioOutput) {
@@ -78,13 +70,12 @@ bool AudioPlayer::getIsOk() const
     return isOk;
 }
 
-int AudioPlayer::getVolume() const
-{
+int AudioPlayer::getVolume() const {
     qreal value = 1.0;
 #ifdef multimedia5
     if (audioOutput) {
         value = audioOutput->volume();
-#if (QT_VERSION >= QT_VERSION_CHECK(5,8,0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
         value = QAudio::convertVolume(value, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
 #endif
     }
@@ -92,15 +83,14 @@ int AudioPlayer::getVolume() const
     return value * 100;
 }
 
-void AudioPlayer::setVolume(int volume)
-{
+void AudioPlayer::setVolume(int volume) {
     //Qt5.8版本以下在静音状态下不能设置音量大小卧槽
     this->volume = volume;
     emit receiveVolume(volume);
 #ifdef multimedia5
     if (audioOutput) {
-        qreal value = (qreal)volume / 100;
-#if (QT_VERSION >= QT_VERSION_CHECK(5,8,0))
+        qreal value = (qreal) volume / 100;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
         value = QAudio::convertVolume(value, QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
 #endif
         audioOutput->setVolume(value);
@@ -108,14 +98,12 @@ void AudioPlayer::setVolume(int volume)
 #endif
 }
 
-bool AudioPlayer::getMuted() const
-{
+bool AudioPlayer::getMuted() const {
     return this->muted;
     //return (getVolume() == 0);
 }
 
-void AudioPlayer::setMuted(bool muted)
-{
+void AudioPlayer::setMuted(bool muted) {
     //Qt6中的QAudioSink音频类用挂起和复位失效(需要用静音标志位来控制是否写入数据实现静音)
     this->muted = muted;
     emit receiveMuted(muted);
@@ -132,18 +120,15 @@ void AudioPlayer::setMuted(bool muted)
 #endif
 }
 
-bool AudioPlayer::getLevel() const
-{
+bool AudioPlayer::getLevel() const {
     return this->level;
 }
 
-void AudioPlayer::setLevel(bool level)
-{
+void AudioPlayer::setLevel(bool level) {
     this->level = level;
 }
 
-void AudioPlayer::readyRead()
-{
+void AudioPlayer::readyRead() {
 #ifdef multimedia
     //将音频输入设备数据发给音频输出设备播放
     if (deviceInput && deviceOutput) {
@@ -154,13 +139,11 @@ void AudioPlayer::readyRead()
 #endif
 }
 
-void AudioPlayer::openAudioInput(int sampleRate, int channelCount, int sampleSize)
-{
+void AudioPlayer::openAudioInput(int sampleRate, int channelCount, int sampleSize) {
     this->openAudioInput("", sampleRate, channelCount, sampleSize);
 }
 
-void AudioPlayer::openAudioInput(const QString &deviceName, int sampleRate, int channelCount, int sampleSize)
-{
+void AudioPlayer::openAudioInput(const QString &deviceName, int sampleRate, int channelCount, int sampleSize) {
 #ifdef multimedia
     //先关闭设备
     this->closeAudioInput();
@@ -185,8 +168,7 @@ void AudioPlayer::openAudioInput(const QString &deviceName, int sampleRate, int 
 #endif
 }
 
-void AudioPlayer::closeAudioInput()
-{
+void AudioPlayer::closeAudioInput() {
 #ifdef multimedia
     if (audioInput) {
         audioInput->reset();
@@ -197,13 +179,11 @@ void AudioPlayer::closeAudioInput()
 #endif
 }
 
-void AudioPlayer::openAudioOutput(int sampleRate, int channelCount, int sampleSize)
-{
+void AudioPlayer::openAudioOutput(int sampleRate, int channelCount, int sampleSize) {
     this->openAudioOutput("", sampleRate, channelCount, sampleSize);
 }
 
-void AudioPlayer::openAudioOutput(const QString &deviceName, int sampleRate, int channelCount, int sampleSize)
-{
+void AudioPlayer::openAudioOutput(const QString &deviceName, int sampleRate, int channelCount, int sampleSize) {
 #ifdef multimedia
     //先关闭设备
     this->closeAudioOutput();
@@ -227,8 +207,7 @@ void AudioPlayer::openAudioOutput(const QString &deviceName, int sampleRate, int
 #endif
 }
 
-void AudioPlayer::closeAudioOutput()
-{
+void AudioPlayer::closeAudioOutput() {
 #ifdef multimedia
     if (audioOutput) {
         audioOutput->reset();
@@ -239,8 +218,8 @@ void AudioPlayer::closeAudioOutput()
 #endif
 }
 
-void AudioPlayer::openSonic(bool useSonic, int sampleRate, int channelCount, float speed, float pitch, float rate, float volume)
-{
+void AudioPlayer::openSonic(bool useSonic, int sampleRate, int channelCount, float speed, float pitch, float rate,
+                            float volume) {
     this->closeSonic();
     if (useSonic) {
         //开辟临时存放运算后的音频数据内存空间
@@ -258,8 +237,7 @@ void AudioPlayer::openSonic(bool useSonic, int sampleRate, int channelCount, flo
     }
 }
 
-void AudioPlayer::closeSonic()
-{
+void AudioPlayer::closeSonic() {
     //释放变声库临时数据
     if (sonicData) {
         delete[] sonicData;
@@ -273,32 +251,30 @@ void AudioPlayer::closeSonic()
     }
 }
 
-void AudioPlayer::playSonicData(const char *data, qint64 len)
-{
+void AudioPlayer::playSonicData(const char *data, qint64 len) {
     //为什么是这个尺寸 https://blog.csdn.net/qq_40170041/article/details/127727153
     //写入的时候用真实的数据长度除以这个值/取出的时候用运算后的真实数据长度乘以这个值
     //先将音频数据写入流/然后从流中取出运算后的数据
     int offset, numSamples;
     if (sampleSize == 8) {
         offset = SonicCpp::sonicGetNumChannels(sonicObj) * 1;
-        SonicCpp::sonicWriteUnsignedCharToStream(sonicObj, (uchar *)data, len / offset);
-        numSamples = SonicCpp::sonicReadUnsignedCharFromStream(sonicObj, (uchar *)sonicData, sonicSize);
+        SonicCpp::sonicWriteUnsignedCharToStream(sonicObj, (uchar *) data, len / offset);
+        numSamples = SonicCpp::sonicReadUnsignedCharFromStream(sonicObj, (uchar *) sonicData, sonicSize);
     } else if (sampleSize == 16) {
         offset = SonicCpp::sonicGetNumChannels(sonicObj) * 2;
-        SonicCpp::sonicWriteShortToStream(sonicObj, (short *)data, len / offset);
-        numSamples = SonicCpp::sonicReadShortFromStream(sonicObj, (short *)sonicData, sonicSize);
+        SonicCpp::sonicWriteShortToStream(sonicObj, (short *) data, len / offset);
+        numSamples = SonicCpp::sonicReadShortFromStream(sonicObj, (short *) sonicData, sonicSize);
     } else {
         offset = SonicCpp::sonicGetNumChannels(sonicObj) * 4;
-        SonicCpp::sonicWriteFloatToStream(sonicObj, (float *)data, len / offset);
-        numSamples = SonicCpp::sonicReadFloatFromStream(sonicObj, (float *)sonicData, sonicSize);
+        SonicCpp::sonicWriteFloatToStream(sonicObj, (float *) data, len / offset);
+        numSamples = SonicCpp::sonicReadFloatFromStream(sonicObj, (float *) sonicData, sonicSize);
     }
 
     //写入运算后的音频数据
-    deviceOutput->write((const char *)sonicData, numSamples * offset);
+    deviceOutput->write((const char *) sonicData, numSamples * offset);
 }
 
-void AudioPlayer::playAudioData(const char *data, qint64 len)
-{
+void AudioPlayer::playAudioData(const char *data, qint64 len) {
 #ifdef multimedia
     if (deviceOutput) {
         //发送收到音频播放数据信号

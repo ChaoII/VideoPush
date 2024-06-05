@@ -2,8 +2,7 @@
 
 #include "head.h"
 
-class AppConfig
-{
+class AppConfig {
 public:
     static QString ConfigFile;      //配置文件文件路径及名称
 

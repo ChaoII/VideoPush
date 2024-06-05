@@ -2,8 +2,7 @@
 #include "qpainter.h"
 #include "qdebug.h"
 
-AudioLevel::AudioLevel(QWidget *parent) : QWidget(parent)
-{
+AudioLevel::AudioLevel(QWidget *parent) : QWidget(parent) {
     level = 0;
     borderWidth = 1;
 
@@ -22,8 +21,7 @@ AudioLevel::AudioLevel(QWidget *parent) : QWidget(parent)
 #endif
 }
 
-void AudioLevel::paintEvent(QPaintEvent *)
-{
+void AudioLevel::paintEvent(QPaintEvent *) {
     QPainter painter(this);
     painter.setRenderHints(QPainter::Antialiasing);
     bool vertical = (this->height() > this->width());
@@ -69,13 +67,11 @@ void AudioLevel::paintEvent(QPaintEvent *)
     }
 }
 
-void AudioLevel::setLevel(qreal level)
-{
+void AudioLevel::setLevel(qreal level) {
     this->level = level;
     this->update();
 }
 
-void AudioLevel::clear()
-{
+void AudioLevel::clear() {
     this->setLevel(0);
 }

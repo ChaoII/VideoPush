@@ -2,9 +2,9 @@
 
 #include <QItemDelegate>
 
-class ItemDelegate : public QItemDelegate
-{
-    Q_OBJECT
+class ItemDelegate : public QItemDelegate {
+Q_OBJECT
+
 public:
     explicit ItemDelegate(QObject *parent = 0);
 

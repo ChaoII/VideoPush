@@ -2,12 +2,10 @@
 #include "qevent.h"
 #include "qdebug.h"
 
-Slider::Slider(QWidget *parent) : QSlider(parent)
-{
+Slider::Slider(QWidget *parent) : QSlider(parent) {
 }
 
-void Slider::mousePressEvent(QMouseEvent *e)
-{
+void Slider::mousePressEvent(QMouseEvent *e) {
     //限定必须是鼠标左键按下
     if (e->button() != Qt::LeftButton) {
         return;
@@ -16,10 +14,10 @@ void Slider::mousePressEvent(QMouseEvent *e)
     //获取鼠标的位置
     double pos, value;
     if (orientation() == Qt::Horizontal) {
-        pos = e->pos().x() / (double)width();
+        pos = e->pos().x() / (double) width();
         value = pos * (maximum() - minimum()) + minimum();
     } else {
-        pos = e->pos().y() / (double)height();
+        pos = e->pos().y() / (double) height();
         value = maximum() - pos * (maximum() - minimum()) + minimum();
     }
 

@@ -9,16 +9,18 @@
 //3. 等到其他系统研究好了如何获取唯一机器码再改进。
 //4. 后面统一将两种秘钥逻辑合并，即可控制详细参数也能识别设备唯一编码。
 //5. 统一合并生成一个秘钥文件字符串加密形式。
-class CommonKey : public QObject
-{
-    Q_OBJECT
+class CommonKey : public QObject {
+Q_OBJECT
+
 public:
     //全局打印数据类
     static CommonKey *commonKey;
+
     static void initClass();
 
     //异或加密解密
     static QString getXorEncryptDecrypt(const QString &keyData, char keyCode);
+
     //秘钥内容写入到秘钥文件
     static void writeFile(const QString &fileName, const QByteArray &data);
 
@@ -41,33 +43,42 @@ public:
 
     //通过编译器函数或者汇编获取CPU编号
     static void getCpuId(int cpuInfo[], int infoType);
+
     static QString getCpuId2();
 
     //执行查询命令
     static QString runProcess(const QString &cmd, int timeout = 1000);
+
     //获取机器码
     static QString getMachineCode();
 
     //获取cpu名称
     static QString getCpuName();
+
     //获取cpu编号
     static QString getCpuId();
+
     //获取主板编号
     static QString getBoardNum();
+
     //获取硬盘编号
     static QString getDiskNum();
 
     //定时器检查运行时间
     static void checkTime();
+
     //校验数量 一般在添加设备的地方调用此方法
     static bool checkCount(int count);
+
     //校验秘钥文件 传入秘钥文件和运算秘钥
     static bool checkKey(const QString &fileName, char keyCode);
+
     //校验机器码是否正确 另外一种方式秘钥校验机制
     static bool checkLicense(const QString &fileName);
 
     explicit CommonKey(QObject *parent = 0);
-    ~CommonKey();
+
+    ~CommonKey() override;
 
 private:
     QTimer *timer;          //定时器判断是否运行超时
@@ -83,12 +94,16 @@ public:
     int keyCount;           //设备限制数量
 
 private slots:
+
     //定时器检查运行时间
     void checkTime1();
+
     //校验数量 一般在添加设备的地方调用此方法
     bool checkCount1(int count);
+
     //校验秘钥文件 传入秘钥文件和运算秘钥
     bool checkKey1(const QString &fileName, char keyCode);
+
     //校验机器码是否正确 另外一种方式秘钥校验机制
     bool checkLicense1(const QString &fileName);
 };

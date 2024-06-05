@@ -94,10 +94,9 @@ bool AppConfig::ImagePushStart = false;
 QString AppConfig::ImageListenIP = "127.0.0.1";
 int AppConfig::ImageListenPort = 6901;
 
-void AppConfig::readConfig()
-{
+void AppConfig::readConfig() {
     QSettings set(ConfigFile, QSettings::IniFormat);
-#if (QT_VERSION < QT_VERSION_CHECK(6,0,0))
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     set.setIniCodec("utf-8");
 #endif
 
@@ -217,8 +216,7 @@ void AppConfig::readConfig()
     }
 }
 
-void AppConfig::writeConfig()
-{
+void AppConfig::writeConfig() {
     //校验空值/防止空值带来的未知的隐患
     if (HtmlName1.isEmpty()) {
         HtmlName1 = "./config/video_push_url.html";
@@ -228,7 +226,7 @@ void AppConfig::writeConfig()
     }
 
     QSettings set(ConfigFile, QSettings::IniFormat);
-#if (QT_VERSION < QT_VERSION_CHECK(6,0,0))
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     set.setIniCodec("utf-8");
 #endif
 

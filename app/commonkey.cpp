@@ -1,20 +1,18 @@
-﻿#pragma execution_character_set("utf-8")
-
+﻿
 #include "commonkey.h"
-#include "qmutex.h"
-#include "qfile.h"
-#include "qapplication.h"
-#include "qmessagebox.h"
-#include "qprocess.h"
-#include "qcryptographichash.h"
-#include "qclipboard.h"
-#include "qdebug.h"
+#include <QMutex>
+#include <QFile>
+#include <QApplication>
+#include <QMessageBox>
+#include <QProcess>
+#include <QCryptographicHash>
+#include <QClipboard>
 
-CommonKey *CommonKey::commonKey = 0;
+CommonKey *CommonKey::commonKey = nullptr;
 
 void CommonKey::initClass() {
     //没有实例化过则先实例化
-    if (commonKey == 0) {
+    if (commonKey == nullptr) {
         commonKey = new CommonKey;
     }
 }
@@ -47,7 +45,7 @@ QString CommonKey::writeKey(const QString &fileName, char keyCode,
 
     QByteArray data = keyData.toLatin1();
     writeFile(fileName, data);
-    return QString(data);
+    return data;
 }
 
 QString CommonKey::writeLicense(const QString &fileName, const QString &machineCode) {
@@ -55,7 +53,7 @@ QString CommonKey::writeLicense(const QString &fileName, const QString &machineC
     QByteArray data = QCryptographicHash::hash(machineCode.toLatin1(), QCryptographicHash::Md5);
     data = data.toHex().toUpper();
     writeFile(fileName, data);
-    return QString(data);
+    return data;
 }
 
 void CommonKey::getCpuId(int cpuInfo[], int infoType) {
@@ -95,7 +93,6 @@ QString CommonKey::getCpuId2() {
     QString cpu_id;
     int cpuInfo[4] = {0};
     getCpuId(cpuInfo, 1);
-
     //必须转换成 quint32 否则64位的不准确
     QString str0 = QString::number((quint32) cpuInfo[3], 16).toUpper();
     str0 = str0.rightJustified(8, '0');
@@ -107,9 +104,8 @@ QString CommonKey::getCpuId2() {
 
 QString CommonKey::runProcess(const QString &cmd, int timeout) {
     if (cmd.isEmpty()) {
-        return QString();
+        return "";
     }
-
     //获取cpu名称：wmic cpu get Name
     //获取cpu核心数：wmic cpu get NumberOfCores
     //获取cpu线程数：wmic cpu get NumberOfLogicalProcessors
@@ -361,13 +357,12 @@ bool CommonKey::checkLicense1(const QString &fileName) {
     QString key = getMachineCode();
     //MD5加密,也可以选择其他加密方式
     QByteArray result = QCryptographicHash::hash(key.toLatin1(), QCryptographicHash::Md5).toHex().toUpper();
-    qDebug() << result << "--" << keyData;
     if (result != keyData) {
         //自动复制一下等待粘贴到秘钥工具生成秘钥
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(key);
         QString msg = QString("秘钥文件错误,请联系供应商! 已自动复制机器码!\n机器码: %1").arg(key);
-        QMessageBox::critical(0, "错误", msg);
+        QMessageBox::critical(nullptr, "错误", msg);
         return false;
     }
     return true;
