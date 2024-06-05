@@ -13,7 +13,7 @@ FormConfig::~FormConfig() {
 }
 
 void FormConfig::initForm() {
-    ui->gboxBase->setFixedWidth(500);
+//    ui->gboxBase->setFixedWidth(800);
 }
 
 void FormConfig::initConfig() {

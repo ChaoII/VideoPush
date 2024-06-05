@@ -3,10 +3,9 @@
 #include <QMutex>
 #include <QApplication>
 
-TrayIcon::TrayIcon(QObject *parent) : QObject(parent) {
+TrayIcon::TrayIcon(QObject *parent) : QObject(parent), menu_(new QMenu) {
     trayIcon_ = new QSystemTrayIcon(this);
     connect(trayIcon_, &QSystemTrayIcon::activated, this, &TrayIcon::iconIsActivated);
-    menu_ = new QMenu;
 }
 
 void TrayIcon::iconIsActivated(QSystemTrayIcon::ActivationReason reason) {
@@ -29,9 +28,9 @@ void TrayIcon::setExitDirect(bool exitDirect) {
 
 void TrayIcon::setMainWidget(QWidget *mainWidget) {
     this->mainWidget_ = mainWidget;
-    auto actionMenu = new QAction("主界面", this);
-    connect(actionMenu, &QAction::triggered, this, &TrayIcon::showMainWidget);
-    menu_->addAction(actionMenu);
+    auto actionMainWidget = new QAction("主界面", this);
+    connect(actionMainWidget, &QAction::triggered, this, &TrayIcon::showMainWidget);
+    menu_->addAction(actionMainWidget);
     if (exitDirect_) {
         auto actionExit = new QAction("退出", this);
         connect(actionExit, &QAction::triggered, this, &TrayIcon::closeAll);

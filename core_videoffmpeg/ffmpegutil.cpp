@@ -234,7 +234,6 @@ void FFmpegUtil::getInputDevices(bool video, QStringList &devices) {
 
 QStringList FFmpegUtil::getInputDevices(bool video) {
     FFmpegHelper::initLib();
-
     //测试发现从ffmpeg5开始才能获取到值(以前的版本内部没有实现)
     QStringList names;
     AVDeviceInfoList *devices = nullptr;
@@ -245,13 +244,11 @@ QStringList FFmpegUtil::getInputDevices(bool video) {
             names = getDeviceNames(devices, video);
         }
     }
-
     return names;
 }
 
 QStringList FFmpegUtil::getDeviceNames(bool input, bool video) {
     FFmpegHelper::initLib();
-
     QStringList names;
     AVDeviceInfoList *devices = nullptr;
     if (input) {
@@ -288,14 +285,12 @@ QStringList FFmpegUtil::getDeviceNames(AVDeviceInfoList *devices, bool video) {
     int count = devices->nb_devices;
     for (int i = 0; i < count; ++i) {
         AVDeviceInfo *device = devices->devices[i];
-#if (FFMPEG_VERSION_MAJOR > 4)
         if (device->nb_media_types > 0) {
             AVMediaType type = *device->media_types;
             if ((video && type != AVMEDIA_TYPE_VIDEO) || (!video && type != AVMEDIA_TYPE_AUDIO)) {
                 continue;
             }
         }
-#endif
         //在win上设备名传描述符/linux是设备名
 #ifdef Q_OS_WIN
         names << device->device_description;
@@ -303,7 +298,6 @@ QStringList FFmpegUtil::getDeviceNames(AVDeviceInfoList *devices, bool video) {
         names << device->device_name;
 #endif
     }
-
     //释放设备列表
     avdevice_free_list_devices(&devices);
     return names;

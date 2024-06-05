@@ -487,7 +487,6 @@ void VideoWidget::connectThreadSignal() {
     if (!videoThread) {
         return;
     }
-
     //后面带个参数指定信号唯一(如果多次连接信号会自动去重)
     connect(videoThread, &VideoThread::started, this, &VideoWidget::started);
     connect(videoThread, &VideoThread::finished, this, &VideoWidget::finished);
@@ -571,7 +570,6 @@ bool VideoWidget::init() {
 
     //初始化参数
     VideoHelper::initPara(widgetPara_, videoPara, encodePara_);
-    widgetPara_.sharedData = true;
     //线程正在运行不用继续
     if (isRunning_) {
         return false;

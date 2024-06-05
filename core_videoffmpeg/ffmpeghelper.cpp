@@ -22,14 +22,9 @@ void FFmpegHelper::initLib() {
     if (!isInit) {
         //注册库中所有可用的文件格式和解码器
         //注册滤镜特效库相关(色调/模糊/水平翻转/裁剪/加方框/叠加文字等功能)
-#if (FFMPEG_VERSION_MAJOR < 4)
-        av_register_all();
-        avfilter_register_all();
-#endif
         //注册所有设备相关支持
-#ifdef ffmpegdevice
         avdevice_register_all();
-#endif
+
         //初始化网络流格相关(使用网络流时必须先执行)
         avformat_network_init();
 

@@ -210,12 +210,9 @@ void DeviceInfoHelper::getInputDevices(QStringList &audioDevices, QStringList &v
     if (!audioDevices.contains("virtual-audio-capturer") && videoDevices.contains("screen-capture-recorder")) {
         audioDevices << "virtual-audio-capturer";
     }
-
     //上面没有获取到则用ffmpeg内置函数再获取
-#ifdef ffmpegdevice
     FFmpegUtil::getInputDevices(false, audioDevices);
     FFmpegUtil::getInputDevices(true, videoDevices);
-#endif
 
     //将屏幕信息加到后面
     if (screen) {

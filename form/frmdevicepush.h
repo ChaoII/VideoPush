@@ -50,6 +50,6 @@ private:
     Ui::FormDevicePush *ui;
 
     //音频采集推流线程
-    FFmpegThread *ffmpegThread = nullptr;
+    FFmpegThread *ffmpegThread_ = nullptr;
 };
 

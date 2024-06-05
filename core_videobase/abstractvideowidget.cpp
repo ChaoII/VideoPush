@@ -68,17 +68,14 @@ AbstractVideoWidget::~AbstractVideoWidget() {
 }
 
 void AbstractVideoWidget::clearOpenGLData() {
-#ifdef openglx
     if (widgetPara_.videoMode == VideoMode_Opengl) {
         rgbWidget_->clear();
         yuvWidget_->clear();
         nv12Widget_->clear();
     }
-#endif
 }
 
 void AbstractVideoWidget::showOpenGLWidget() {
-#ifdef openglx
     //纯音频不显示
     if (widgetPara_.videoMode == VideoMode_Opengl && !onlyAudio_) {
         if (hardware_ == "rgb") {
@@ -89,17 +86,14 @@ void AbstractVideoWidget::showOpenGLWidget() {
             nv12Widget_->setVisible(true);
         }
     }
-#endif
 }
 
 void AbstractVideoWidget::hideOpenGLWidget() {
-#ifdef openglx
     if (widgetPara_.videoMode == VideoMode_Opengl) {
         rgbWidget_->setVisible(false);
         yuvWidget_->setVisible(false);
         nv12Widget_->setVisible(false);
     }
-#endif
 }
 
 void AbstractVideoWidget::showEvent(QShowEvent *) {
@@ -134,7 +128,6 @@ void AbstractVideoWidget::resizeEvent(QResizeEvent *) {
     //标签图片窗体永远尺寸一样
     coverWidget_->setGeometry(rect());
 
-#ifdef openglx
     //GPU显示控件依附在句柄控件上所以永远和句柄控件尺寸一样
     if (widgetPara_.videoMode == VideoMode_Opengl) {
         //先要清空再设置尺寸否则可能会遇到崩溃
@@ -148,8 +141,6 @@ void AbstractVideoWidget::resizeEvent(QResizeEvent *) {
             nv12Widget_->setGeometry(rect);
         }
     }
-#endif
-
     //设置悬浮工具栏的位置和宽高
     int size = widgetPara_.bannerSize;
     int offset = widgetPara_.borderWidth / 2;
@@ -198,7 +189,6 @@ void AbstractVideoWidget::dropEvent(QDropEvent *event) {
             }
         }
     }
-
     if (!url.isEmpty()) {
         emit sigFileDrag(url);
     }
@@ -312,12 +302,10 @@ void AbstractVideoWidget::drawBg(QPainter *painter) {
         return;
     }
 
-#ifdef openglx
     //GPU控件可见不用绘制背景
     if (rgbWidget_->isVisible() || yuvWidget_->isVisible() || nv12Widget_->isVisible()) {
         return;
     }
-#endif
 
     painter->save();
 
@@ -332,7 +320,6 @@ void AbstractVideoWidget::drawBg(QPainter *painter) {
         QRect rect = WidgetHelper::getCenterRect(widgetPara_.bgImage.size(), this->rect());
         painter->drawImage(rect, widgetPara_.bgImage);
     }
-
     painter->restore();
 }
 
@@ -341,7 +328,6 @@ void AbstractVideoWidget::drawInfo(QPainter *painter) {
     if (videoWidth_ == 0 || onlyAudio_ || widgetPara_.videoMode == VideoMode_Hwnd) {
         return;
     }
-
     //标签位置尽量偏移多一点避免遮挡
     QRect rect = image_.isNull() ? coverWidget_->rect() : image_.rect();
     int borderWidth = widgetPara_.borderWidth + 5;
@@ -387,16 +373,14 @@ void AbstractVideoWidget::drawImage(QPainter *painter) {
     int borderWidth = widgetPara_.borderWidth + 5;
     rect = QRect(rect.x() + borderWidth, rect.y() + borderWidth, rect.width() - (borderWidth * 2),
                  rect.height() - (borderWidth * 2));
-
     //将标签信息绘制到图片上
     if (widgetPara_.osdDrawMode == DrawMode_Image) {
         for (auto &osd: listOsd_) {
             if (osd.visible) {
-                QPainter painter;
-                painter.begin(&image_);
-                //painter.setRenderHints(QPainter::Antialiasing);
-                WidgetHelper::drawOsd(&painter, osd, rect);
-                painter.end();
+                QPainter _painter;
+                _painter.begin(&image_);
+                WidgetHelper::drawOsd(&_painter, osd, rect);
+                _painter.end();
             }
         }
     }
@@ -404,22 +388,20 @@ void AbstractVideoWidget::drawImage(QPainter *painter) {
     //将图形信息绘制到图片上
     if (widgetPara_.graphDrawMode == DrawMode_Image) {
         for (auto &graph: listGraph_) {
-            QPainter painter;
-            painter.begin(&image_);
-            //painter.setRenderHints(QPainter::Antialiasing);
+            QPainter _painter;
+            _painter.begin(&image_);
             if (!graph.rect.isEmpty()) {
-                WidgetHelper::drawRect(&painter, graph.rect, graph.borderWidth, graph.borderColor);
+                WidgetHelper::drawRect(&_painter, graph.rect, graph.borderWidth, graph.borderColor);
             }
             if (!graph.path.isEmpty()) {
-                WidgetHelper::drawPath(&painter, graph.path, graph.borderWidth, graph.borderColor);
+                WidgetHelper::drawPath(&_painter, graph.path, graph.borderWidth, graph.borderColor);
             }
             if (graph.points.count() > 0) {
-                WidgetHelper::drawPoints(&painter, graph.points, graph.borderWidth, graph.borderColor);
+                WidgetHelper::drawPoints(&_painter, graph.points, graph.borderWidth, graph.borderColor);
             }
-            painter.end();
+            _painter.end();
         }
     }
-
     //绘制图片
     painter->save();
     painter->drawImage(imageRect_, image_);
@@ -698,7 +680,7 @@ void AbstractVideoWidget::setOsd(const OsdInfo &osd) {
             exist = true;
             osdInfo = osd;
             emit sigOsdChanged();
-            return;
+            break;
         }
     }
     //不存在则插入
@@ -722,7 +704,6 @@ void AbstractVideoWidget::removeOsd(const QString &name) {
             break;
         }
     }
-
     this->update();
     emit sigOsdChanged();
 }
@@ -742,10 +723,9 @@ void AbstractVideoWidget::setGraph(const GraphInfo &graph) {
             exist = true;
             graphInfo = graph;
             emit sigGraphChanged();
-            return;
+            break;
         }
     }
-
     //不存在则插入
     if (!exist) {
         this->appendGraph(graph);
@@ -788,7 +768,6 @@ void AbstractVideoWidget::setImage(const QImage &image) {
             videoHeight_ = image.height();
             this->receiveSizeChanged();
         }
-
         receiveImage(image, 0);
     }
 }
@@ -872,31 +851,26 @@ void AbstractVideoWidget::receiveSizeChanged() {
 }
 
 void AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataRGB, int type) {
-#ifdef openglx
     //这里要过滤下可能线程刚好结束了但是信号已经到这里
     if (sender()) {
         rgbWidget_->updateFrame(width, height, dataRGB, type);
     }
-#endif
+
 }
 
-void
-AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 lineSizeY,
-                                  quint32 lineSizeU, quint32 lineSizeV) {
-#ifdef openglx
+void AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU,
+                                       quint8 *dataV, quint32 lineSizeY, quint32 lineSizeU, quint32 lineSizeV) {
     //这里要过滤下可能线程刚好结束了但是信号已经到这里
     if (sender()) {
         yuvWidget_->updateFrame(width, height, dataY, dataU, dataV, lineSizeY, lineSizeU, lineSizeV);
     }
-#endif
+
 }
 
 void AbstractVideoWidget::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 lineSizeY,
                                        quint32 lineSizeUV) {
-#ifdef openglx
     //这里要过滤下可能线程刚好结束了但是信号已经到这里
     if (sender()) {
         nv12Widget_->updateFrame(width, height, dataY, dataUV, lineSizeY, lineSizeUV);
     }
-#endif
 }

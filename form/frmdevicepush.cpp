@@ -34,16 +34,18 @@ void FormDevicePush::initForm() {
     videoPara.videoCore = VideoCore_FFmpeg;
     videoPara.audioLevel = true;
     ui->videoWidget->setVideoPara(videoPara);
+    // 如果视频中自带音频，那么也会显示音柱
     connect(ui->videoWidget, &VideoWidget::sigReceiveLevel, ui->audioLevel, &AudioLevel::setLevel);
 
-    //实例化音频采集线程
-    ffmpegThread = new FFmpegThread;
-    ffmpegThread->setAudioLevel(true);
-    connect(ffmpegThread, &FFmpegThread::receivePlayStart, this, &FormDevicePush::receivePlayStart);
-    connect(ffmpegThread, &FFmpegThread::receivePlayFinish, this, &FormDevicePush::receivePlayFinish);
-    connect(ffmpegThread, &FFmpegThread::receivePlayFinish, ui->audioLevel, &AudioLevel::clear);
-    connect(ffmpegThread, &FFmpegThread::receiveLevel, ui->audioLevel, &AudioLevel::setLevel);
+    //实例化音频采集线程（注意区分单独的音频采集和视频中既带音频，又带视频的玩法）
+    ffmpegThread_ = new FFmpegThread;
+    ffmpegThread_->setAudioLevel(true);
+    connect(ffmpegThread_, &FFmpegThread::receivePlayStart, this, &FormDevicePush::receivePlayStart);
+    connect(ffmpegThread_, &FFmpegThread::receivePlayFinish, this, &FormDevicePush::receivePlayFinish);
+    connect(ffmpegThread_, &FFmpegThread::receivePlayFinish, ui->audioLevel, &AudioLevel::clear);
+    connect(ffmpegThread_, &FFmpegThread::receiveLevel, ui->audioLevel, &AudioLevel::setLevel);
 
+    // 视频部分
     connect(ui->videoWidget, &VideoWidget::sigReceivePlayStart, this, &FormDevicePush::receivePlayStart);
     connect(ui->videoWidget, &VideoWidget::sigReceivePlayFinish, this, &FormDevicePush::receivePlayFinish);
 
@@ -55,11 +57,6 @@ void FormDevicePush::initForm() {
 }
 
 void FormDevicePush::initConfig() {
-    //试用版永远有水印
-#ifdef betaversion
-    AppConfig::DevicePushOsd = true;
-    ui->ckOsd->setEnabled(false);
-#endif
 
     int index = ui->cboxVideoDevice->findText(AppConfig::DeviceVideo);
     index = (index < 0 ? 0 : index);
@@ -155,8 +152,8 @@ void FormDevicePush::initUrl() {
 void FormDevicePush::initPara() {
     //本地麦克风采集声音后会发送给默认的声卡播放/可能导致回音/可以取消
     bool muted = ui->ckMuted->isChecked();
-    if (ffmpegThread->isRunning()) {
-        ffmpegThread->setMuted(muted);
+    if (ffmpegThread_->isRunning()) {
+        ffmpegThread_->setMuted(muted);
     }
     if (ui->videoWidget->getIsRunning()) {
         //如果是本地桌面采集带音频则需要静音/否则声音一直重复播放导致滴滴滴
@@ -176,8 +173,8 @@ void FormDevicePush::initPara() {
 
 void FormDevicePush::receivePlayStart(int time) {
     this->initPara();
-    if (sender() == ffmpegThread) {
-        ffmpegThread->recordStart(AppConfig::DevicePushUrl2);
+    if (sender() == ffmpegThread_) {
+        ffmpegThread_->recordStart(AppConfig::DevicePushUrl2);
         ui->btnStart2->setText("停止推流");
     } else {
         VideoThread *thread = ui->videoWidget->getVideoThread();
@@ -187,7 +184,7 @@ void FormDevicePush::receivePlayStart(int time) {
 }
 
 void FormDevicePush::receivePlayFinish() {
-    if (sender() == ffmpegThread) {
+    if (sender() == ffmpegThread_) {
         ui->btnStart2->setText("启动推流");
     } else {
         ui->btnStart1->setText("启动推流");
@@ -204,9 +201,9 @@ void FormDevicePush::on_btnStart1_clicked() {
 
 void FormDevicePush::on_btnStart2_clicked() {
     if (ui->btnStart2->text() == "启动推流") {
-        ffmpegThread->setMediaUrl(AppConfig::DeviceMediaUrl2);
-        ffmpegThread->play();
+        ffmpegThread_->setMediaUrl(AppConfig::DeviceMediaUrl2);
+        ffmpegThread_->play();
     } else {
-        ffmpegThread->stop();
+        ffmpegThread_->stop();
     }
 }

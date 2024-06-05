@@ -63,7 +63,7 @@ FFmpegFilter::initFilter(AbstractVideoThread *thread, AVStream *stream, AVCodecC
     }
 
     //创建输入滤镜
-    result = avfilter_graph_create_filter(&filterData.filterSrcCtx, filterSrc, "in", args.toUtf8().constData(), NULL,
+    result = avfilter_graph_create_filter(&filterData.filterSrcCtx, filterSrc, "in", args.toUtf8().constData(), nullptr,
                                           filterData.filterGraph);
     if (result < 0) {
         step = "创建输入滤镜";
@@ -71,7 +71,7 @@ FFmpegFilter::initFilter(AbstractVideoThread *thread, AVStream *stream, AVCodecC
     }
 
     //创建输出滤镜
-    result = avfilter_graph_create_filter(&filterData.filterSinkCtx, filterSink, "out", NULL, NULL,
+    result = avfilter_graph_create_filter(&filterData.filterSinkCtx, filterSink, "out", nullptr, nullptr,
                                           filterData.filterGraph);
     if (result < 0) {
         step = "创建输出滤镜";
@@ -90,22 +90,22 @@ FFmpegFilter::initFilter(AbstractVideoThread *thread, AVStream *stream, AVCodecC
     outputs->name = av_strdup("in");
     outputs->filter_ctx = filterData.filterSrcCtx;
     outputs->pad_idx = 0;
-    outputs->next = NULL;
+    outputs->next = nullptr;
 
     inputs->name = av_strdup("out");
     inputs->filter_ctx = filterData.filterSinkCtx;
     inputs->pad_idx = 0;
-    inputs->next = NULL;
+    inputs->next = nullptr;
 
     //初始化滤镜
-    result = avfilter_graph_parse_ptr(filterData.filterGraph, filters.toUtf8().constData(), &inputs, &outputs, NULL);
+    result = avfilter_graph_parse_ptr(filterData.filterGraph, filters.toUtf8().constData(), &inputs, &outputs, nullptr);
     if (result < 0) {
         step = "应用滤镜参数";
         goto end;
     }
 
     //应用滤镜配置
-    result = avfilter_graph_config(filterData.filterGraph, NULL);
+    result = avfilter_graph_config(filterData.filterGraph, nullptr);
     if (result < 0) {
         step = "应用滤镜配置";
         goto end;
@@ -130,8 +130,8 @@ void FFmpegFilter::freeFilter(FilterData &filterData) {
         avfilter_free(filterData.filterSrcCtx);
         avfilter_free(filterData.filterSinkCtx);
         avfilter_graph_free(&filterData.filterGraph);
-        filterData.filterSrcCtx = NULL;
-        filterData.filterSinkCtx = NULL;
-        filterData.filterGraph = NULL;
+        filterData.filterSrcCtx = nullptr;
+        filterData.filterSinkCtx = nullptr;
+        filterData.filterGraph = nullptr;
     }
 }

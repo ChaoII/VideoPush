@@ -294,17 +294,11 @@ MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, En
             widgetPara.osdDrawMode = DrawMode_Source;
             widgetPara.graphDrawMode = DrawMode_Source;
         }
-
-        //Qt4中的多媒体只有句柄模式(Qt5.6以下绘制模式用QAbstractVideoSurface获取不到图片也只能用句柄模式)
-#if (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
-        widgetPara.videoMode = VideoMode_Hwnd;
-#endif
     } else if (videoCore == VideoCore_FFmpeg) {
         //ffmpeg内核没有句柄模式
         if (widgetPara.videoMode == VideoMode_Hwnd) {
             widgetPara.videoMode = VideoMode_Opengl;
         }
-
         //设置标签和图形绘制模式
         widgetPara.osdDrawMode = DrawMode_Source;
         widgetPara.graphDrawMode = DrawMode_Source;
@@ -329,7 +323,7 @@ MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, En
         widgetPara.osdDrawMode = DrawMode_Source;
         widgetPara.graphDrawMode = DrawMode_Source;
     } else if (videoCore == VideoCore_Mdk || videoCore == VideoCore_Qtav) {
-        //内核只有GPU模式
+        //内核只有句柄模式
         widgetPara.videoMode = VideoMode_Hwnd;
         //设置标签和图形绘制模式
         widgetPara.osdDrawMode = DrawMode_Source;
@@ -399,17 +393,10 @@ MediaType VideoHelper::initPara(WidgetPara &widgetPara, VideoPara &videoPara, En
         }
     }
 
-#ifndef openglx
-    //如果没有opengl则强制改成绘制模式
-    if (widgetPara.videoMode == VideoMode_Opengl) {
-        widgetPara.videoMode = VideoMode_Painter;
-    }
-#else
     //OpenGLES模式下不能用硬解码
     if (QCoreApplication::testAttribute(Qt::AA_UseOpenGLES)) {
         videoPara.hardware = "none";
     }
-#endif
 
     //句柄模式不能共享解码线程
     if (widgetPara.videoMode == VideoMode_Hwnd) {

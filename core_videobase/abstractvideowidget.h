@@ -319,10 +319,10 @@ protected slots:
     //接收一帧图片并绘制
     void receiveFrame(int width, int height, quint8 *dataRGB, int type);
 
-    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 linesizeY,
-                      quint32 linesizeU, quint32 linesizeV);
+    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 lineSizeY,
+                      quint32 lineSizeU, quint32 lineSizeV);
 
-    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 linesizeY, quint32 linesizeUV);
+    void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 lineSizeY, quint32 lineSizeUV);
 
 signals:
 
