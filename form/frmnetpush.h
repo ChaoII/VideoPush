@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 
 #include <QWidget>
+#include <QOverload>
 #include "frmnetadd.h"
+#include "core_videobase/abstractvideothread.h"
 
 class ImageLabel;
 
@@ -106,9 +108,12 @@ private slots:
     //收到一张图片
     void receiveImage(const QImage &image, int time);
 
-    //收到一帧yuv视频数据
+    //收到一帧yuv视频数据(软件解码)
     void receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 lineSizeY,
                       quint32 lineSizeU, quint32 lineSizeV);
+
+    //收到一帧nv12视频数据(硬件解码)
+    void receiveFrameNV12(int width, int height, quint8 *dataY, quint8 *dataUV, quint32 lineSizeY, quint32 lineSizeUV);
 
     //添加地址
     void addUrl(const QString &flag, const QString &url, bool direct);

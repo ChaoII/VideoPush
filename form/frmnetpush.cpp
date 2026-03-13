@@ -1,9 +1,10 @@
-﻿#include "frmnetpush.h"
+#include "frmnetpush.h"
 #include "ui_frmnetpush.h"
 #include "itemdelegate.h"
 #include "core_helper/qthelper.h"
 #include "core_videohelper/urlutil.h"
 #include "core_videohelper/urlhelper.h"
+#include "core_video/videothread.h"
 #include "core_video/videoutil.h"
 #include "core_videopush/videopushurl.h"
 #include "core_videohelper/imagelabel.h"
@@ -12,8 +13,9 @@
 #include "core_videopush/netpushserver.h"
 #include "core_videoffmpeg/ffmpegthread.h"
 #include "core_videoffmpeg/ffmpegsavehelper.h"
+#include <QOverload>
 
-frmNetPush::frmNetPush(QWidget *parent) : QWidget(parent), ui(new Ui::frmNetPush) {
+frmNetPush::frmNetPush(QWidget* parent) : QWidget(parent), ui(new Ui::frmNetPush) {
     ui->setupUi(this);
     this->initForm();
     this->initTip();
@@ -30,7 +32,7 @@ frmNetPush::~frmNetPush() {
     delete ui;
 }
 
-void frmNetPush::resizeEvent(QResizeEvent *) {
+void frmNetPush::resizeEvent(QResizeEvent*) {
     this->moveVideo();
 }
 
@@ -65,7 +67,7 @@ void frmNetPush::initForm() {
 
 #if 0
     //定时器模拟测试
-    QTimer *timer = new QTimer(this);
+    QTimer* timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(on_btnStart_clicked()));
     timer->start(10000);
 #endif
@@ -89,7 +91,8 @@ void frmNetPush::initPara() {
 
     if (types.contains(AppConfig::NetPushType)) {
         FFmpegSaveHelper::rtmp_pcm = true;
-    } else {
+    }
+    else {
         FFmpegSaveHelper::rtmp_pcm = false;
     }
 
@@ -175,7 +178,7 @@ void frmNetPush::saveConfig() {
     AppConfig::NetCopyNumber = ui->cboxCopyNumber->currentText().toInt();
     AppConfig::EncodeVideo = ui->cboxEncodeVideo->currentIndex();
     AppConfig::EncodeVideoRatio = ui->cboxEncodeVideoRatio->itemData(
-            ui->cboxEncodeVideoRatio->currentIndex()).toFloat();
+        ui->cboxEncodeVideoRatio->currentIndex()).toFloat();
     AppConfig::EncodeVideoScale = ui->cboxEncodeVideoScale->lineEdit()->text().trimmed();
     AppConfig::CheckB = ui->ckCheckB->isChecked();
     AppConfig::NetHideUser = ui->ckHideUser->isChecked();
@@ -187,7 +190,9 @@ void frmNetPush::saveConfig() {
 
 void frmNetPush::initUrl() {
     //自动取出对应流媒体服务器对应推流模式对应网卡的推流地址
-    QString url = VideoPushUrl::getPushUrl(AppConfig::NetPushType, AppConfig::NetPushMode, AppConfig::NetPushUrl,
+    QString url = VideoPushUrl::getPushUrl(AppConfig::NetPushType,
+                                           AppConfig::NetPushMode,
+                                           AppConfig::NetPushUrl,
                                            AppConfig::NetPushHost);
     UrlHelper::removeDefaultPort(url);
     ui->txtPushUrl->setText(url);
@@ -230,7 +235,7 @@ void frmNetPush::connectBtn() {
     //关联按钮信号槽
     int count = ui->tableWidget->rowCount();
     for (int i = 0; i < count; ++i) {
-        auto btn = (QPushButton *) ui->tableWidget->cellWidget(i, 2);
+        auto btn = (QPushButton*)ui->tableWidget->cellWidget(i, 2);
         if (btn) {
             connect(btn, &QPushButton::clicked, this, &frmNetPush::clicked);
         }
@@ -262,8 +267,9 @@ void frmNetPush::resetVideo() {
         disconnect(videoThread, &FFmpegThread::receivePlayStart, this, &frmNetPush::receivePlayStart);
         disconnect(videoThread, &FFmpegThread::receivePosition, this, &frmNetPush::receivePosition);
         disconnect(videoThread, &FFmpegThread::receiveImage, this, &frmNetPush::receiveImage);
-        disconnect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
-                &FFmpegThread::receiveFrame), this, &frmNetPush::receiveFrame);
+        //断开所有receiveFrame信号连接(不带参数断开所有重载版本)
+        disconnect(videoThread, SIGNAL(receiveFrame(int,int,quint8*,quint8*,quint8*,quint32,quint32,quint32)), this, SLOT(receiveFrame(int,int,quint8*,quint8*,quint8*,quint32,quint32,quint32)));
+        disconnect(videoThread, SIGNAL(receiveFrame(int,int,quint8*,quint8*,quint32,quint32)), this, SLOT(receiveFrameNV12(int,int,quint8*,quint8*,quint32,quint32)));
         videoThread = nullptr;
     }
 
@@ -280,18 +286,19 @@ void frmNetPush::clearUrl() {
 
 void frmNetPush::clicked() {
     //动态单个启动和停止推流
-    auto btn = (QPushButton *) sender();
+    auto btn = (QPushButton*)sender();
     int row = btn->objectName().split("_").at(1).toInt();
     QString mediaUrl = ui->tableWidget->item(row, 5)->data(Qt::UserRole).toString();
     if (btn->text() == "启动") {
         pushServer->start(mediaUrl);
-    } else {
+    }
+    else {
         pushServer->stop(mediaUrl);
     }
 }
 
 void
-frmNetPush::pushStart(const QString &mediaUrl, int width, int height, int videoStatus, int audioStatus, bool start) {
+frmNetPush::pushStart(const QString& mediaUrl, int width, int height, int videoStatus, int audioStatus, bool start) {
     int count = ui->tableWidget->rowCount();
     for (int i = 0; i < count; ++i) {
         QString url = ui->tableWidget->item(i, 5)->data(Qt::UserRole).toString();
@@ -309,7 +316,7 @@ frmNetPush::pushStart(const QString &mediaUrl, int width, int height, int videoS
     }
 }
 
-void frmNetPush::pushChanged(const QString &mediaUrl, int state) {
+void frmNetPush::pushChanged(const QString& mediaUrl, int state) {
     int count = ui->tableWidget->rowCount();
     for (int i = 0; i < count; ++i) {
         QString url = ui->tableWidget->item(i, 5)->data(Qt::UserRole).toString();
@@ -337,14 +344,14 @@ void frmNetPush::receivePosition(qint64 position) {
     ui->labPosition->setText(QtHelper::getTimeString(position));
 }
 
-void frmNetPush::receiveImage(const QImage &image, int time) {
+void frmNetPush::receiveImage(const QImage& image, int time) {
     Q_UNUSED(time)
     if (sender()) {
         labImage->setImage(image, true);
     }
 }
 
-void frmNetPush::receiveFrame(int width, int height, quint8 *dataY, quint8 *dataU, quint8 *dataV, quint32 lineSizeY,
+void frmNetPush::receiveFrame(int width, int height, quint8* dataY, quint8* dataU, quint8* dataV, quint32 lineSizeY,
                               quint32 lineSizeU, quint32 lineSizeV) {
     //这里要过滤下可能线程刚好结束了但是信号已经到这里
     if (sender()) {
@@ -352,10 +359,19 @@ void frmNetPush::receiveFrame(int width, int height, quint8 *dataY, quint8 *data
     }
 }
 
-void frmNetPush::addUrl(const QString &flag, const QString &url, bool direct) {
+void frmNetPush::receiveFrameNV12(int width, int height, quint8* dataY, quint8* dataUV, quint32 lineSizeY, quint32 lineSizeUV) {
+    //硬件解码-NV12格式: Y plane + UV interleaved
+    if (sender()) {
+        yuvWidget->updateFrame(width, height, dataY, dataUV, nullptr, lineSizeY, lineSizeUV, 0);
+    }
+}
+
+void frmNetPush::addUrl(const QString& flag, const QString& url, bool direct) {
     //非直接添加则取出对应的标识
-    QString name = direct ? flag : VideoPushHelper::getFlag(ui->tableWidget, AppConfig::NetFlagType,
-                                                            AppConfig::NetPushFlag);
+    QString name = direct
+                       ? flag
+                       : VideoPushHelper::getFlag(ui->tableWidget, AppConfig::NetFlagType,
+                                                  AppConfig::NetPushFlag);
     VideoPushHelper::addUrl(ui->tableWidget, url, pushServer, name);
 }
 
@@ -367,13 +383,15 @@ void frmNetPush::on_btnStart_clicked() {
         int port = UrlHelper::getUrlPort(url);
         if (!url.startsWith("udp://") && !VideoPushUrl::hostLive(host, port, 3000)) {
             QtHelper::showMessageBoxError("流媒体服务器不可达, 请检查地址是否正常或者服务是否开启!");
-        } else {
+        }
+        else {
             pushServer->setPushUrl(AppConfig::NetPushUrl);
             pushServer->start();
             ui->btnStart->setText("停止服务");
             ui->widget->setEnabled(false);
         }
-    } else {
+    }
+    else {
         this->resetVideo();
         this->clearUrl();
         pushServer->stop();
@@ -440,7 +458,7 @@ void frmNetPush::on_btnClear_clicked() {
 void frmNetPush::on_btnAddFile_clicked() {
     QString filter = "视频文件(*.mp4 *.rmvb *.avi *.asf *.mov *.wmv *.mkv);;音频文件(*.mp3 *.wav *.wma *.aac);;所有文件(*.*)";
     QStringList fileNames = QFileDialog::getOpenFileNames(this, "", "", filter);
-    for (auto &fileName: fileNames) {
+    for (auto& fileName : fileNames) {
         this->addUrl(AppConfig::NetPushFlag, fileName, false);
     }
 
@@ -453,7 +471,7 @@ void frmNetPush::on_btnAddPath_clicked() {
     on_btnClear_clicked();
     QStringList fileNames;
     fileNames = UrlUtil::getUrls(UrlUtil::Simple);
-    foreach (QString fileName, fileNames) {
+    foreach(QString fileName, fileNames) {
         if (!fileName.endsWith(".mp3") && !fileName.contains("47.114.127.78")) {
             this->addUrl(AppConfig::NetPushFlag, fileName, false);
         }
@@ -465,7 +483,7 @@ void frmNetPush::on_btnAddPath_clicked() {
         QStringList filters = QString("*.mp4 *.rmvb *.avi *.asf *.mov *.wmv *.mkv *.mp3 *.wav *.wma *.aac").split(" ");
         QDir dir(path);
         QStringList fileNames = dir.entryList(filters);
-        for (auto &fileName: fileNames) {
+        for (auto& fileName : fileNames) {
             this->addUrl(AppConfig::NetPushFlag, path + "/" + fileName, false);
         }
     }
@@ -479,7 +497,8 @@ void frmNetPush::on_btnAddUrl_clicked() {
     //return;
 
     bool ok = false;
-    QString title = "视频流[rtsp://xxxxx rtmp://xxxxx http://xxxxx] / 摄像头[video=USB Video Device|1280x720|30] / 桌面[desktop]";
+    QString title =
+        "视频流[rtsp://xxxxx rtmp://xxxxx http://xxxxx] / 摄像头[video=USB Video Device|1280x720|30] / 桌面[desktop]";
     QStringList urls = UrlUtil::getUrls(UrlUtil::Simple);
     QString url = QInputDialog::getItem(this, "输入地址", title, urls,
                                         static_cast<int>(urls.indexOf(AppConfig::NetLastUrl)), true, &ok);
@@ -519,7 +538,8 @@ void frmNetPush::on_ckPlayPause_stateChanged(int arg1) {
     if (videoThread) {
         if (arg1 != 0) {
             videoThread->pause();
-        } else {
+        }
+        else {
             videoThread->next();
         }
     }
@@ -577,6 +597,10 @@ void frmNetPush::on_tableWidget_cellPressed(int row, int column) {
         return;
     }
 
+    //Qt6 下需要先 show 再调整位置
+    yuvWidget->show();
+    labImage->show();
+
     //调整视频控件位置
     receivePlayStart(0);
 
@@ -599,8 +623,11 @@ void frmNetPush::on_tableWidget_cellPressed(int row, int column) {
     connect(videoThread, &FFmpegThread::receivePlayStart, this, &frmNetPush::receivePlayStart);
     connect(videoThread, &FFmpegThread::receivePosition, this, &frmNetPush::receivePosition);
     connect(videoThread, &FFmpegThread::receiveImage, this, &frmNetPush::receiveImage);
-    connect(videoThread, QOverload<int, int, quint8 *, quint8 *, quint8 *, quint32, quint32, quint32>::of(
-            &FFmpegThread::receiveFrame), this, &frmNetPush::receiveFrame);
+    connect(videoThread, QOverload<int, int, quint8*, quint8*, quint8*, quint32, quint32, quint32>::of(
+                &AbstractVideoThread::receiveFrame), this, &frmNetPush::receiveFrame);
+    //硬件解码帧单独处理
+    connect(videoThread, QOverload<int, int, quint8*, quint8*, quint32, quint32>::of(
+                &AbstractVideoThread::receiveFrame), this, &frmNetPush::receiveFrameNV12);
 }
 
 void frmNetPush::on_tableWidget_cellDoubleClicked(int row, int column) {

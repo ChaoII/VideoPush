@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <QFile>
 #include <QTimer>
@@ -6,6 +6,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
 
 class YuvWidget : public QOpenGLWidget, protected QOpenGLFunctions {
 Q_OBJECT
@@ -64,12 +65,17 @@ private:
     //顶点着色器代码+片段着色器代码
     QString shaderVert, shaderFrag;
 
-    //着色器程序,编译链接着色器
+    //着色器程序，编译链接着色器
     QOpenGLShaderProgram program;
-    //YUV纹理,用于生成纹理贴图
+    //YUV 纹理，用于生成纹理贴图
     GLuint textureY, textureU, textureV;
-    //shader中YUV变量地址
+    //shader 中 YUV 变量地址
     GLuint textureUniformY, textureUniformU, textureUniformV;
+
+    //Qt6 Core Profile 需要 VAO
+    QOpenGLVertexArrayObject m_vao;
+    //Qt6 Core Profile 需要 VBO
+    QOpenGLBuffer vbo;
 
 private:
     //直接读取文件
