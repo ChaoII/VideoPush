@@ -32,9 +32,9 @@ QString ImagePushServer::getHttpAddr() {
 
 void ImagePushServer::sendImage(const QImage &image) {
     //对所有在线连接发送
-            foreach (ImagePushClient *client, clients) {
-            client->append(image);
-        }
+    for (auto &client: clients) {
+        client->append(image);
+    }
 }
 
 bool ImagePushServer::start(const QString &ip, int port) {
@@ -65,9 +65,9 @@ bool ImagePushServer::start(const QString &ip, int port) {
 
 void ImagePushServer::stop() {
     //释放所有资源
-            foreach (ImagePushClient *client, clients) {
-            client->deleteLater();
-        }
+    for (auto &client: clients) {
+        client->deleteLater();
+    }
 
     clients.clear();
     this->close();

@@ -340,7 +340,7 @@ void VideoWidget::receivePlayStart(int time) {
     }
 }
 
-void VideoWidget::receivePlayFinsh() {
+void VideoWidget::receivePlayFinish() {
     //mpv内核句柄模式下在关闭后鼠标打圈圈需要复位下
     if (widgetPara_.videoMode == VideoMode_Hwnd) {
         VideoTask::Instance().append("resetCursor", "");
@@ -491,7 +491,7 @@ void VideoWidget::connectThreadSignal() {
     connect(videoThread, &VideoThread::started, this, &VideoWidget::started);
     connect(videoThread, &VideoThread::finished, this, &VideoWidget::finished);
     connect(videoThread, &VideoThread::receivePlayStart, this, &VideoWidget::receivePlayStart);
-    connect(videoThread, &VideoThread::receivePlayFinish, this, &VideoWidget::receivePlayFinsh);
+    connect(videoThread, &VideoThread::receivePlayFinish, this, &VideoWidget::receivePlayFinish);
 
     connect(videoThread, &VideoThread::receiveImage, this, &VideoWidget::receiveImage);
     connect(videoThread, &VideoThread::snapImage, this, &VideoWidget::snapImage);
@@ -552,8 +552,7 @@ void VideoWidget::disconnectThreadSignal() {
 
     disconnect(videoThread, &VideoThread::receivePlayFinish, bannerWidget_, &BannerWidget::receivePlayFinish);
     disconnect(videoThread, &VideoThread::receiveMuted, bannerWidget_, &BannerWidget::receiveMuted);
-    disconnect(videoThread, &VideoThread::recorderStateChanged, bannerWidget_,
-               &BannerWidget::recorderStateChanged);
+    disconnect(videoThread, &VideoThread::recorderStateChanged, bannerWidget_, &BannerWidget::recorderStateChanged);
     disconnect(videoThread, &VideoThread::receiveSizeChanged, this, &VideoWidget::receiveSizeChanged);
 }
 
@@ -652,7 +651,7 @@ void VideoWidget::play() {
     //已经在运行阶段还要发送已经开始的信号
     if (videoThread->isRunning()) {
         isRunning_ = true;
-        QMetaObject::invokeMethod(this, "sig_receivePlayStart", Qt::DirectConnection, Q_ARG(int, 0));
+        QMetaObject::invokeMethod(this, "sigReceivePlayStart", Qt::DirectConnection, Q_ARG(int, 0));
     }
 
     //启动播放线程

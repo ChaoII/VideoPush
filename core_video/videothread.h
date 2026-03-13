@@ -24,7 +24,7 @@ protected:
     virtual void run();
 
     //事件过滤器/识别尺寸变化
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 protected slots:
 

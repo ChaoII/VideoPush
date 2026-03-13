@@ -76,13 +76,10 @@ void FFmpegUtil::debugHardware() {
 QStringList FFmpegUtil::getHardware() {
     //硬解类型名称 ffmpeg -hwaccels
     QStringList listHardware;
-    //其实ffmpeg2/ffmpeg3也有但是不完整一般建议3以上
-#if (FFMPEG_VERSION_MAJOR > 3)
     enum AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
     while ((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
         listHardware << av_hwdevice_get_type_name(type);
     }
-#endif
     return listHardware;
 }
 

@@ -98,9 +98,6 @@ public:
 
     static void setFont(int fontSize = 12);
 
-    //设置编码
-    static void setCode(bool utf8 = true);
-
     //设置翻译文件
     static void setTranslator(const QString &qmFile);
 

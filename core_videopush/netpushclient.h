@@ -24,7 +24,7 @@ public:
 
     explicit NetPushClient(QObject *parent = nullptr);
 
-    ~NetPushClient();
+    ~NetPushClient() override;
 
 private:
     //播放地址

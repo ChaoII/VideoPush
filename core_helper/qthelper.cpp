@@ -485,18 +485,6 @@ void QtHelper::setFont(int fontSize) {
     qApp->setFont(font);
 }
 
-void QtHelper::setCode(bool utf8) {
-    QTextCodec *codec = QTextCodec::codecForName("utf-8");
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-    QTextCodec::setCodecForCStrings(codec);
-    QTextCodec::setCodecForTr(codec);
-#endif
-
-    //如果想要控制台打印信息中文正常就注释掉这个设置/setCodecForLocale会影响toLocal8Bit函数
-    if (utf8) {
-        QTextCodec::setCodecForLocale(codec);
-    }
-}
 
 void QtHelper::setTranslator(const QString &qmFile) {
     //过滤下不存在的就不用设置了
@@ -560,8 +548,6 @@ void QtHelper::initAll(bool utf8, bool style, int fontSize) {
     QtHelper::initAndroidPermission();
     //初始化随机数种子
     QtHelper::initRand();
-    //设置编码
-    QtHelper::setCode(utf8);
     //设置字体
     QtHelper::setFont(fontSize);
     //设置样式风格

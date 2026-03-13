@@ -1,8 +1,8 @@
 ﻿#include "urlhelper.h"
 #include "qtcpsocket.h"
-#include "qregexp.h"
+#include <QRegularExpression>
 
-bool UrlHelper::checkUrl(const QString &url, int timeout) {
+bool UrlHelper::checkUrl(const QString& url, int timeout) {
     //没有超时时间则认为永远返回真
     if (timeout <= 0) {
         return true;
@@ -39,7 +39,7 @@ bool UrlHelper::checkUrl(const QString &url, int timeout) {
     return true;
 }
 
-void UrlHelper::checkPrefix(QString &url) {
+void UrlHelper::checkPrefix(QString& url) {
     //地址前缀全部转小写
     QStringList list = url.split("://");
     if (list.count() == 2) {
@@ -47,26 +47,30 @@ void UrlHelper::checkPrefix(QString &url) {
     }
 }
 
-QString UrlHelper::getRtspUrl(const CompanyType &companyType, int channel, int streamType) {
+QString UrlHelper::getRtspUrl(const CompanyType& companyType, int channel, int streamType) {
     QString url;
     if (companyType == CompanyType_HaiKang) {
         url = QString("rtsp://admin:12345@[Addr]:554/Streaming/Channels/%1%2?transportmode=unicast").arg(
-                channel + 1).arg(streamType + 1, 2, 10, QChar('0'));
-    } else if (companyType == CompanyType_DaHua) {
+            channel + 1).arg(streamType + 1, 2, 10, QChar('0'));
+    }
+    else if (companyType == CompanyType_DaHua) {
         url = QString(
-                "rtsp://admin:12345@[Addr]:554/cam/realmonitor?channel=%1&subtype=%2&unicast=true&proto=Onvif").arg(
-                channel + 1).arg(streamType);
-    } else if (companyType == CompanyType_YuShi) {
+            "rtsp://admin:12345@[Addr]:554/cam/realmonitor?channel=%1&subtype=%2&unicast=true&proto=Onvif").arg(
+            channel + 1).arg(streamType);
+    }
+    else if (companyType == CompanyType_YuShi) {
         url = QString("rtsp://admin:12345@[Addr]/media/video%1").arg(streamType + 1);
-    } else if (companyType == CompanyType_Normal) {
+    }
+    else if (companyType == CompanyType_Normal) {
         url = QString("rtsp://admin:12345@[Addr]/live?channel=%1&stream=%2").arg(channel + 1).arg(streamType);
-    } else {
+    }
+    else {
         url = QString("rtsp://admin:12345@[Addr]:554/%1").arg(streamType);
     }
     return url;
 }
 
-QString UrlHelper::getRtspUrl(const UrlPara &urlPara) {
+QString UrlHelper::getRtspUrl(const UrlPara& urlPara) {
     QString url;
     //头部地址格式完全一致
     QString head = QString("rtsp://%1:%2@%3:554").arg(urlPara.userName).arg(urlPara.userPwd).arg(urlPara.deviceIP);
@@ -94,10 +98,12 @@ QString UrlHelper::getRtspUrl(const UrlPara &urlPara) {
         //实时和回放地址格式不同
         if (urlPara.videoType == 0) {
             url = QString("%1/Streaming/Channels/%2").arg(head).arg(info);
-        } else if (urlPara.videoType == 1) {
+        }
+        else if (urlPara.videoType == 1) {
             url = QString("%1/Streaming/tracks/%2?%3").arg(head).arg(info).arg(time);
         }
-    } else if (urlPara.companyType == CompanyType_DaHua) {
+    }
+    else if (urlPara.companyType == CompanyType_DaHua) {
         //实时预览格式 rtsp://admin:12345@192.168.1.128:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif
         //视频回放格式 rtsp://admin:12345@192.168.1.128:554/cam/playback?channel=1&subtype=0&starttime=2021_03_18_11_36_01&endtime=2021_03_18_12_05_01
         QString startTimeStr = urlPara.dateTimeStart.toString("yyyy_MM_dd_HH_mm_ss");
@@ -109,10 +115,12 @@ QString UrlHelper::getRtspUrl(const UrlPara &urlPara) {
         //实时和回放地址格式不同
         if (urlPara.videoType == 0) {
             url = QString("%1/cam/realmonitor?%2&unicast=true&proto=Onvif").arg(head).arg(info);
-        } else if (urlPara.videoType == 1) {
+        }
+        else if (urlPara.videoType == 1) {
             url = QString("%1/cam/playback?%2&%3").arg(head).arg(info).arg(time);
         }
-    } else {
+    }
+    else {
         //实时预览格式 rtsp://admin:12345@192.168.1.128:554/live?channel=1&stream=1
         //视频回放格式 rtsp://admin:12345@192.168.1.128:554/file?channel=1&start=1494485280&stop=1494485480
         //先转换时间戳,1970年到该时间经过的秒数
@@ -123,7 +131,8 @@ QString UrlHelper::getRtspUrl(const UrlPara &urlPara) {
         //实时和回放地址格式不同
         if (urlPara.videoType == 0) {
             url = QString("%1/live?channel=%2&stream=%3").arg(head).arg(urlPara.channel).arg(urlPara.streamType);
-        } else if (urlPara.videoType == 1) {
+        }
+        else if (urlPara.videoType == 1) {
             url = QString("%1/file?channel=%2&%3").arg(head).arg(urlPara.channel).arg(time);
         }
     }
@@ -132,28 +141,30 @@ QString UrlHelper::getRtspUrl(const UrlPara &urlPara) {
     return url;
 }
 
-void UrlHelper::removeDefaultPort(QString &url) {
+void UrlHelper::removeDefaultPort(QString& url) {
     if (url.startsWith("rtsp://")) {
         if (url.contains(":554/")) {
             url.replace(":554/", "/");
         }
-    } else if (url.startsWith("rtmp://")) {
+    }
+    else if (url.startsWith("rtmp://")) {
         if (url.contains(":1935/")) {
             url.replace(":1935/", "/");
         }
-    } else if (url.startsWith("http://")) {
+    }
+    else if (url.startsWith("http://")) {
         if (url.contains(":80/")) {
             url.replace(":80/", "/");
         }
     }
 }
 
-bool UrlHelper::isIP(const QString &ip) {
-    QRegExp RegExp("((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)");
-    return RegExp.exactMatch(ip);
+bool UrlHelper::isIP(const QString& ip) {
+    QRegularExpression RegExp(R"(^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$)");
+    return RegExp.match(ip).hasMatch();
 }
 
-QString UrlHelper::getUrlHost(const QString &url) {
+QString UrlHelper::getUrlHost(const QString& url) {
     //先获取IP地址
     QString host = getUrlIP(url);
     //如果非IP地址则取出中间主机部分
@@ -163,14 +174,18 @@ QString UrlHelper::getUrlHost(const QString &url) {
     return host;
 }
 
-QString UrlHelper::getUrlIP(const QString &url) {
-    QRegExp regExp("((?:(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d))");
-    int start = regExp.indexIn(url);
-    int length = regExp.matchedLength();
-    return url.mid(start, length);
+QString UrlHelper::getUrlIP(const QString& url) {
+    static const QRegularExpression re(
+        R"(((?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d))"
+    );
+    QRegularExpressionMatch match = re.match(url);
+    if (match.hasMatch()) {
+        return match.captured(0);
+    }
+    return QString();
 }
 
-int UrlHelper::getUrlPort(const QString &url) {
+int UrlHelper::getUrlPort(const QString& url) {
     //必须是最后一个:符号(用户可能地址中带了用户信息用:作为分隔符)
     int index = url.lastIndexOf(":");
     QString temp = url.mid(index + 1, 6);
@@ -179,16 +194,18 @@ int UrlHelper::getUrlPort(const QString &url) {
     if (port == 0) {
         if (url.startsWith("rtsp://")) {
             port = 554;
-        } else if (url.startsWith("rtmp://")) {
+        }
+        else if (url.startsWith("rtmp://")) {
             port = 1935;
-        } else if (url.startsWith("http://")) {
+        }
+        else if (url.startsWith("http://")) {
             port = 80;
         }
     }
     return port;
 }
 
-void UrlHelper::getUserInfo(const QString &url, QString &userName, QString &userPwd) {
+void UrlHelper::getUserInfo(const QString& url, QString& userName, QString& userPwd) {
     userName = "admin";
     userPwd = "12345";
     //必须是最后一个@符号(因为用户名称和密码也可能是这个字符)
@@ -202,35 +219,41 @@ void UrlHelper::getUserInfo(const QString &url, QString &userName, QString &user
     }
 }
 
-QString UrlHelper::getCompanyName(const QString &url) {
+QString UrlHelper::getCompanyName(const QString& url) {
     QString companyName;
     if (url.contains("/Streaming/Channels/")) {
         companyName = "HIKVISION";
-    } else if (url.contains("/cam/realmonitor?channel=")) {
+    }
+    else if (url.contains("/cam/realmonitor?channel=")) {
         companyName = "Dahua";
-    } else if (url.contains("/media/video")) {
+    }
+    else if (url.contains("/media/video")) {
         companyName = "UNIVIEW";
-    } else if (url.contains("/live?channel=")) {
+    }
+    else if (url.contains("/live?channel=")) {
         companyName = "General";
     }
     return companyName;
 }
 
-CompanyType UrlHelper::getCompanyType(const QString &url) {
+CompanyType UrlHelper::getCompanyType(const QString& url) {
     CompanyType companyType = CompanyType_Other;
     if (url.contains("/Streaming/Channels/")) {
         companyType = CompanyType_HaiKang;
-    } else if (url.contains("/cam/realmonitor?channel=")) {
+    }
+    else if (url.contains("/cam/realmonitor?channel=")) {
         companyType = CompanyType_DaHua;
-    } else if (url.contains("/media/video")) {
+    }
+    else if (url.contains("/media/video")) {
         companyType = CompanyType_YuShi;
-    } else if (url.contains("/live?channel=")) {
+    }
+    else if (url.contains("/live?channel=")) {
         companyType = CompanyType_Normal;
     }
     return companyType;
 }
 
-void UrlHelper::getOtherInfo(const QString &url, int &channel, int &streamType) {
+void UrlHelper::getOtherInfo(const QString& url, int& channel, int& streamType) {
     CompanyType companyType = getCompanyType(url);
     QString temp = url.split("/").last();
     if (companyType == CompanyType_HaiKang) {
@@ -238,36 +261,42 @@ void UrlHelper::getOtherInfo(const QString &url, int &channel, int &streamType) 
         //101=通道1码流01 1602=通道16码流02
         channel = temp.mid(0, temp.length() - 2).toInt();
         streamType = temp.right(2).toInt();
-    } else if (companyType == CompanyType_DaHua) {
+    }
+    else if (companyType == CompanyType_DaHua) {
         temp = temp.split("?").last();
         QStringList list = temp.split("&");
-                foreach (QString text, list) {
-                int value = text.split("=").last().toInt();
-                if (text.startsWith("channel")) {
-                    channel = value;
-                } else if (text.startsWith("subtype")) {
-                    streamType = value;
-                }
+        foreach(QString text, list) {
+            int value = text.split("=").last().toInt();
+            if (text.startsWith("channel")) {
+                channel = value;
             }
-    } else if (companyType == CompanyType_YuShi) {
+            else if (text.startsWith("subtype")) {
+                streamType = value;
+            }
+        }
+    }
+    else if (companyType == CompanyType_YuShi) {
         streamType = temp.mid(5, 2).toInt();
-    } else if (companyType == CompanyType_Normal) {
+    }
+    else if (companyType == CompanyType_Normal) {
         temp = temp.split("?").last();
         QStringList list = temp.split("&");
-                foreach (QString text, list) {
-                int value = text.split("=").last().toInt();
-                if (text.startsWith("channel")) {
-                    channel = value;
-                } else if (text.startsWith("stream")) {
-                    streamType = value;
-                }
+        foreach(QString text, list) {
+            int value = text.split("=").last().toInt();
+            if (text.startsWith("channel")) {
+                channel = value;
             }
-    } else {
+            else if (text.startsWith("stream")) {
+                streamType = value;
+            }
+        }
+    }
+    else {
         streamType = temp.toInt();
     }
 }
 
-void UrlHelper::getUrlPara(const QString &url, UrlPara &urlPara) {
+void UrlHelper::getUrlPara(const QString& url, UrlPara& urlPara) {
     urlPara.deviceIP = getUrlIP(url);
     urlPara.devicePort = getUrlPort(url);
     getUserInfo(url, urlPara.userName, urlPara.userPwd);

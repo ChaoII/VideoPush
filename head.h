@@ -11,12 +11,6 @@
 
 #endif
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-
-#include <QtCore5Compat/QtCore5Compat>
-
-#endif
-
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #ifdef Q_OS_ANDROID
 #include <QtAndroidExtras>

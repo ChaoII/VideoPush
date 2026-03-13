@@ -33,6 +33,10 @@ void initOther() {
 int main(int argc, char *argv[]) {
     int openGLType = QtHelper::getIniValue(argv, "OpenGLType", "", "video_push").toInt();
 
+    //Qt6 需要设置 OpenGL 属性（必须在 QCoreApplication 之前）
+    QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL, false);
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+
     QtHelper::initOpenGL(openGLType);
 
     bool use96Dpi = (QtHelper::getIniValue(argv, "Use96Dpi", "", "video_push") == "true");

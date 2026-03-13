@@ -7,7 +7,7 @@ class VideoWidget : public AbstractVideoWidget {
 Q_OBJECT
 
 public:
-    explicit VideoWidget(QWidget *parent = 0);
+    explicit VideoWidget(QWidget *parent = nullptr);
 
     ~VideoWidget() override;
 
@@ -99,7 +99,7 @@ private slots:
     void receivePlayStart(int time);
 
     //播放结束
-    void receivePlayFinsh();
+    void receivePlayFinish();
 
     //校验接收数据
     bool checkReceive(bool clear = false);

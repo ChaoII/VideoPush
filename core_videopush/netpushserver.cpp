@@ -74,7 +74,6 @@ bool NetPushServer::addUrl(const QString &url, QString &flag) {
         if (isStart) {
             client->start();
         }
-
         clients << client;
         return true;
     }
@@ -88,11 +87,9 @@ void NetPushServer::updateUrl(const QString &url, const QString &srcFlag, const 
     if (!urls.contains(srcFlag) || urls.contains(dstFlag)) {
         return;
     }
-
     //先移除旧的再添加新的
     urls.remove(srcFlag);
     urls[dstFlag] = url;
-
     //更新推流类对应的推流码
     for (auto &client: clients) {
         if (client->getMediaUrl() == url) {
@@ -120,7 +117,6 @@ void NetPushServer::clearUrl() {
         client->stop();
         client->deleteLater();
     }
-
     clients.clear();
     urls.clear();
 }

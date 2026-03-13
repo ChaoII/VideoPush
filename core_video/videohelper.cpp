@@ -187,12 +187,7 @@ QUrl VideoHelper::getPlayUrl(const MediaType &mediaType, const QString &mediaUrl
 }
 
 QByteArray VideoHelper::getUrlData(const MediaType &mediaType, const QString &mediaUrl, bool gbk) {
-    if (gbk && mediaType == MediaType_Screen) {
-        //return mediaUrl.toLocal8Bit();
-        return QTextCodec::codecForName("gbk")->fromUnicode(mediaUrl);
-    } else {
         return mediaUrl.toUtf8();
-    }
 }
 
 MediaType VideoHelper::getMediaType(const QString &mediaUrl) {
